@@ -1,17 +1,17 @@
-package utest.sbt
-import utest.toTestSeq
+package microtest.sbt
+import microtest.toTestSeq
 import sbt.testing._
 import sbt.testing
 import collection.mutable
-import utest.framework.{TestTreeSeq, TestSuite, Result}
+import microtest.framework.{TestTreeSeq, TestSuite, Result}
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.concurrent.ExecutionContext.Implicits.global
-import utest.util.Tree
+import microtest.util.Tree
 import scala.annotation.tailrec
 
 class Runner(val args: Array[String],
              val remoteArgs: Array[String],
-             val printer: utest.Formatter)
+             val printer: microtest.Formatter)
              extends sbt.testing.Runner{
 
 
@@ -62,9 +62,9 @@ class Runner(val args: Array[String],
 }
 
 class Task(val taskDef: TaskDef,
-           tests: utest.util.Tree[utest.framework.Test],
+           tests: microtest.util.Tree[microtest.framework.Test],
            path: String,
-           printer: utest.Formatter,
+           printer: microtest.Formatter,
            addResult: Tree[Result] => Unit,
            progressString: => String)
            extends sbt.testing.Task{

@@ -1,7 +1,7 @@
-package utest
+package microtest
 
-import utest.framework.{TestSuite, Test}
-import utest.asserts.{LoggedValue, LoggedAssertionError}
+import microtest.framework.{TestSuite, Test}
+import microtest.asserts.{LoggedValue, LoggedAssertionError}
 
 
 object Core extends TestSuite{

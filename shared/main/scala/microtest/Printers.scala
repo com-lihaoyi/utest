@@ -1,7 +1,7 @@
-package utest
+package microtest
 
-import utest.framework.Result
-import utest.util.Tree
+import microtest.framework.Result
+import microtest.util.Tree
 import scala.util.{Failure, Success}
 import java.io.{PrintWriter, StringWriter}
 
@@ -46,7 +46,9 @@ class DefaultFormatter(color: Boolean = true,
       r.value match{
         case Failure(e) =>
           pw.write("\n")
-          e.printStackTrace(pw)
+          try{
+            e.printStackTrace(pw)
+          }catch{case e =>}
         case _ =>
       }
       str + sw.toString

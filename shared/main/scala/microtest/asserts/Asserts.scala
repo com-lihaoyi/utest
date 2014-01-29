@@ -1,4 +1,4 @@
-package utest.asserts
+package microtest.asserts
 
 import scala.reflect.macros.Context
 import scala.util.Random
@@ -10,7 +10,7 @@ object Asserts {
 
   def assertProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
-    TraceLogger(c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
+    TraceLogger(c)(q"microtest.asserts.Asserts.assertImpl", exprs:_*)
   }
 
   def assertImpl(funcs: ((LoggedValue => Unit) => Boolean)*) = {
@@ -47,7 +47,7 @@ object TraceLogger{
             // since those are the ones people probably care about
             q"""{
             val $tempName = $tree
-            $loggerName(utest.asserts.LoggedValue(
+            $loggerName(microtest.asserts.LoggedValue(
               ${tree.toString()},
               ${show(tree.symbol.typeSignature)},
               $tempName

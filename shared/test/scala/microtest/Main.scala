@@ -1,10 +1,10 @@
-package utest
+package microtest
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import utest.framework.{Result, TestSuite}
+import microtest.framework.{Result, TestSuite}
 import scala.concurrent.ExecutionContext
 import scala.util.Success
-import utest.asserts.LoggedAssertionError
+import microtest.asserts.LoggedAssertionError
 
 object Main {
   def main(args: Array[String]): Unit = {

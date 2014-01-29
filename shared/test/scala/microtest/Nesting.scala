@@ -1,8 +1,8 @@
-package utest
+package microtest
 
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
-import utest.framework.{SkippedDueToOuterFailureError, Result, TestSuite, Test}
+import microtest.framework.{SkippedDueToOuterFailureError, Result, TestSuite, Test}
 
 object Nesting extends TestSuite{
   def tests = TestSuite{
@@ -152,7 +152,7 @@ object Nesting extends TestSuite{
         }
       }
       // listing tests B and C works despite failure of A
-      assert(tests.toSeq.map(_.name) == Seq("utest.Nesting$", "A", "B", "C"))
+      assert(tests.toSeq.map(_.name) == Seq("microtest.Nesting$", "A", "B", "C"))
       assert(tests.run().iterator.count(_.value.isSuccess) == 1)
 
       // When a test fails, don't both trying to run any inner tests and just
@@ -161,7 +161,7 @@ object Nesting extends TestSuite{
       val res = tests.run().toSeq
       // Check that the right exceptions are thrown
       assertMatches(res){case Seq(
-        Result("utest.Nesting$", Success(_), _, _),
+        Result("microtest.Nesting$", Success(_), _, _),
         Result("A", Failure(_: AssertionError), _, _),
         Result("B", Failure(SkippedDueToOuterFailureError(Seq("A"), _: AssertionError)), _, _),
         Result("C", Failure(SkippedDueToOuterFailureError(Seq("A"), _: AssertionError)), _, _)

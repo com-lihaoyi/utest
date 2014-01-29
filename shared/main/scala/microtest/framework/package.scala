@@ -1,4 +1,4 @@
-package utest
+package microtest
 
 package object framework {
   case class SkippedDueToOuterFailureError(errorPath: Seq[String],

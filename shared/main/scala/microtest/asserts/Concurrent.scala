@@ -1,4 +1,4 @@
-package utest.asserts
+package microtest.asserts
 
 import scala.concurrent.duration._
 import scala.annotation.tailrec
@@ -15,7 +15,7 @@ object Concurrent {
 
   def eventuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
-    TraceLogger(c)(q"utest.asserts.Concurrent.eventuallyImpl", exprs:_*)
+    TraceLogger(c)(q"microtest.asserts.Concurrent.eventuallyImpl", exprs:_*)
   }
   def eventuallyImpl(funcs: ((LoggedValue => Unit) => Boolean)*): Unit = {
     val start = Deadline.now
@@ -41,7 +41,7 @@ object Concurrent {
 
   def continuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
-    TraceLogger(c)(q"utest.asserts.Concurrent.continuallyImpl", exprs:_*)
+    TraceLogger(c)(q"microtest.asserts.Concurrent.continuallyImpl", exprs:_*)
   }
 
   def continuallyImpl(funcs: ((LoggedValue => Unit) => Boolean)*): Unit = {

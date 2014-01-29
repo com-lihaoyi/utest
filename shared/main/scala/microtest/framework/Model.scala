@@ -1,4 +1,4 @@
-package utest.framework
+package microtest.framework
 
 import scala.util.{Success, Failure, Try}
 import scala.concurrent.duration.Deadline
@@ -7,7 +7,7 @@ import scala.concurrent.duration.Deadline
 import scala.language.experimental.macros
 import scala.concurrent.{Await, Future, ExecutionContext}
 import concurrent.duration._
-import utest.util.Tree
+import microtest.util.Tree
 
 object Test{
   def create(tests: (String, (String, TestThunkTree) => Tree[Test])*)

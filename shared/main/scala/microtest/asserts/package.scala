@@ -1,4 +1,4 @@
-package utest
+package microtest
 
 
 package object asserts {

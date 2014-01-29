@@ -1,10 +1,10 @@
-package utest
+package microtest
 
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.Deadline
 import scala.util.Random
-import utest.asserts.LoggedAssertionError
-import utest.framework.{TestSuite, Test}
+import microtest.asserts.LoggedAssertionError
+import microtest.framework.{TestSuite, Test}
 
 
 object Parallel extends TestSuite{
@@ -127,8 +127,6 @@ object Parallel extends TestSuite{
           x == Seq(12),
           y == 1
         )
-
-
       }
     }
   }

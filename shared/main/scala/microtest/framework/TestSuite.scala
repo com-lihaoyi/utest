@@ -1,9 +1,9 @@
-package utest
+package microtest
 package framework
 
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
-import utest.framework.Test
+import microtest.framework.Test
 
 
 abstract class TestSuite{
@@ -17,7 +17,7 @@ object TestSuite{
     import c.universe._
 
     def matcher: PartialFunction[Tree, (Tree, Tree)] = {
-      case q"""utest.this.`package`.TestableString($value).-($body)""" => (value, body)
+      case q"""microtest.this.`package`.TestableString($value).-($body)""" => (value, body)
     }
 
     def recurse(t: Tree): (Tree, Tree) = {
@@ -47,13 +47,13 @@ object TestSuite{
       }
 
       val testTree = q"""
-        utest.framework.TestThunkTree.create{
+        microtest.framework.TestThunkTree.create{
           ..$normal2
           ($retValueName, Seq(..$testTrees))
         }
       """
 
-      val suite = q"utest.framework.Test.create(..$suiteFrags)"
+      val suite = q"microtest.framework.Test.create(..$suiteFrags)"
 
       (testTree, suite)
     }

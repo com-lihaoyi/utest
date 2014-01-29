@@ -1,7 +1,7 @@
-package utest.sbt
+package microtest.sbt
 
 import sbt.testing.SubclassFingerprint
-import utest.DefaultFormatter
+import microtest.DefaultFormatter
 
 
 class Framework extends sbt.testing.Framework{
@@ -9,7 +9,7 @@ class Framework extends sbt.testing.Framework{
 
   def fingerprints(): Array[sbt.testing.Fingerprint] = Array(
     new SubclassFingerprint {
-      def superclassName = "utest.framework.TestSuite"
+      def superclassName = "microtest.framework.TestSuite"
       def isModule = true
       def requireNoArgConstructor = true
     }

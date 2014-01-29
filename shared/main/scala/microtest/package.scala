@@ -1,15 +1,15 @@
 import scala.reflect.ClassTag
 import scala.reflect.macros.Context
-import utest.framework.{TestTreeSeq, Test}
-import utest.asserts._
-import utest.util.Tree
+import microtest.framework.{TestTreeSeq, Test}
+import microtest.asserts._
+import microtest.util.Tree
 import concurrent.duration._
-import utest.util.Tree
+import microtest.util.Tree
 
 /**
  * Created by haoyi on 1/24/14.
  */
-package object utest {
+package object microtest {
   implicit val interval = new RetryInterval(100.millis)
   implicit val max = new RetryMax(1.second)
   import language.experimental.macros
