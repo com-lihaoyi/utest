@@ -45,10 +45,10 @@ class DefaultFormatter(color: Boolean = true,
       val pw = new PrintWriter(sw)
       r.value match{
         case Failure(e) =>
-          pw.write("\n")
-          try{
-            e.printStackTrace(pw)
-          }catch{case e =>}
+//          pw.write("\n")
+//          try{
+//            e.printStackTrace(pw)
+//          }catch{case e =>}
         case _ =>
       }
       str + sw.toString

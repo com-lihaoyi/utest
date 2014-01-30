@@ -1,4 +1,5 @@
-package microtest.sbt
+package microtest.runner
+
 import microtest.toTestSeq
 import sbt.testing._
 import sbt.testing
@@ -33,10 +34,7 @@ class Runner(val args: Array[String],
                    .getOrElse("")
 
     for(taskDef <- taskDefs) yield {
-      val cls = Class.forName(taskDef.fullyQualifiedName() + "$")
-      val tests = cls.getField("MODULE$").get(cls).asInstanceOf[TestSuite].tests
-      total += tests.length
-      new Task(taskDef, tests, path, printer, addResult, progressString)
+      new microtest.runner.Task(taskDef, path, printer, total += _, addResult, progressString)
     }
   }
 
@@ -61,42 +59,3 @@ class Runner(val args: Array[String],
   }
 }
 
-class Task(val taskDef: TaskDef,
-           tests: microtest.util.Tree[microtest.framework.Test],
-           path: String,
-           printer: microtest.Formatter,
-           addResult: Tree[Result] => Unit,
-           progressString: => String)
-           extends sbt.testing.Task{
-
-
-  def tags(): Array[String] = Array()
-
-  def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[testing.Task] = {
-    def doStuff(s: Seq[String]) = {
-      def addSingleResult(path: Seq[String], s: Result): Unit = {
-        val str = progressString + printer.formatResult(path, s)
-        loggers.map(_.info(str))
-      }
-
-      val results = tests.run(
-        addSingleResult,
-        Seq(taskDef.fullyQualifiedName()),
-        s
-      )
-      addResult(results)
-    }
-
-    val fqName = taskDef.fullyQualifiedName()
-
-    if (fqName.startsWith(path)){
-      doStuff(Nil)
-    } else if (path.startsWith(fqName)){
-      doStuff(path.drop(fqName.length).split("\\.").filter(_.length > 0))
-    }else{
-      // do nothing
-    }
-
-    Array()
-  }
-}

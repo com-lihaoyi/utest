@@ -1,4 +1,8 @@
+lazy val root = project.in(file("."))
+
 lazy val js = project.in(file("js"))
+
+lazy val jsTest = project.in(file("js-test")).dependsOn(js)
 
 unmanagedSourceDirectories in Compile <+= baseDirectory(_ / "shared" / "main" / "scala")
 
@@ -16,5 +20,5 @@ libraryDependencies ++= Seq(
 
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 
-testFrameworks += new TestFramework("microtest.sbt.Framework")
+testFrameworks += new TestFramework("microtest.runner.Framework")
 

@@ -1,4 +1,4 @@
-package microtest.sbt
+package microtest.runner
 
 import sbt.testing.SubclassFingerprint
 import microtest.DefaultFormatter

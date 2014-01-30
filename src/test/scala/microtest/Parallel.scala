@@ -15,6 +15,7 @@ object Parallel extends TestSuite{
       if (i > 5) thunk()
     }
   }
+
   val tests = TestSuite{
 
     "parallelizingSpeedsThingsUp"-{

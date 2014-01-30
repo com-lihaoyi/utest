@@ -1,8 +1,10 @@
+import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
+
+import scala.scalajs.sbtplugin.testing.TestFramework
+
 scalaJSSettings
 
 unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".."/ "shared" / "main" / "scala")
-
-unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala")
 
 resolvers += Resolver.sonatypeRepo("releases")
 
@@ -16,4 +18,3 @@ libraryDependencies ++= Seq(
 
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 
-testFrameworks += new TestFramework("microtest.sbt.Framework")

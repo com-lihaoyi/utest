@@ -15,8 +15,8 @@ object Nesting extends TestSuite{
           1
         }
         "test3"-{
-          val a = Array[Byte]()
-          a(0)
+          val a = List[Byte](1, 2)
+          a(10)
         }
       }
       val results = test.run()
