@@ -25,7 +25,12 @@ object Test{
  * a pretty simple data structure, as much of the information related to it
  * comes contextually when traversing the [[microtest.framework.TestTreeSeq]] to reach it.
  */
-case class Test(name: String, TestThunkTree: TestThunkTree)
+case class Test(name: String, TestThunkTree: TestThunkTree){
+  require(
+    name.matches("^[a-zA-Z0-9$]+$"),
+    s"Illegal test name: [$name], test names must non-empty alphanumeric strings"
+  )
+}
 
 /**
  * Extension methods related to `TreeSeq[Test]`
@@ -78,17 +83,17 @@ class TestTreeSeq(tests: Tree[Test]) {
     val indices = collection.mutable.Buffer.empty[Int]
     var current = tests
     var strings = testPath.toList
-    println("Resolving... " + strPath.mkString("."))
     while(!strings.isEmpty){
       val head :: tail = strings
       strings = tail
       val index = current.children.indexWhere(_.value.name == head)
       indices.append(index)
-      current = current.children.toList(index)
+      if (!current.children.isDefinedAt(index)){
+        throw NoSuchTestException(testPath:_*)
+      }
+      current = current.children(index)
     }
-    println("Running Async... " + strPath.mkString("."))
     val future = current.runAsync(onComplete, indices, strPath)
-    println("Result... " + future.value)
 
     Flattener.await(future)
   }

@@ -12,6 +12,9 @@ abstract class TestSuite{
 
 object TestSuite{
   def apply(expr: Unit): util.Tree[Test] = macro TestSuite.applyImpl
+  def dieInAFire(testName: String) = {
+    throw new IllegalArgumentException(s"Test nested badly: $testName")
+  }
 
   def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[util.Tree[Test]] = {
     import c.universe._
@@ -46,6 +49,7 @@ object TestSuite{
         case (name, suite) => q"$name -> $suite"
       }
 
+
       val testTree = q"""
         microtest.framework.TestThunkTree.create{
           ..$normal2
@@ -59,7 +63,26 @@ object TestSuite{
     }
 
     val (testTree, suite) = recurse(expr.tree.asInstanceOf[Block])
-    c.Expr[util.Tree[Test]](c.resetLocalAttrs(q"""$suite(this.getClass.getName, $testTree)"""))
+    var found: Option[Tree] = None
+    val transformer = new Transformer{
+      override def transform(t: Tree) = {
+        //          println("transforming " + t)
+        found = found.orElse(matcher.lift(t).map(_._1))
+        super.transform(t)
+      }
+    }
+    testTree.foreach(transformer.transform(_))
+
+    found match{
+      case Some(tree) =>
+        c.Expr[util.Tree[Test]](q"""
+          throw new java.lang.IllegalArgumentException("Test [" + $tree + "] nested badly. Tests must be nested directly underneath their parents and can not be placed within blocks.")
+        """)
+
+      case None =>
+        c.Expr[util.Tree[Test]](c.resetLocalAttrs(q"""$suite(this.getClass.getName.split('.').last, $testTree)"""))
+    }
+
   }
 }
 

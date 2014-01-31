@@ -1,8 +1,12 @@
 package microtest
 
 import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
-import microtest.framework.{SkippedDueToOuterFailureError, Result, TestSuite, Test}
+import TestExecutionContext.value
+import microtest.framework._
+import microtest.framework.SkippedDueToOuterFailureError
+import microtest.framework.Result
+import scala.util.Success
+import scala.util.Failure
 
 object Nesting extends TestSuite{
   def tests = TestSuite{
@@ -28,6 +32,57 @@ object Nesting extends TestSuite{
       assert(results.leaves.count(_.value.isSuccess) == 1)
       results.leaves.map(_.value).toList
     }
+    "failures"-{
+      "noSuchTest"-{
+        val test = TestSuite{
+          "test1"-{
+            1
+          }
+
+        }
+        try{
+          println(test.run(testPath=Seq("does", "not", "exist")))
+        }catch {case e @ NoSuchTestException("does", "not", "exist") =>
+          assert(e.getMessage.contains("does.not.exist"))
+          e.getMessage
+        }
+      }
+      "illegalTestName"-{
+        // Ideally should not compile, but until I
+        // figure that out, a runtime error works great
+        try{
+          val test = TestSuite{
+            "t est1"-{
+              1
+            }
+          }
+          test.run()
+        }catch{ case e: IllegalArgumentException =>
+          assert(e.getMessage.contains("Illegal test name"))
+          assert(e.getMessage.contains("t est1"))
+          e.getMessage
+        }
+      }
+      "testNestedBadly"-{
+        // Ideally should not compile, but until I
+        // figure that out, a runtime error works great
+        try{
+          val test = TestSuite{
+            "outer"-{
+              if (true){
+                "inners"-{
+
+                }
+              }
+            }
+          }
+        }catch{case e: IllegalArgumentException =>
+          assert(e.getMessage.contains("inners"))
+          assert(e.getMessage.contains("nested badly"))
+          e.getMessage
+        }
+      }
+    }
 
     "extractingResults"-{
       val test = TestSuite{
@@ -49,7 +104,7 @@ object Nesting extends TestSuite{
       }
       val results = test.run()
       val expected = Seq("i am cow", 1, 2, Seq('a', 'b')).map(Success[Any])
-
+      assert(results.leaves.map(_.value).toList == expected)
       results.map(_.value.get)
     }
     "nesting"-{
@@ -152,23 +207,20 @@ object Nesting extends TestSuite{
         }
       }
       // listing tests B and C works despite failure of A
-      assert(tests.toSeq.map(_.name) == Seq("microtest.Nesting$", "A", "B", "C"))
+      assertMatches(tests.toSeq.map(_.name)){ case Seq(_, "A", "B", "C")=>}
       assert(tests.run().iterator.count(_.value.isSuccess) == 1)
-
       // When a test fails, don't both trying to run any inner tests and just
       // die fail the immediately
       assert(timesRun == 2)
       val res = tests.run().toSeq
       // Check that the right exceptions are thrown
       assertMatches(res){case Seq(
-        Result("microtest.Nesting$", Success(_), _, _),
+        Result(_, Success(_), _, _),
         Result("A", Failure(_: AssertionError), _, _),
         Result("B", Failure(SkippedDueToOuterFailureError(Seq("A"), _: AssertionError)), _, _),
         Result("C", Failure(SkippedDueToOuterFailureError(Seq("A"), _: AssertionError)), _, _)
       )=>}
       "timeRun: " + timesRun
-
-
     }
   }
 }
