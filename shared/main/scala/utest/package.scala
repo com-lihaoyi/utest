@@ -30,19 +30,40 @@ package object utest {
    */
   def continually(exprs: Boolean*): Unit = macro Concurrent.continuallyProxy
 
+  /**
+   * Extension methods to allow you to create tests via the "omg"-{ ... }
+   * syntax.
+   */
   implicit class TestableString(s: String){
+    /**
+     * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
+     * meaning outside that block
+     */
     def -(x: => Any) = ???
   }
 
+  /**
+   * Extension methods on `Tree[Test]` in order to conveniently run the tests
+   * and aggregate the results
+   */
   implicit def toTestSeq(t: Tree[Test]) = new TestTreeSeq(t)
 
   val ClassTag = scala.reflect.ClassTag
 
+  /**
+   * Asserts that the given value matches the PartialFunction. Useful for using
+   * pattern matching to validate the shape of a data structure.
+   */
   def assertMatches[T](t: T)(pf: PartialFunction[T, Unit]): Unit = {
     if (pf.isDefinedAt(t)) pf(t)
     else throw new AssertionError("Matching failed " + t)
   }
 
+  /**
+   * Asserts that the given block raises the expected exception. The exception
+   * is returned if raised, and an `AssertionError` is raised if the expected
+   * exception does not appear.
+   */
   def intercept[T: ClassTag](thunk: => Unit): T = {
     try{
       thunk
@@ -51,15 +72,5 @@ package object utest {
     } catch { case e: T => e }
   }
 
-  def desugar(a: Any): String = macro desugarImpl
-
-  def desugarImpl(c: Context)(a: c.Expr[Any]) = {
-    import c.universe._
-
-    val s = show(a.tree)
-    c.Expr(
-      Literal(Constant(s))
-    )
-  }
 }
 

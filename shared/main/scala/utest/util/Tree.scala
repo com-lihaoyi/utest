@@ -32,7 +32,6 @@ case class Tree[+T](value: T, children: Seq[Tree[T]]){
     else children.toIterator.flatMap(_.leaves)
   }
 
-
   /**
    * Transforms this tree into a new tree by applying the function `f` to
    * the value at every node. Does not change the shape of the tree.

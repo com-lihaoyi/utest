@@ -5,11 +5,15 @@ import utest.util.Tree
 import scala.util.{Failure, Success}
 import java.io.{PrintWriter, StringWriter}
 
+/**
+ * Represents something that can format a single test result or a [[Tree]] of 
+ * them. 
+ */
 abstract class Formatter{
   /**
    * Prettyprints a single result.
    */
-  def formatResult(path: Seq[String], r: Result): String
+  def formatSingle(path: Seq[String], r: Result): String
 
   /**
    * Prettyprints a tree of results; may or may not use `formatResult`.
@@ -17,6 +21,10 @@ abstract class Formatter{
   def format(results: Tree[Result]): String
 }
 
+/**
+ * Default implementation of [[Formatter]], also used by the default SBT test
+ * framework. Allows some degree of customization of the formatted test results.
+ */
 class DefaultFormatter(color: Boolean = true, 
                        truncate: Int = 30,
                        trace: Boolean = false) extends Formatter{
@@ -35,7 +43,7 @@ class DefaultFormatter(color: Boolean = true,
     else s2
   }
 
-  def formatResult(path: Seq[String], r: Result): String = {
+  def formatSingle(path: Seq[String], r: Result): String = {
     val str = path.mkString(".") + "\t\t" + prettyTruncate(r)
     if (!trace) str
     else{

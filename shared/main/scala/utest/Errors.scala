@@ -1,11 +1,29 @@
 package utest
 
-case class SkippedDueToOuterFailureError(errorPath: Seq[String],
-                                         outerError: Throwable)
-  extends Exception("Test skipped due to outer failure in " + errorPath.mkString("."), outerError)
+object SkippedOuterFailure{
+  def errorMsg(errorPath: Seq[String]) = {
+    "Test skipped due to outer failure in " + errorPath.mkString(".")
+  }
+}
+case class SkippedOuterFailure(errorPath: Seq[String],
+                               outerError: Throwable)
+                               extends Exception(SkippedOuterFailure.errorMsg(errorPath), outerError)
 
+/**
+ * Indicates that there was no test to run at the path you provided
+ */
 case class NoSuchTestException(path: String*) extends Exception("["+path.mkString(".") + "]")
 
-case class LoggedAssertionError(msg: String, captured: Seq[LoggedValue]) extends AssertionError(msg)
+/**
+ * A special `AssertionError` thrown by utest's macro-powered asserts that 
+ * contains metadata about local variables used in the assert expression.
+ */
+case class LoggedAssertionError(msg: String, 
+                                captured: Seq[LoggedValue]) 
+                                extends AssertionError(msg)
 
+/**
+ * Information about a value that was logged in one of the macro-powered 
+ * `assert` functions
+ */
 case class LoggedValue(name: String, tpeName: String, value: Any)

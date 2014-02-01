@@ -24,7 +24,7 @@ class Task(val taskDef: TaskDef,
   def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[testing.Task] = {
     def doStuff(s: Seq[String]) = {
       def addSingleResult(path: Seq[String], s: Result): Unit = {
-        val str = progressString + printer.formatResult(path, s)
+        val str = progressString + printer.formatSingle(path, s)
         loggers.foreach(_.info(str))
       }
 

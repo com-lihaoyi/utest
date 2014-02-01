@@ -9,9 +9,14 @@ import scala.concurrent.{Await, Future, ExecutionContext}
 import concurrent.duration._
 import utest.util.Tree
 import utest.Flattener
-import utest.{NoSuchTestException, SkippedDueToOuterFailureError}
+import utest.{NoSuchTestException, SkippedOuterFailure}
 
 object Test{
+  /**
+   * Creates a test from a set of children, a name a a [[TestThunKTree]].
+   * Generally called by the [[TestSuite.apply]] macro and doesn't need to
+   * be called manually.
+   */
   def create(tests: (String, (String, TestThunkTree) => Tree[Test])*)
             (name: String, testTree: TestThunkTree): Tree[Test] = {
     new Tree(
@@ -34,14 +39,26 @@ case class Test(name: String, TestThunkTree: TestThunkTree){
 }
 
 /**
- * Extension methods related to `TreeSeq[Test]`
+ * Extension methods on `TreeSeq[Test]`
  */
 class TestTreeSeq(tests: Tree[Test]) {
+  /**
+   * Runs this `Tree[Test]` asynchronously and returns a `Future` containing
+   * the tree of the results.
+   *
+   * @param onComplete Called each time a single [[Test]] finishes
+   * @param path The integer path of the current test in its [[TestThunkTree]]
+   * @param strPath The path to the current test
+   * @param outerError Whether or not an outer test failed, and this test can
+   *                   be failed immediately without running
+   * @param ec Used to
+   */
   def runAsync(onComplete: (Seq[String], Result) => Unit,
                path: Seq[Int],
                strPath: Seq[String] = Nil,
-               outerError: Option[SkippedDueToOuterFailureError] = None)
+               outerError: Option[SkippedOuterFailure] = None)
               (implicit ec: ExecutionContext): Future[Tree[Result]] = {
+
     Flattener.flatten(Future{
       val start = Deadline.now
       val tryResult =
@@ -49,8 +66,8 @@ class TestTreeSeq(tests: Tree[Test]) {
 
       val thisError = tryResult match{
         case Success(_) => None
-        case Failure(e: SkippedDueToOuterFailureError) => Some(e)
-        case Failure(e) => Some(SkippedDueToOuterFailureError(strPath, e))
+        case Failure(e: SkippedOuterFailure) => Some(e)
+        case Failure(e) => Some(SkippedOuterFailure(strPath, e))
       }
 
       val childRuns =
@@ -107,9 +124,14 @@ object TestThunkTree{
 /**
  * A tree of nested lexical scopes that accompanies the tree of tests. This
  * is separated from the tree of metadata in [[TestTreeSeq]] in order to allow
- * you to query the metadata without executing the tests..
+ * you to query the metadata without executing the tests. Generally created by
+ * the [[TestSuite]] macro and not instantiated manually.
  */
 class TestThunkTree(inner: => (Any, Seq[TestThunkTree])){
+  /**
+   * Runs the test in this [[TestThunkTree]] at the specified `path`. Called
+   * by the [[TestTreeSeq.run]] method and usually not called manually.
+   */
   def run(path: List[Int]): Any = {
     path match {
       case head :: tail =>

@@ -6,7 +6,7 @@ import utest.framework._
 import utest.framework.Result
 import scala.util.Success
 import scala.util.Failure
-import utest.SkippedDueToOuterFailureError
+import utest.SkippedOuterFailure
 
 object Nesting extends TestSuite{
   def tests = TestSuite{
@@ -217,8 +217,8 @@ object Nesting extends TestSuite{
       assertMatches(res){case Seq(
         Result(_, Success(_), _, _),
         Result("A", Failure(_: AssertionError), _, _),
-        Result("B", Failure(SkippedDueToOuterFailureError(Seq("A"), _: AssertionError)), _, _),
-        Result("C", Failure(SkippedDueToOuterFailureError(Seq("A"), _: AssertionError)), _, _)
+        Result("B", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _, _),
+        Result("C", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _, _)
       )=>}
       "timeRun: " + timesRun
     }

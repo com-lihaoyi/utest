@@ -5,7 +5,8 @@ import scala.reflect.macros.Context
 import scala.util.Random
 
 /**
- * Macro implementation that provides rich error message for boolean expression assertion.
+ * Macro implementation that provides rich error
+ * message for boolean expression assertion.
  */
 object Asserts {
 
@@ -53,7 +54,7 @@ object TraceLogger{
               ${show(tree.symbol.typeSignature)},
               $tempName
             ))
-            $tempName
+             $tempName
           }"""
           case _ => super.transform(tree)
         }

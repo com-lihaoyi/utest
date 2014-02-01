@@ -9,6 +9,7 @@ import scala.util.{Success, Try}
 
 class RetryInterval(d: Duration)
 class RetryMax(d: Duration)
+
 object Concurrent {
 
   val interval = 100.millis

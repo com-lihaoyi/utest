@@ -5,13 +5,27 @@ import scala.reflect.macros.Context
 import scala.language.experimental.macros
 import utest.framework.Test
 
-
+/**
+ * Marker class used to mark an `object` as something containing tests. Used
+ * for test-discovery by SBT.
+ */
 abstract class TestSuite{
+  /**
+   * The tests within this `object`.
+   */
   def tests: util.Tree[Test]
 }
 
 object TestSuite{
+  /**
+   * Macro to demarcate a `Tree[Test]`.
+   */
   def apply(expr: Unit): util.Tree[Test] = macro TestSuite.applyImpl
+
+  /**
+   * Raise an exception if a test is nested badly within a `TestSuite{ ... }`
+   * block.
+   */
   def dieInAFire(testName: String) = {
     throw new IllegalArgumentException(s"Test nested badly: $testName")
   }
