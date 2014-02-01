@@ -20,5 +20,5 @@ libraryDependencies ++= Seq(
 
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 
-testFrameworks += new TestFramework("microtest.runner.Framework")
+testFrameworks += new TestFramework("utest.runner.Framework")
 
