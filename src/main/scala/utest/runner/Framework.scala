@@ -15,27 +15,11 @@ class Framework extends sbt.testing.Framework{
     }
   )
 
-  def printer(args: Array[String]) = {
-    def find[T](prefix: String, parse: String => T, default: T): T = {
-      args.find(_.startsWith(prefix))
-          .fold(default)(s => parse(s.drop(prefix.length)))
-    }
-
-    val color = find("--color=", _.toBoolean, true)
-    val truncate = find("--truncate=", _.toInt, 30)
-    val trace = find("--trace=", _.toBoolean, false)
-
-    new DefaultFormatter(
-      color,
-      truncate,
-      trace
-    )
-  }
+  def printer(args: Array[String]) = DefaultFormatter(args)
 
   def runner(args: Array[String],
              remoteArgs: Array[String],
              testClassLoader: ClassLoader): Runner = {
     new Runner(args, remoteArgs, printer(args))
-
   }
 }

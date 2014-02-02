@@ -1,7 +1,7 @@
 package utest
 
 import scala.util.{Failure, Success}
-import TestExecutionContext.value
+
 import utest.framework._
 import utest.framework.Result
 import scala.util.Success
@@ -9,6 +9,7 @@ import scala.util.Failure
 import utest.SkippedOuterFailure
 
 object Nesting extends TestSuite{
+  implicit val ec = utest.util.RunNowExecutionContext
   def tests = TestSuite{
     "helloWorld"-{
       val test = TestSuite{

@@ -15,7 +15,6 @@ class Runner(val args: Array[String],
              val printer: utest.Formatter)
              extends sbt.testing.Runner{
 
-
   val results = new AtomicReference(List.empty[Tree[Result]])
 
   var total = 0

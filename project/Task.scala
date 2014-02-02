@@ -7,6 +7,7 @@ import scala.scalajs.sbtplugin.environment.rhino.{Utilities, CodeBlock}
 import scala.scalajs.sbtplugin.ScalaJSEnvironment
 
 class Task(val taskDef: TaskDef,
+           args: Array[String],
            path: String,
            environment: ScalaJSEnvironment)
            extends sbt.testing.Task{
@@ -24,9 +25,19 @@ class Task(val taskDef: TaskDef,
         new CodeBlock(context, scope) with Utilities {
           try {
             val module = getModule(taskDef.fullyQualifiedName().replace('.', '_'))
+            val formatter = callMethod(
+              getModule("utest.DefaultFormatter"),
+              "apply",
+              toScalaJSArray(args)
+            )
             val called = callMethod(
-              callMethod(module, "tests").asInstanceOf[NativeObject],
-              "toString"
+              formatter.asInstanceOf[NativeObject],
+              "format",
+              callMethod(
+                module,
+                "runSuite",
+                toScalaJSArray(args)
+              )
             )
             println("module " + module)
             println("called " + called)

@@ -14,6 +14,13 @@ abstract class TestSuite{
    * The tests within this `object`.
    */
   def tests: util.Tree[Test]
+
+  def runSuite(args: Array[String]) = {
+    implicit val ec = utest.util.RunNowExecutionContext
+    DefaultFormatter(args).format(
+      tests.run(testPath = args.lift(0).fold(Nil: Seq[String])(_.split("\\.")))(ec)
+    )
+  }
 }
 
 object TestSuite{

@@ -20,7 +20,24 @@ abstract class Formatter{
    */
   def format(results: Tree[Result]): String
 }
+object DefaultFormatter{
+  def apply(args: Array[String]) = {
+    def find[T](prefix: String, parse: String => T, default: T): T = {
+      args.find(_.startsWith(prefix))
+        .fold(default)(s => parse(s.drop(prefix.length)))
+    }
 
+    val color = find("--color=", _.toBoolean, true)
+    val truncate = find("--truncate=", _.toInt, 30)
+    val trace = find("--trace=", _.toBoolean, false)
+
+    new DefaultFormatter(
+      color,
+      truncate,
+      trace
+    )
+  }
+}
 /**
  * Default implementation of [[Formatter]], also used by the default SBT test
  * framework. Allows some degree of customization of the formatted test results.

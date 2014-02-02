@@ -12,6 +12,7 @@ class Runner(val args: Array[String],
   def tasks(taskDefs: Array[TaskDef]): Array[sbt.testing.Task] = {
     println("Runner.taskDefs")
     taskDefs.foreach(println)
+
     val path = args.lift(0)
                    .filter(_(0) != '-')
                    .getOrElse("")
@@ -19,6 +20,7 @@ class Runner(val args: Array[String],
     for(taskDef <- taskDefs) yield {
       new Task(
         taskDef,
+        args,
         path,
         environment
       )
