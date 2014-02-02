@@ -11,11 +11,15 @@ class Runner(val args: Array[String],
   val results = new AtomicReference[List[String]](Nil)
   val total = new AtomicInteger(0)
   val success = new AtomicInteger(0)
-  def failure = total.get - success.get
+  val failure = new AtomicInteger(0)
 
   @tailrec final def addResult(r: String): Unit = {
     val old = results.get()
     if (!results.compareAndSet(old, r :: old)) addResult(r)
+  }
+
+  def progressString = {
+    s"${success.get + failure.get}/${total.get}".padTo(8, ' ')
   }
 
   def tasks(taskDefs: Array[TaskDef]): Array[sbt.testing.Task] = {
@@ -29,8 +33,14 @@ class Runner(val args: Array[String],
         args,
         path,
         environment,
-        (x, y) => {total.addAndGet(x); success.addAndGet(y)},
-        addResult
+        win => {
+          if (win)success.addAndGet(1)
+          else failure.addAndGet(1)
+        },
+        total.addAndGet,
+        addResult,
+
+        progressString
       )
     }
   }

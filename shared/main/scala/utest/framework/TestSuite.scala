@@ -15,17 +15,27 @@ abstract class TestSuite{
    */
   def tests: util.Tree[Test]
 
-  def runSuite(args: Array[String]) = {
+  def runSuite(args: Array[String],
+               func: String => Unit,
+               addTotal: String => Unit) = {
+
+    addTotal(this.tests.length.toString)
+
     implicit val ec = utest.util.RunNowExecutionContext
+    val formatter = DefaultFormatter(args)
     val path = args.lift(0).fold(Nil: Seq[String])(_.split("\\."))
-    val results = tests.run(testPath = path)(ec)
+    val results = tests.run(
+      (path, s) => func(s.value.isSuccess + "\t" + formatter.formatSingle(path, s)),
+      testPath = path
+    )(ec)
     val success = results.toSeq.count(_.value.isSuccess)
     val count = results.toSeq.length
-    success + "\t" + count + "\t" + DefaultFormatter(args).format(results)
+    success + "\t" + count + "\t" + formatter.format(results)
   }
 }
 
 object TestSuite{
+
 
 
   /**
