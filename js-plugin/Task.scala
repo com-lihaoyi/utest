@@ -6,16 +6,11 @@ import ExecutionContext.Implicits.global
 import scala.scalajs.sbtplugin.environment.rhino.{Utilities, CodeBlock}
 import scala.scalajs.sbtplugin.ScalaJSEnvironment
 
-class doStuff(f: Boolean => Unit, g: String => Unit){
-  def apply__O__O(x: String) = {
-    val Array(win, msg) = x.split("\\t", 2)
-    f(win.toBoolean)
-    g(msg)
-  }
+
+case class JsCallback(f: String => Unit){
+  def apply__O__O(x: String) = f(x)
 }
-class doStuff2(f: Int => Unit){
-  def apply__O__O(x: String) = f(x.toInt)
-}
+
 class Task(val taskDef: TaskDef,
            args: Array[String],
            path: String,
@@ -39,13 +34,12 @@ class Task(val taskDef: TaskDef,
               module,
               "runSuite",
               toScalaJSArray(args),
-              new doStuff(addCount, msg => loggers.foreach(_.info(progressString + taskDef.fullyQualifiedName() + "." + msg))),
-              new doStuff2(addTotal)
+              JsCallback(s => addCount(s.toBoolean)),
+              JsCallback(msg => loggers.foreach(_.info(progressString + taskDef.fullyQualifiedName() + "." + msg))),
+              JsCallback(s => addTotal(s.toInt))
             )
 
-            val Array(success, total, msg) = results.toString.split("\t", 3)
-
-            addResult(msg)
+            addResult(results.toString)
           } catch {
             case t: RhinoException =>
               println(t.details, t.getScriptStack())

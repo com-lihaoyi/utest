@@ -179,15 +179,15 @@ object Nesting extends TestSuite{
       }
 
       assertMatches(tests.run(testPath=Seq("A", "C")).toSeq)
-                   {case Seq(Result("C", Success(1), _, _))=>}
+                   {case Seq(Result("C", Success(1), _))=>}
 
       assertMatches(tests.run(testPath=Seq("A")).toSeq)
-                   {case Seq(Result("A", Success(()), _, _), Result("C", Success(1), _, _))=>}
+                   {case Seq(Result("A", Success(()), _), Result("C", Success(1), _))=>}
 
       assertMatches(tests.run(testPath=Seq("B")).toSeq){case Seq(
-        Result("B", Success(()), _, _),
-        Result("D", Success(2), _, _),
-        Result("E", Success(3), _, _)
+        Result("B", Success(()), _),
+        Result("D", Success(2), _),
+        Result("E", Success(3), _)
       )=>}
     }
     "outerFailures"-{
@@ -216,10 +216,10 @@ object Nesting extends TestSuite{
       val res = tests.run().toSeq
       // Check that the right exceptions are thrown
       assertMatches(res){case Seq(
-        Result(_, Success(_), _, _),
-        Result("A", Failure(_: AssertionError), _, _),
-        Result("B", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _, _),
-        Result("C", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _, _)
+        Result(_, Success(_), _),
+        Result("A", Failure(_: AssertionError), _),
+        Result("B", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _),
+        Result("C", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _)
       )=>}
       "timeRun: " + timesRun
     }

@@ -82,7 +82,7 @@ class TestTreeSeq(tests: Tree[Test]) {
 
       val sequenced = temp.map{ results =>
         val end = Deadline.now
-        val result = Result(tests.value.name, tryResult, start, end)
+        val result = Result(tests.value.name, tryResult, end.time.toMillis - start.time.toMillis)
         onComplete(strPath, result)
         new Tree(
           result,
@@ -151,8 +151,4 @@ class TestThunkTree(inner: => (Any, Seq[TestThunkTree])){
  */
 case class Result(name: String,
                   value: Try[Any],
-                  startTime: Deadline,
-                  endTime: Deadline) {
-
-  def duration = endTime - startTime
-}
+                  milliDuration: Long)
