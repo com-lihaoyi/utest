@@ -17,13 +17,17 @@ abstract class TestSuite{
 
   def runSuite(args: Array[String]) = {
     implicit val ec = utest.util.RunNowExecutionContext
-    DefaultFormatter(args).format(
-      tests.run(testPath = args.lift(0).fold(Nil: Seq[String])(_.split("\\.")))(ec)
-    )
+    val path = args.lift(0).fold(Nil: Seq[String])(_.split("\\."))
+    val results = tests.run(testPath = path)(ec)
+    val success = results.toSeq.count(_.value.isSuccess)
+    val count = results.toSeq.length
+    success + "\t" + count + "\t" + DefaultFormatter(args).format(results)
   }
 }
 
 object TestSuite{
+
+
   /**
    * Macro to demarcate a `Tree[Test]`.
    */

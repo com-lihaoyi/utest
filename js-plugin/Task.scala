@@ -9,38 +9,30 @@ import scala.scalajs.sbtplugin.ScalaJSEnvironment
 class Task(val taskDef: TaskDef,
            args: Array[String],
            path: String,
-           environment: ScalaJSEnvironment)
+           environment: ScalaJSEnvironment,
+           addCount: (Int, Int) => Unit,
+           addResult: String => Unit)
            extends sbt.testing.Task{
 
-  println("Task " + path)
   def tags(): Array[String] = Array()
 
   def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[testing.Task] = {
 
     def doStuff(s: Seq[String]) = {
-      println("Task.doStuff")
-      println(s)
-      println(taskDef.fullyQualifiedName())
       environment.runInContextAndScope { (context, scope) =>
         new CodeBlock(context, scope) with Utilities {
           try {
             val module = getModule(taskDef.fullyQualifiedName().replace('.', '_'))
-            val formatter = callMethod(
-              getModule("utest.DefaultFormatter"),
-              "apply",
+            val results = callMethod(
+              module,
+              "runSuite",
               toScalaJSArray(args)
             )
-            val called = callMethod(
-              formatter.asInstanceOf[NativeObject],
-              "format",
-              callMethod(
-                module,
-                "runSuite",
-                toScalaJSArray(args)
-              )
-            )
-            println("module " + module)
-            println("called " + called)
+
+            val Array(success, total, msg) = results.toString.split("\t", 3)
+            addCount(success.toInt, total.toInt)
+
+            addResult(msg)
           } catch {
             case t: RhinoException =>
               println(t.details, t.getScriptStack())

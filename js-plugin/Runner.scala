@@ -8,11 +8,17 @@ class Runner(val args: Array[String],
              environment: ScalaJSEnvironment)
              extends sbt.testing.Runner{
 
-  println("new Runner")
-  def tasks(taskDefs: Array[TaskDef]): Array[sbt.testing.Task] = {
-    println("Runner.taskDefs")
-    taskDefs.foreach(println)
+  val results = new AtomicReference[List[String]](Nil)
+  val total = new AtomicInteger(0)
+  val success = new AtomicInteger(0)
+  def failure = total.get - success.get
 
+  @tailrec final def addResult(r: String): Unit = {
+    val old = results.get()
+    if (!results.compareAndSet(old, r :: old)) addResult(r)
+  }
+
+  def tasks(taskDefs: Array[TaskDef]): Array[sbt.testing.Task] = {
     val path = args.lift(0)
                    .filter(_(0) != '-')
                    .getOrElse("")
@@ -22,16 +28,24 @@ class Runner(val args: Array[String],
         taskDef,
         args,
         path,
-        environment
+        environment,
+        (x, y) => {total.addAndGet(x); success.addAndGet(y)},
+        addResult
       )
     }
   }
 
   def done(): String = {
-    println("Runner.done")
     val header = "-----------------------------------Results-----------------------------------"
+
+    val body = results.get.mkString("\n")
+
     Seq(
-      header
+      header,
+      body,
+      s"Tests: $total",
+      s"Passed: $total",
+      s"Failed: $failure"
     ).mkString("\n")
   }
 }
