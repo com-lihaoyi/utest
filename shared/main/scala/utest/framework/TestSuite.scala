@@ -4,8 +4,8 @@ package framework
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
 import utest.framework.Test
-//import scala.pickling._
-//import json._
+import scala.pickling._
+import json._
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
@@ -24,7 +24,7 @@ abstract class TestSuite{
 
     addTotal(this.tests.length.toString)
 
-    implicit val ec = utest.util.RunNowExecutionContext
+    implicit val ec = utest.ExecutionContext.RunNow
     val formatter = DefaultFormatter(args)
     val path = args.lift(0).fold(Nil: Seq[String])(_.split("\\."))
     val results = tests.run(
@@ -35,7 +35,7 @@ abstract class TestSuite{
       testPath = path
     )(ec)
 
-    formatter.format(results)
+    results.pickle.value
   }
 }
 

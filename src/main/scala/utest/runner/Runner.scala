@@ -7,8 +7,9 @@ import collection.mutable
 import utest.framework.{TestTreeSeq, TestSuite, Result}
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.concurrent.ExecutionContext.Implicits.global
-import utest.util.Tree
+import utest.util.{ArgParse, Tree}
 import scala.annotation.tailrec
+import scala.concurrent.ExecutionContext
 
 class Runner(val args: Array[String],
              val remoteArgs: Array[String],
@@ -32,8 +33,13 @@ class Runner(val args: Array[String],
                    .filter(_(0) != '-')
                    .getOrElse("")
 
+    val ec = if (ArgParse.find("parallel", _.toBoolean, false)(args)){
+      ExecutionContext.Implicits.global
+    }else{
+      utest.ExecutionContext.RunNow
+    }
     for(taskDef <- taskDefs) yield {
-      new utest.runner.Task(taskDef, path, printer, total += _, addResult, progressString)
+      new utest.runner.Task(taskDef, path, printer, total += _, addResult, progressString, ec)
     }
   }
 

@@ -44,17 +44,8 @@ object Parallel extends TestSuite{
       }
 
       val parallelTime = timedTrial(ExecutionContext.Implicits.global)
-      object RunNowExecutionContext extends ExecutionContext {
 
-        def execute(runnable: Runnable) =
-          try   { runnable.run() }
-          catch { case t: Throwable => reportFailure(t) }
-
-        def reportFailure(t: Throwable) =
-          Console.err.println("Failure in async execution: " + t)
-
-      }
-      val serialTime = timedTrial(RunNowExecutionContext)
+      val serialTime = timedTrial(utest.ExecutionContext.RunNow)
       val speedup = serialTime * 1.0 / parallelTime
       // Most people running this should be on at least a dual-core machine
       assert(speedup > 1.5)

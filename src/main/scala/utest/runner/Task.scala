@@ -12,7 +12,8 @@ class Task(val taskDef: TaskDef,
            printer: utest.Formatter,
            addTotal: Int => Unit,
            addResult: Tree[Result] => Unit,
-           progressString: => String)
+           progressString: => String,
+           implicit ec: ExecutionContext)
            extends sbt.testing.Task{
 
   val cls = Class.forName(taskDef.fullyQualifiedName() + "$")
@@ -27,6 +28,7 @@ class Task(val taskDef: TaskDef,
         val str = progressString + printer.formatSingle(path, s)
         loggers.foreach(_.info(str))
       }
+
 
       val results = tests.run(
         addSingleResult,

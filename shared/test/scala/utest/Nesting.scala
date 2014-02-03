@@ -9,7 +9,7 @@ import scala.util.Failure
 import utest.SkippedOuterFailure
 
 object Nesting extends TestSuite{
-  implicit val ec = utest.util.RunNowExecutionContext
+  implicit val ec = utest.ExecutionContext.RunNow
   def tests = TestSuite{
     "helloWorld"-{
       val test = TestSuite{
@@ -178,13 +178,13 @@ object Nesting extends TestSuite{
         }
       }
 
-      assertMatches(tests.run(testPath=Seq("A", "C")).toSeq)
-                   {case Seq(Result("C", Success(1), _))=>}
+      assertMatch(tests.run(testPath=Seq("A", "C")).toSeq)
+                 {case Seq(Result("C", Success(1), _))=>}
 
-      assertMatches(tests.run(testPath=Seq("A")).toSeq)
-                   {case Seq(Result("A", Success(()), _), Result("C", Success(1), _))=>}
+      assertMatch(tests.run(testPath=Seq("A")).toSeq)
+                 {case Seq(Result("A", Success(()), _), Result("C", Success(1), _))=>}
 
-      assertMatches(tests.run(testPath=Seq("B")).toSeq){case Seq(
+      assertMatch(tests.run(testPath=Seq("B")).toSeq){case Seq(
         Result("B", Success(()), _),
         Result("D", Success(2), _),
         Result("E", Success(3), _)
@@ -208,14 +208,14 @@ object Nesting extends TestSuite{
         }
       }
       // listing tests B and C works despite failure of A
-      assertMatches(tests.toSeq.map(_.name)){ case Seq(_, "A", "B", "C")=>}
+      assertMatch(tests.toSeq.map(_.name)){ case Seq(_, "A", "B", "C")=>}
       assert(tests.run().iterator.count(_.value.isSuccess) == 1)
       // When a test fails, don't both trying to run any inner tests and just
       // die fail the immediately
       assert(timesRun == 2)
       val res = tests.run().toSeq
       // Check that the right exceptions are thrown
-      assertMatches(res){case Seq(
+      assertMatch(res){case Seq(
         Result(_, Success(_), _),
         Result("A", Failure(_: AssertionError), _),
         Result("B", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _),

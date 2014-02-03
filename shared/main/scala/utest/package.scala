@@ -54,7 +54,7 @@ package object utest {
    * Asserts that the given value matches the PartialFunction. Useful for using
    * pattern matching to validate the shape of a data structure.
    */
-  def assertMatches[T](t: T)(pf: PartialFunction[T, Unit]): Unit = {
+  def assertMatch[T](t: T)(pf: PartialFunction[T, Unit]): Unit = {
     if (pf.isDefinedAt(t)) pf(t)
     else throw new AssertionError("Matching failed " + t)
   }

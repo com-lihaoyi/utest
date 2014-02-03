@@ -64,15 +64,15 @@ object Core extends TestSuite{
         }
       }
     }
-    "assertMatches"-{
+    "assertMatch"-{
       "success"-{
         val thing = Seq(1, 2, 3)
-        assertMatches(thing){case Seq(1, _, 3) =>}
+        assertMatch(thing){case Seq(1, _, 3) =>}
         ()
       }
       "failure"-{
         try {
-          assertMatches(Seq(1, 2, 3)){case Seq(1, 2) =>}
+          assertMatch(Seq(1, 2, 3)){case Seq(1, 2) =>}
           Predef.assert(false)
         } catch{ case e: AssertionError =>
           e.getMessage

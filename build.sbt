@@ -2,7 +2,7 @@ lazy val root = project.in(file("."))
 
 lazy val js = project.in(file("js"))
 
-lazy val jsTest = project.in(file("js-test")).dependsOn(js)
+lazy val jsPlugin = project.in(file("js-plugin"))
 
 unmanagedSourceDirectories in Compile <+= baseDirectory(_ / "shared" / "main" / "scala")
 

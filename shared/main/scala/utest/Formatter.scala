@@ -21,20 +21,12 @@ abstract class Formatter{
   def format(results: Tree[Result]): String
 }
 object DefaultFormatter{
-  def apply(args: Array[String]) = {
-    def find[T](prefix: String, parse: String => T, default: T): T = {
-      args.find(_.startsWith(prefix))
-        .fold(default)(s => parse(s.drop(prefix.length)))
-    }
+  def apply(implicit args: Array[String]) = {
+    val color = utest.util.ArgParse.find("--color=", _.toBoolean, true)
+    val truncate = utest.util.ArgParse.find("--truncate=", _.toInt, 30)
+    val trace = utest.util.ArgParse.find("--trace=", _.toBoolean, false)
 
-    val color = find("--color=", _.toBoolean, true)
-    val truncate = find("--truncate=", _.toInt, 30)
-    val trace = find("--trace=", _.toBoolean, false)
-
-    new DefaultFormatter(
-      color,
-      truncate,
-      trace
+    new DefaultFormatter(color, truncate, trace
     )
   }
 }
