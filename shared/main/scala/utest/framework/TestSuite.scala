@@ -4,8 +4,7 @@ package framework
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
 import utest.framework.Test
-import scala.pickling._
-import json._
+
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
@@ -35,7 +34,7 @@ abstract class TestSuite{
       testPath = path
     )(ec)
 
-    results.pickle.value
+    formatter.format(results)
   }
 }
 

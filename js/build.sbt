@@ -6,6 +6,8 @@ scalaJSSettings
 
 unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".."/ "shared" / "main" / "scala")
 
+unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala")
+
 resolvers += Resolver.sonatypeRepo("releases")
 
 resolvers += Resolver.sonatypeRepo("snapshots")
@@ -18,3 +20,11 @@ libraryDependencies ++= Seq(
 
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 
+(loadedTestFrameworks in Test) := {
+  println("inConfig works")
+  println("A")
+  (loadedTestFrameworks in Test).value.updated(
+    sbt.TestFramework(classOf[UTestFramework].getName),
+    new UTestFramework(environment = (scalaJSEnvironment in Test).value)
+  )
+}

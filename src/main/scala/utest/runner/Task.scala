@@ -13,7 +13,7 @@ class Task(val taskDef: TaskDef,
            addTotal: Int => Unit,
            addResult: Tree[Result] => Unit,
            progressString: => String,
-           implicit ec: ExecutionContext)
+           implicit val ec: ExecutionContext)
            extends sbt.testing.Task{
 
   val cls = Class.forName(taskDef.fullyQualifiedName() + "$")

@@ -43,7 +43,7 @@ object Parallel extends TestSuite{
         end - start
       }
 
-      val parallelTime = timedTrial(ExecutionContext.Implicits.global)
+      val parallelTime = timedTrial(concurrent.ExecutionContext.Implicits.global)
 
       val serialTime = timedTrial(utest.ExecutionContext.RunNow)
       val speedup = serialTime * 1.0 / parallelTime
@@ -67,7 +67,7 @@ object Parallel extends TestSuite{
         error.captured
       }
       "success"-{
-        import ExecutionContext.Implicits.global
+        import ExecutionContext.RunNow
         var x = Seq(12)
         var y = 0
         val i = Counter{ () =>
@@ -89,7 +89,7 @@ object Parallel extends TestSuite{
 
     "continually"-{
       "failure"-{
-        import ExecutionContext.Implicits.global
+        import ExecutionContext.RunNow
         var x = Seq(12)
         val y = 1
 
@@ -110,7 +110,7 @@ object Parallel extends TestSuite{
         expected
       }
       "success"-{
-        import ExecutionContext.Implicits.global
+        import ExecutionContext.RunNow
         val x = Seq(12)
         val y = 1
 

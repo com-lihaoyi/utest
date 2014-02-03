@@ -26,7 +26,8 @@ Contents
 - [Running tests with SBT](#running-tests-with-sbt)
 - [ScalaJS](#scalajs)
   - [ScalaJS and SBT](#scalajs-and-sbt)
--
+- [Why utest](#why-utest)
+
 Getting Started
 ===============
 
@@ -227,7 +228,9 @@ println(results.leaves.count(_.value.isSuccess)) // 3
 
 The example above demonstrates a subtlety of how utest suites are run: despite all the tests being able to refer to the same lexically-scoped value `x`, each tests modifications to `x` happen entirely independently of the others, allowing all three of the leaf-tests to pass. This allows you to easily place re-usable fixtures anywhere convenient within the test tree.
 
-Furthermore, test-discovery is done entirely at compile-time by the `TestSuite{ ... }` macro, and is independent of execution of the tests:
+If you want to create a shared resource that is lazily initialized when needed in one of the tests and used throughout them, simply make it a `lazy val` outside the `TestSuite{ ... }` block.
+
+Test-discovery is done entirely at compile-time by the `TestSuite{ ... }` macro, and is independent of execution of the tests:
 
 ```scala
 val tests = TestSuite{
@@ -426,7 +429,7 @@ utest began as an attempt to port [ScalaTest](http://www.scalatest.org/) and [Sp
 Thus, utest tries to provide most of what you want as a developer, while leaving out all the unnecessary functionality that ScalaTest and Specs2 provide:
 
 - Fluent english-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
-- Legacy code, like ScalaTests [time package](), now obsolete with the introduction of `scala.concurrent.duration`.
+- Legacy code, like ScalaTests [time package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now obsolete with the introduction of [scala.concurrent.duration](http://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.package).
 - Such a a rich command-line interface: with a simple API, any user who wants to do heavy customization of the test running can simply do it in code.
 
 While improving on the basic things that matters
@@ -434,4 +437,4 @@ While improving on the basic things that matters
 - Better [macro-asserts](#macro-assserts) which are both more-useful and more-simply-implemented than those provided by ScalaTest
 - Compile-time test registration, which allows [completely separating test-discovery and execution](#execution-model)
 - A simpler, straightforward [API](#test-running-api) that makes user utest as a library much easier.
-- Raw size: at less than 1000 lines of code, utest is 1/400th the size of [ScalaTest] and 1/50th the size of [Specs2].
+- Raw size: at less than 1000 lines of code, utest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors).
