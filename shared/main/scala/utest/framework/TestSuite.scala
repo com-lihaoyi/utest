@@ -60,6 +60,7 @@ object TestSuite{
 
     def matcher: PartialFunction[Tree, (Tree, Tree)] = {
       case q"""utest.this.`package`.TestableString($value).-($body)""" => (value, body)
+      case q"""utest.`package`.TestableString($value).-($body)""" => (value, body)
     }
 
     def recurse(t: Tree): (Tree, Tree) = {

@@ -23,3 +23,11 @@ libraryDependencies ++= Seq(
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 
 testFrameworks += new TestFramework("utest.runner.Framework")
+
+organization := "com.lihaoyi"
+
+name := "utest"
+
+scalaVersion := "2.10.3"
+
+version := "0.1.0"

@@ -72,5 +72,7 @@ package object utest {
     } catch { case e: T => e }
   }
 
+  val TestSuite = framework.TestSuite
+  type TestSuite  = framework.TestSuite
 }
 
