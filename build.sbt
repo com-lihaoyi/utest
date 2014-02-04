@@ -1,10 +1,10 @@
-lazy val root = project.in(file("."))
-
 lazy val js = project.in(file("js"))
 
-lazy val jsPlugin = project.in(file("js-plugin"))
+lazy val runner = project.in(file("runner"))
 
-lazy val jsTest = project.in(file("js-test"))
+lazy val root = project.in(file(".")).dependsOn(runner)
+
+lazy val jsPlugin = project.in(file("js-plugin")).dependsOn(runner)
 
 unmanagedSourceDirectories in Compile <+= baseDirectory(_ / "shared" / "main" / "scala")
 
@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
 
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 
-testFrameworks += new TestFramework("utest.runner.Framework")
+testFrameworks += new TestFramework("utest.runner.JvmFramework")
 
 organization := "com.lihaoyi"
 

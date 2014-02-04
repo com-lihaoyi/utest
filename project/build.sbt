@@ -2,6 +2,8 @@ addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.3-SNAP
 
 unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".." / "js-plugin")
 
+unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".." / "runner")
+
 resolvers += Resolver.sonatypeRepo("releases")
 
 resolvers += Resolver.sonatypeRepo("snapshots")

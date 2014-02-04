@@ -1,10 +1,8 @@
 package utest.runner
-
 import sbt.testing.SubclassFingerprint
-import utest.DefaultFormatter
 
+abstract class GenericTestFramework extends sbt.testing.Framework{
 
-class Framework extends sbt.testing.Framework{
   def name(): String = "utest"
 
   def fingerprints(): Array[sbt.testing.Fingerprint] = Array(
@@ -15,11 +13,4 @@ class Framework extends sbt.testing.Framework{
     }
   )
 
-  def printer(args: Array[String]) = DefaultFormatter(args)
-
-  def runner(args: Array[String],
-             remoteArgs: Array[String],
-             testClassLoader: ClassLoader): Runner = {
-    new Runner(args, remoteArgs, printer(args))
-  }
 }
