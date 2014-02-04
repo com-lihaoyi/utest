@@ -12,5 +12,4 @@ abstract class GenericTestFramework extends sbt.testing.Framework{
       def requireNoArgConstructor = true
     }
   )
-
 }

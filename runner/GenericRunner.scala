@@ -24,19 +24,12 @@ trait GenericRunner extends sbt.testing.Runner{
     s"${success.get + failure.get}/${total.get}".padTo(8, ' ')
   }
 
-  def tasks(taskDefs: Array[TaskDef]): Array[sbt.testing.Task] = {
+  def tasks(taskDefs: Array[TaskDef]) = {
     val path = args.lift(0)
       .filter(_(0) != '-')
       .getOrElse("")
 
-    for(taskDef <- taskDefs) yield {
-      new Task(
-        taskDef,
-        args,
-        path,
-        doStuff
-      )
-    }
+    taskDefs.map(t => new Task(t, args, path, doStuff): sbt.testing.Task)
   }
 
   def done(): String = {

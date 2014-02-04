@@ -39,7 +39,7 @@ package object utest {
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    def -(x: => Any) = ???
+    def -[T](x: => T) = ???
   }
 
   /**
