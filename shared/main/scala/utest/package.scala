@@ -39,7 +39,7 @@ package object utest {
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    def -[T](x: => T) = ???
+    def -(x: => Any) = ???
   }
 
   /**
@@ -56,7 +56,7 @@ package object utest {
    */
   def assertMatch[T](t: T)(pf: PartialFunction[T, Unit]): Unit = {
     if (pf.isDefinedAt(t)) pf(t)
-    else throw new AssertionError("Matching failed " + t)
+    else throw new java.lang.AssertionError("Matching failed " + t)
   }
 
   /**
@@ -68,7 +68,7 @@ package object utest {
     try{
       thunk
       val clsName = implicitly[ClassTag[T]].toString()
-      throw new AssertionError(s"Thunk failed to raise $clsName!")
+      throw new java.lang.AssertionError(s"Thunk failed to raise $clsName!")
     } catch { case e: T => e }
   }
 

@@ -16,16 +16,22 @@ abstract class TestSuite{
    */
   def tests: util.Tree[Test]
 
-  def runSuite(args: Array[String],
+  def runSuite(path: Array[String],
+               args: Array[String],
                addCount: String => Unit,
                log: String => Unit,
                addTotal: String => Unit) = {
+    val (indices, found) = tests.resolve(path)
+    addTotal(found.length.toString)
 
-    addTotal(this.tests.length.toString)
+    implicit val ec =
+      if (utest.util.ArgParse.find("--parallel=", _.toBoolean, false)(args)){
+        concurrent.ExecutionContext.global
+      }else{
+        ExecutionContext.RunNow
+      }
 
-    implicit val ec = utest.ExecutionContext.RunNow
     val formatter = DefaultFormatter(args)
-    val path = args.lift(0).fold(Nil: Seq[String])(_.split("\\."))
     val results = tests.run(
       (path, s) => {
         addCount(s.value.isSuccess.toString)
@@ -33,7 +39,6 @@ abstract class TestSuite{
       },
       testPath = path
     )(ec)
-
     formatter.format(results)
   }
 }

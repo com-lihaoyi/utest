@@ -4,9 +4,9 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 /**
- * Created by haoyi on 1/31/14.
+ * Platform specific stuff that differs between JVM and JS
  */
-object Flattener {
+object PlatformShims {
   def flatten[T](f: Future[Future[T]]): Future[T] = {
     f.value.get.map(_.value.get) match{
       case Success(Success(v)) => Future.successful(v)
@@ -16,4 +16,7 @@ object Flattener {
   }
 
   def await[T](f: Future[T]): T = f.value.get.get
+  def getTrace(e: Throwable): String = {
+    ""
+  }
 }

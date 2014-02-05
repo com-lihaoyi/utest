@@ -23,7 +23,7 @@ abstract class Formatter{
 object DefaultFormatter{
   def apply(implicit args: Array[String]) = {
     val color = utest.util.ArgParse.find("--color=", _.toBoolean, true)
-    val truncate = utest.util.ArgParse.find("--truncate=", _.toInt, 30)
+    val truncate = utest.util.ArgParse.find("--truncate=", _.toInt, 50)
     val trace = utest.util.ArgParse.find("--trace=", _.toBoolean, false)
 
     new DefaultFormatter(color, truncate, trace
@@ -56,17 +56,11 @@ class DefaultFormatter(color: Boolean = true,
     val str = path.mkString(".") + "\t\t" + prettyTruncate(r)
     if (!trace) str
     else{
-      val sw = new StringWriter()
-      val pw = new PrintWriter(sw)
-      r.value match{
-        case Failure(e) =>
-//          pw.write("\n")
-//          try{
-//            e.printStackTrace(pw)
-//          }catch{case e =>}
+      val traceStr = r.value match{
+        case Failure(e) => PlatformShims.getTrace(e)
         case _ =>
       }
-      str + sw.toString
+      str + traceStr
     }
   }
 

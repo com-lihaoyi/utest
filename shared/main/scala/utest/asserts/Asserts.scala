@@ -2,7 +2,7 @@ package utest
 package asserts
 
 import scala.reflect.macros.Context
-import scala.util.Random
+import scala.util.{Failure, Success, Try, Random}
 
 /**
  * Macro implementation that provides rich error
@@ -15,22 +15,27 @@ object Asserts {
     TraceLogger(c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
   }
 
-  def assertImpl(funcs: ((LoggedValue => Unit) => Boolean)*) = {
-    for (func <- funcs){
+  def assertImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*) = {
+    for ((src, func) <- funcs){
       val logged = collection.mutable.Buffer.empty[LoggedValue]
-      val res = func(logged.append(_))
-      if (!res) TraceLogger.throwError("Assert failed: ", logged)
+      val res = Try(func(logged.append(_)))
+      res match{
+        case Success(true) => // yay
+        case Success(false) => TraceLogger.throwError(src, logged)
+        case Failure(e) => TraceLogger.throwError(src, logged, e)
+      }
     }
   }
 }
 
 object TraceLogger{
-  def throwError(msgPrefix: String, logged: Seq[LoggedValue]) = {
-    throw LoggedAssertionError(
-      msgPrefix + logged.map{
+  def throwError(msgPrefix: String, logged: Seq[LoggedValue], cause: Throwable = null) = {
+    throw AssertionError(
+      msgPrefix + Option(cause).fold("")(e => s"\ncaused by: $e") + logged.map{
         case LoggedValue(name, tpe, thing) => s"\n$name: $tpe = $thing"
       }.mkString,
-      logged
+      logged,
+      cause
     )
   }
   def apply(c: Context)(func: c.Tree, exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
@@ -62,10 +67,10 @@ object TraceLogger{
     }
 
     val trees = exprs.map(expr =>
-      q"($loggerName => ${tracingTransformer.transform(expr.tree)})"
+      q"${expr.tree.pos.lineContent.trim} -> ($loggerName => ${tracingTransformer.transform(expr.tree)})"
     )
 
-    c.Expr[Unit](c.resetLocalAttrs(q"$func(..$trees)"))
+    c.Expr[Unit](c.resetLocalAttrs(q"""$func(..$trees)"""))
   }
 }
 

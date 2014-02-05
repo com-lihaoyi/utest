@@ -9,6 +9,5 @@ object ExecutionContext{
 
     def reportFailure(t: Throwable) =
       Console.err.println("Failure in async execution: " + t)
-
   }
 }

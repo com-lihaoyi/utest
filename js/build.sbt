@@ -22,8 +22,8 @@ addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 
 (loadedTestFrameworks in Test) := {
   (loadedTestFrameworks in Test).value.updated(
-    sbt.TestFramework(classOf[utest.runner.JsTestFramework].getName),
-    new utest.runner.JsTestFramework(environment = (scalaJSEnvironment in Test).value)
+    sbt.TestFramework(classOf[utest.runner.JsFramework].getName),
+    new utest.runner.JsFramework(environment = (scalaJSEnvironment in Test).value)
   )
 }
 

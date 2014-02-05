@@ -41,7 +41,7 @@ trait GenericRunner extends sbt.testing.Runner{
       header,
       body,
       s"Tests: $total",
-      s"Passed: $total",
+      s"Passed: $success",
       s"Failed: $failure"
     ).mkString("\n")
   }

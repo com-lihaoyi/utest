@@ -1,7 +1,7 @@
-utest 0.0.1
+uTest 0.0.1
 ===========
 
-utest (pronounced micro-test) is a lightweight testing library for Scala. It's key features are:
+uTest (pronounced micro-test) is a lightweight testing library for Scala. It's key features are:
 
 - [Less than 1000 lines of code](https://github.com/lihaoyi/utest/graphs/contributors)
 - [A fancy set of macro-powered asserts](#macro-asserts)
@@ -73,7 +73,7 @@ The simplest way to define a suite and start running tests is directly creating 
 
 As you can see, both `Test`s and `Result`s at the root of the tree are considered part of it. If you only want e.g. the `Result`s from the leaf tests, use the `.leaves` method to get an iterator for those.
 
-Note that tests within the suite can nested within each other, but only directly. E.g. you cannot define tests within `if`-statements or `for`-loops. utest relies on the test structure to be statically known at compile time. They can be nested arbitrarily deep:
+Note that tests within the suite can nested within each other, but only directly. E.g. you cannot define tests within `if`-statements or `for`-loops. uTest relies on the test structure to be statically known at compile time. They can be nested arbitrarily deep:
 
 ```scala
 val test = TestSuite{
@@ -114,7 +114,7 @@ test.run().toSeq.foreach(println)
 
 `Result(name: String, value: Try[Any])` data structure is a simple data structure used to hold the results of the tests. Running the tests gives you a `Tree[Result]`, which is trivially convertible to a `Seq[Result]` and can be manipulated programmatically.
 
-One of the more common things you want to do with `Result`s is print them out nicely so you can see what happened, and utest provides the `DefaultFormatter` class for exactly that purpose:
+One of the more common things you want to do with `Result`s is print them out nicely so you can see what happened, and uTest provides the `DefaultFormatter` class for exactly that purpose:
 
 ```scala
 
@@ -141,12 +141,27 @@ assert(
   x == y
 )
 
-// utest.LoggedAssertionError: Assert failed:
+// utest.AssertionError: Assert failed:
 // x: Int = 1
 // y: String = 2
 ```
 
-utest comes with a macro-powered `assert`s that provide useful debugging information in the error message. These take one or more boolean expressions, and when they fail, will print out the names, types and values of any local variables used in the expression that failed. This makes it much easier to see what's going on than Scala's default `assert`, which gives you the stack trace and nothing else.
+uTest comes with a macro-powered `assert`s that provide useful debugging information in the error message. These take one or more boolean expressions, and when they fail, will print out the names, types and values of any local variables used in the expression that failed. This makes it much easier to see what's going on than Scala's default `assert`, which gives you the stack trace and nothing else.
+
+uTest also wraps any exceptions thrown within the assert, to help trace what went wrong:
+
+```scala
+val x = 1L
+val y = 0L
+assert(x / y == 10)
+
+// utest.AssertionError: assert(x / y == 10)
+// caused by: java.lang.ArithmeticException: / by zero
+// x: Long = 1
+// y: Long = 0
+```
+
+The origin exception is stored as the `cause` of the `utest.AssertionError`, so the original stack trace is still available for you to inspect.
 
 Intercept
 ---------
@@ -171,11 +186,11 @@ Eventually and Continually
 val x = Seq(12)
 eventually(x == Nil)
 
-// utest.LoggedAssertionError: Eventually failed:
+// utest.AssertionError: Eventually failed:
 // x: Seq[Int] = List(12)
 ```
 
-In addition to a macro-powered `assert`, utest also provides macro-powered versions of `eventually` and `continually`. These are used to test asynchronous concurrent operations:
+In addition to a macro-powered `assert`, uTest also provides macro-powered versions of `eventually` and `continually`. These are used to test asynchronous concurrent operations:
 
 - `eventually(tests: Boolean*)`: ensure that the boolean values of `tests` all become true at least once within a certain period of time.
 - `continually(tests: Boolean*)`: ensure that the boolean values of `tests` all remain true and never become false within a certain period of time.
@@ -226,7 +241,7 @@ val results = test.run()
 println(results.leaves.count(_.value.isSuccess)) // 3
 ```
 
-The example above demonstrates a subtlety of how utest suites are run: despite all the tests being able to refer to the same lexically-scoped value `x`, each tests modifications to `x` happen entirely independently of the others, allowing all three of the leaf-tests to pass. This allows you to easily place re-usable fixtures anywhere convenient within the test tree.
+The example above demonstrates a subtlety of how uTest suites are run: despite all the tests being able to refer to the same lexically-scoped value `x`, each tests modifications to `x` happen entirely independently of the others, allowing all three of the leaf-tests to pass. This allows you to easily place re-usable fixtures anywhere convenient within the test tree.
 
 If you want to create a shared resource that is lazily initialized when needed in one of the tests and used throughout them, simply make it a `lazy val` outside the `TestSuite{ ... }` block.
 
@@ -255,7 +270,7 @@ As you can see, even though the `assert(false)` comes before the declaration of 
 Test running API
 ================
 
-This section goes into the Scala API for running a utest suite. For the SBT command-line API, see [Running tests with SBT](#running-tests-with-sbt).
+This section goes into the Scala API for running a uTest suite. For the SBT command-line API, see [Running tests with SBT](#running-tests-with-sbt).
 
 ```scala
 val tests = TestSuite{
@@ -284,7 +299,7 @@ println(tests.run(testPath=Seq("B")).toSeq)
 //)
 ```
 
-You can run individual tests by passing a `testPath` argument to the `run` method. This allows you to specify which test or set of tests you want to run. When a test is selected, utest will run any tests in that subtree of the test tree, e.g. running the test `B` above also runs `D` and `E`.
+You can run individual tests by passing a `testPath` argument to the `run` method. This allows you to specify which test or set of tests you want to run. When a test is selected, uTest will run any tests in that subtree of the test tree, e.g. running the test `B` above also runs `D` and `E`.
 
 If an outer test fails, all the tests in its subtree will be skipped:
 
@@ -357,55 +372,121 @@ To run all tests in your project. Tests are defined in any class inheriting from
 ```scala
 package mytests
 
+
 object MyTestSuite extends TestSuite{
   val tests = TestSuite{
     "hello" - {
-      "world" - { ... }
+      "world" - {
+        val x = 1
+        val y = 2
+        assert(x != y)
+        (x, y)
+      }
     }
-    "test2" - { ... }
+    "test2" - {
+      val a = 1
+      val b = 2
+      assert(a == b)
+    }
   }
 }
 ```
 
-The contents of the `tests` variable is identical to that shown [earlier](#defining-a-test-suite). If you want to run only a single `object` worth of tests (e.g. `MyTestSuite`) you can use:
+Running:
 
 ```
 sbt> test-only -- mytests.MyTestSuite
 ```
 
+Will print out something like this:
+
+```
+[info] 1/4     utest.MyTestSuite.hello.world		Success((1,2))
+[info] 2/4     utest.MyTestSuite.hello		Success
+[info] 3/4     utest.MyTestSuite.test2		Failure(utest.AssertionError: assert(a == b)
+[info] ...
+[info] 4/4     utest.MyTestSuite.		Success
+[info] -----------------------------------Results-----------------------------------
+[info] MyTestSuite$		Success
+[info]     hello		Success
+[info]         world		Success((1,2))
+[info]     test2		Failure(utest.AssertionError: assert(a == b)
+[info]     ...
+[info] Tests: 4
+[info] Passed: 3
+[info] Failed: 1
+```
+
+As you can see, the total number of tests includes the non-leaf tests like `hello` and `MyTestSuite`. Also, the tests which return a value (like `world`) have that value printed out inside the `Success()` tag: this is handy for doing a visual sanity-check at the end of the run to make sure the tests are doing what you think they are
+
 You can further drill down into a single test suite by providing the path to the test within it:
 
 ```
-sbt> test-only -- mytests.MyTestSuite.hello.world
+sbt> test-only -- mytests.MyTestSuite.test2
 ```
 
-If you want to customize how the output is formatted, you can do so with command-line flags from SBT:
+
+Which will only run one test.
 
 ```
-sbt> test-only -- mytests.MyTestSuite.hello.world --xxx=yyy
+[info] 1/4     utest.MyTestSuite.		Failure(utest.AssertionError: assert(a == b)
+[info] ...
+[info] -----------------------------------Results-----------------------------------
+[info] test2		Failure(utest.AssertionError: assert(a == b)
+[info] ...
+[info] Tests: 1
+[info] Passed: 0
+[info] Failed: 1
+
+```
+If you want to customize how the output is formatted, you can do so with command-line flags from SBT, for example to turn on tracing
+
+```
+sbt> test-only -- mytests.MyTestSuite.test2 --trace=true
 ```
 
-Where the values for `xxx` and `yyy` are:
+Which shows you the exception that gets raised:
+
+```
+[info] 1/4     utest.MyTestSuite.		Failure(utest.AssertionError: assert(a == b)
+[info] ...
+[info] utest.AssertionError: assert(a == b)
+[info] a: Int = 1
+[info] b: Int = 2
+...
+[info] 	at utest.MyTestSuite$$anonfun$4$$anonfun$apply$4.apply(Main.scala:30)
+[info] 	at utest.MyTestSuite$$anonfun$4$$anonfun$apply$4.apply(Main.scala:18)
+...
+[info] -----------------------------------Results-----------------------------------
+[info] test2		Failure(utest.AssertionError: assert(a == b)
+[info] ...
+[info] Tests: 1
+[info] Passed: 0
+[info] Failed: 1
+```
+
+Other flags you can pass to the test suite are:
 
 - `--color=true` or `--color=false`: toggle console color output, defaults to `true`
 - `--truncate=N`: cut off the printing of test results at `N` lines per result
 - `--trace=true` or `--trace=false`: whether or not to print stack traces when things blow up, defaults to false.
 - `--parallel=true` or `--parallel=true`: whether tests within a `TestSuite` should be run in parallel, defaults to `false`. Tests in different suites are always run task-parallel by SBT
 
+
 ScalaJS
 =======
 
-utest is completely compatible with ScalaJS: the above sections on defining a test suite, asserts and the test-running API all work unchanged under ScalaJS, with minor differences:
+uTest is completely compatible with ScalaJS: the above sections on defining a test suite, asserts and the test-running API all work unchanged under ScalaJS, with minor differences:
 
-- ScalaJS does not support parallelism, and as such only single-threaded `ExecutionContexts` like `utest.ExecutionContext.runNow` or `scala.scalajs.concurrent.JSExecutionContext.runNow` work.
+- ScalaJS does not support parallelism, and as such only single-threaded `ExecutionContexts` like `utest.ExecutionContext.runNow` or `scala.scalajs.concurrent.JSExecutionContext.runNow` work. When run via SBT, `--parallel` has no effect.
 - Running tests using SBT requires an additional [magic incantation](#scalajs-and-sbt) in your `project/plugins.sbt` or `project/build.sbt` file.
 
-Apart from these differences, there should be no problem compiling utest TestSuites via ScalaJS and running them using Rhino or in the browser.
+Apart from these differences, there should be no problem compiling uTest TestSuites via ScalaJS and running them using Rhino or in the browser.
 
 ScalaJS and SBT
 ---------------
 
-To get SBT to run your utest suites under ScalaJS, add the following to your `build.sbt`:
+To get SBT to run your uTest suites under ScalaJS, add the following to your `build.sbt`:
 
 ```scala
 libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.0.1"
@@ -418,15 +499,15 @@ And the following to your `project/build.sbt`
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `RhinoBasedScalaJSEnvironment` instead of on the JVM. Test selection, coloring, etc. should all work unchanged.
 
-Why utest
+Why uTest
 =========
 
-utest began as an attempt to port [ScalaTest](http://www.scalatest.org/) and [Specs2](http://etorreborre.github.io/specs2/) to [ScalaJS](). After struggling with that, I realized that both ScalaTest and Specs2 were going to be difficult to port to ScalaJS for a few reasons:
+uTest began as an attempt to port [ScalaTest](http://www.scalatest.org/) and [Specs2](http://etorreborre.github.io/specs2/) to [ScalaJS](). After struggling with that, I realized that both ScalaTest and Specs2 were going to be difficult to port to ScalaJS for a few reasons:
 
 - They have a large number of dependencies on JVM-specific things, such as [Symbols or Reflection](http://www.scalatest.org/user_guide/using_matchers#checkingArbitraryProperties) or [ClassLoaders](), which are not supported by ScalaJS
 - They have huge codebases: [400,000 lines of code for ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and [50,000 lines for Specs2](https://github.com/etorreborre/specs2/graphs/contributors). This huge mass of code makes it difficult to pinpoint the parts which are incompatible with ScalaJS.
 
-Thus, utest tries to provide most of what you want as a developer, while leaving out all the unnecessary functionality that ScalaTest and Specs2 provide:
+Thus, uTest tries to provide most of what you want as a developer, while leaving out all the unnecessary functionality that ScalaTest and Specs2 provide:
 
 - Fluent english-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
 - Legacy code, like ScalaTests [time package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now obsolete with the introduction of [scala.concurrent.duration](http://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.package).
@@ -436,5 +517,5 @@ While improving on the basic things that matters
 
 - Better [macro-asserts](#macro-assserts) which are both more-useful and more-simply-implemented than those provided by ScalaTest
 - Compile-time test registration, which allows [completely separating test-discovery and execution](#execution-model)
-- A simpler, straightforward [API](#test-running-api) that makes user utest as a library much easier.
-- Raw size: at less than 1000 lines of code, utest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors).
+- A simpler, straightforward [API](#test-running-api) that makes user uTest as a library much easier.
+- Raw size: at less than 1000 lines of code, uTest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors).

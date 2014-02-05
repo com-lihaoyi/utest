@@ -16,7 +16,6 @@ class Task(val taskDef: TaskDef,
   def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[testing.Task] = {
 
     val fqName = taskDef.fullyQualifiedName()
-
     if (fqName.startsWith(path)){
       doStuff(Nil, loggers, fqName)
     } else if (path.startsWith(fqName)){

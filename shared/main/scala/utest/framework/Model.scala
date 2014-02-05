@@ -8,7 +8,7 @@ import scala.language.experimental.macros
 import scala.concurrent.{Await, Future, ExecutionContext}
 import concurrent.duration._
 import utest.util.Tree
-import utest.Flattener
+import utest.PlatformShims
 import utest.{NoSuchTestException, SkippedOuterFailure}
 
 object Test{
@@ -59,7 +59,7 @@ class TestTreeSeq(tests: Tree[Test]) {
                outerError: Option[SkippedOuterFailure] = None)
               (implicit ec: ExecutionContext): Future[Tree[Result]] = {
 
-    Flattener.flatten(Future{
+    PlatformShims.flatten(Future{
       val start = Deadline.now
       val tryResult =
         outerError.fold(Try(tests.value.TestThunkTree.run(path.toList)))(Failure(_))
@@ -77,7 +77,7 @@ class TestTreeSeq(tests: Tree[Test]) {
         }
 
       val temp = childRuns.foldLeft(Future(List.empty[Tree[Result]])){
-        case (a, b) => Flattener.flatten(a.map(a => b.map(b => a :+ b)))
+        case (a, b) => PlatformShims.flatten(a.map(a => b.map(b => a :+ b)))
       }
 
       val sequenced = temp.map{ results =>
@@ -94,10 +94,7 @@ class TestTreeSeq(tests: Tree[Test]) {
     })
   }
 
-  def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
-          strPath: Seq[String] = Nil,
-          testPath: Seq[String] = Nil)
-         (implicit ec: ExecutionContext): Tree[Result] = {
+  def resolve(testPath: Seq[String]) = {
     val indices = collection.mutable.Buffer.empty[Int]
     var current = tests
     var strings = testPath.toList
@@ -111,9 +108,18 @@ class TestTreeSeq(tests: Tree[Test]) {
       }
       current = current.children(index)
     }
+    (indices, current)
+  }
+
+  def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
+          strPath: Seq[String] = Nil,
+          testPath: Seq[String] = Nil)
+         (implicit ec: ExecutionContext): Tree[Result] = {
+
+    val (indices, current) = resolve(testPath)
     val future = current.runAsync(onComplete, indices, strPath)
 
-    Flattener.await(future)
+    PlatformShims.await(future)
   }
 }
 

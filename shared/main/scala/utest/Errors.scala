@@ -18,9 +18,10 @@ case class NoSuchTestException(path: String*) extends Exception("["+path.mkStrin
  * A special `AssertionError` thrown by utest's macro-powered asserts that 
  * contains metadata about local variables used in the assert expression.
  */
-case class LoggedAssertionError(msg: String, 
-                                captured: Seq[LoggedValue]) 
-                                extends AssertionError(msg)
+case class AssertionError(msg: String,
+                          captured: Seq[LoggedValue],
+                          cause: Throwable = null)
+                          extends java.lang.AssertionError(msg, cause)
 
 /**
  * Information about a value that was logged in one of the macro-powered 
