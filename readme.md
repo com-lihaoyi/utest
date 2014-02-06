@@ -1,4 +1,4 @@
-uTest 0.0.1
+µTest 0.1.0
 ===========
 
 uTest (pronounced micro-test) is a lightweight testing library for Scala. It's key features are:
@@ -26,7 +26,7 @@ Contents
 - [Running tests with SBT](#running-tests-with-sbt)
 - [ScalaJS](#scalajs)
   - [ScalaJS and SBT](#scalajs-and-sbt)
-- [Why utest](#why-utest)
+- [Why uTest](#why-utest)
 
 Getting Started
 ===============
@@ -141,7 +141,7 @@ assert(
   x == y
 )
 
-// utest.AssertionError: Assert failed:
+// utest.AssertionError: x == y
 // x: Int = 1
 // y: String = 2
 ```
@@ -186,7 +186,7 @@ Eventually and Continually
 val x = Seq(12)
 eventually(x == Nil)
 
-// utest.AssertionError: Eventually failed:
+// utest.AssertionError: eventually(x == Nil)
 // x: Seq[Int] = List(12)
 ```
 
@@ -195,9 +195,17 @@ In addition to a macro-powered `assert`, uTest also provides macro-powered versi
 - `eventually(tests: Boolean*)`: ensure that the boolean values of `tests` all become true at least once within a certain period of time.
 - `continually(tests: Boolean*)`: ensure that the boolean values of `tests` all remain true and never become false within a certain period of time.
 
-These are implemented via a retry-loop, with a default retry interval of 0.1 second and retries up to a total of 1 second.
+These are implemented via a retry-loop, with a default retry interval of 0.1 second and retries up to a total of 1 second. If you want to change this behavior, you can shadow the implicit values `retryInterval` and `retryMax`, for example this:
+
+```scala
+implicit val retryMax = RetryMax(300.millis)
+implicit val retryInterval = RetryInterval(50.millis)
+```
+
+Would set the retry-loop to happen every 50ms up to a max of 300ms.
 
 Together, these two operations allow you to easily test asynchronous operations. You can use them to help verify Liveness properties (that condition must eventually be met) and Safety properties (that a condition is never met)
+
 
 Assert Match
 ------------
@@ -348,7 +356,7 @@ With
 import ExecutionContext.Implicits.global
 ```
 
-That will cause your tests to be distributed on your default `global` ExecutionContext, which parallelizes it on a global ForkJoinPool to make use of all your cores.
+That will cause your tests to be distributed on your default `global` ExecutionContext, which parallelizes it on a global ForkJoinPool to make use of all your cores. Note that even without using a parallelizing `ExecutionContext`, SBT will run separate suites in parallel. The parallel `ExecutionContext` also does not work with ScalaJS
 
 Running tests with SBT
 ======================
@@ -482,7 +490,8 @@ ScalaJS
 uTest is completely compatible with ScalaJS: the above sections on defining a test suite, asserts and the test-running API all work unchanged under ScalaJS, with minor differences:
 
 - ScalaJS does not support parallelism, and as such only single-threaded `ExecutionContexts` like `utest.ExecutionContext.runNow` or `scala.scalajs.concurrent.JSExecutionContext.runNow` work. When run via SBT, `--parallel` has no effect.
-- Running tests using SBT requires an additional [magic incantation](#scalajs-and-sbt) in your `project/plugins.sbt` or `project/build.sbt` file.
+- [eventually](#eventually) and [continually](#continually) are not supported, as they rely on a blocking retry-loop whereas you can't block in ScalaJS
+- Running tests using SBT requires additional [magic incantations](#scalajs-and-sbt) in your `project/plugins.sbt` and `project/build.sbt` file.
 
 Apart from these differences, there should be no problem compiling uTest TestSuites via ScalaJS and running them using Rhino or in the browser.
 
@@ -522,7 +531,7 @@ uTest began as an attempt to port [ScalaTest](http://www.scalatest.org/) and [Sp
 
 Thus, uTest tries to provide most of what you want as a developer, while leaving out all the unnecessary functionality that ScalaTest and Specs2 provide:
 
-- Fluent english-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
+- Fluent english-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must`](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) These add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
 - Legacy code, like ScalaTests [time package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now obsolete with the introduction of [scala.concurrent.duration](http://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.package).
 - Such a a rich command-line interface: with a simple API, any user who wants to do heavy customization of the test running can simply do it in code.
 

@@ -10,8 +10,8 @@ import utest.util.Tree
  * Created by haoyi on 1/24/14.
  */
 package object utest {
-  implicit val interval = new RetryInterval(100.millis)
-  implicit val max = new RetryMax(1.second)
+  implicit val retryInterval = new RetryInterval(100.millis)
+  implicit val retryMax = new RetryMax(1.second)
   import language.experimental.macros
 
   /**

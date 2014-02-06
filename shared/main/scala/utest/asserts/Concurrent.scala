@@ -7,19 +7,17 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.util.{Failure, Success, Try}
 
-class RetryInterval(d: Duration)
-class RetryMax(d: Duration)
+case class RetryInterval(d: FiniteDuration)
+case class RetryMax(d: FiniteDuration)
 
 object Concurrent {
-
-  val interval = 100.millis
-  val max = 1.second
 
   def eventuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
     TraceLogger(c)(q"utest.asserts.Concurrent.eventuallyImpl", exprs:_*)
   }
-  def eventuallyImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*): Unit = {
+  def eventuallyImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*)
+                    (implicit interval: RetryInterval, max: RetryMax): Unit = {
     val start = Deadline.now
     @tailrec def rec(): Unit = {
       val result = for ((src, func) <- funcs) yield {
@@ -30,8 +28,8 @@ object Concurrent {
       die match{
         case None =>
         case Some((logged, src)) =>
-          if(Deadline.now < start + max){
-            Thread.sleep(interval.toMillis)
+          if(Deadline.now < start + max.d){
+            Thread.sleep(interval.d.toMillis)
             rec()
           }else{
             TraceLogger.throwError(
@@ -49,7 +47,8 @@ object Concurrent {
     TraceLogger(c)(q"utest.asserts.Concurrent.continuallyImpl", exprs:_*)
   }
 
-  def continuallyImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*): Unit = {
+  def continuallyImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*)
+                     (implicit interval: RetryInterval, max: RetryMax): Unit = {
     val start = Deadline.now
     @tailrec def rec(): Unit = {
       val result = for ((src, func) <- funcs) yield {
@@ -63,8 +62,8 @@ object Concurrent {
             "continually " + src,
             logged
           )
-        case None if Deadline.now < start + max =>
-          Thread.sleep(interval.toMillis)
+        case None if Deadline.now < start + max.d =>
+          Thread.sleep(interval.d.toMillis)
           rec()
         case _ => ()
 

@@ -5,6 +5,7 @@ object SkippedOuterFailure{
     "Test skipped due to outer failure in " + errorPath.mkString(".")
   }
 }
+
 case class SkippedOuterFailure(errorPath: Seq[String],
                                outerError: Throwable)
                                extends Exception(SkippedOuterFailure.errorMsg(errorPath), outerError)

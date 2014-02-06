@@ -4,14 +4,15 @@ import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.Deadline
 import scala.util.Random
 import utest.framework.{TestSuite, Test}
+import utest.asserts.{RetryInterval, RetryMax}
 
 
 object Parallel extends TestSuite{
-  case class Counter(thunk: () => Unit){
+  case class Counter(){
     var i = 0
-    def apply(){
+    def apply() = {
       i += 1
-      if (i > 5) thunk()
+      i
     }
   }
 
@@ -68,43 +69,58 @@ object Parallel extends TestSuite{
       }
       "success"-{
         import ExecutionContext.RunNow
-        var x = Seq(12)
-        var y = 0
-        val i = Counter{ () =>
-          x = Nil
-          y = 1
-        }
+
+        val i = Counter()
 
         eventually(
-        {
-          i()
-          x == Nil
-        },
-          y == 1
+          i() > 5
         )
 
-        (x, y)
+        i()
+      }
+      "adjustInterval"-{
+        import concurrent.duration._
+        implicit val retryInterval = RetryInterval(300.millis)
+
+        import ExecutionContext.RunNow
+
+        val i = Counter()
+
+        intercept[AssertionError]{
+          eventually{
+            i() > 5
+          }
+        }
+      }
+
+      "adjustMax"-{
+        import concurrent.duration._
+        implicit val retryMax = RetryMax(300.millis)
+
+        import ExecutionContext.RunNow
+
+        val i = Counter()
+
+        intercept[AssertionError]{
+          eventually{
+            i() > 5
+          }
+        }
       }
     }
 
     "continually"-{
       "failure"-{
         import ExecutionContext.RunNow
-        var x = Seq(12)
-        val y = 1
 
-        val i = Counter(() => x = Nil)
+        val i = Counter()
         val error = intercept[AssertionError]{
           continually(
-            {
-              i()
-              x == Seq(12)
-            },
-            y == 1
+            i() < 4
           )
         }
 
-        val expected = utest.LoggedValue("x", "Seq[Int]", List())
+        val expected = utest.LoggedValue("i", "utest.Parallel.Counter", Counter())
 
         assert(error.captured.contains(expected))
         expected

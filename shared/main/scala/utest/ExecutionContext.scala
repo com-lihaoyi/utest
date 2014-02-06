@@ -1,6 +1,7 @@
 package utest
 
 import scala.concurrent.ExecutionContext
+
 object ExecutionContext{
   implicit object RunNow extends ExecutionContext {
     def execute(runnable: Runnable) =
