@@ -32,7 +32,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.0.1"
+libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.0"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -365,8 +365,8 @@ To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.lihaoyi" % "utest_2.10" % "0.0.1",
-  "com.lihaoyi" % "utest-runner_2.10" % "0.0.1"
+  "com.lihaoyi" % "utest_2.10" % "0.1.0",
+  "com.lihaoyi" % "utest-runner_2.10" % "0.1.0"
 )
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
@@ -501,7 +501,7 @@ ScalaJS and SBT
 To get SBT to run your uTest suites under ScalaJS, add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.0.1-JS"
+libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.0-JS"
 
 (loadedTestFrameworks in Test) := {
   (loadedTestFrameworks in Test).value.updated(
