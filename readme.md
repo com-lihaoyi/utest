@@ -98,7 +98,7 @@ println(results.iterator.count(_.value.isSuccess)) // 4
 println(results.leaves.count(_.value.isSuccess)) // 1
 ```
 
-Again, by default the results iterator includes the results of every node in the test tree, and you can use `.leaves` to only get the leaf nodes. Nesting is a convenient way of organizing related tests, and with the added bonus that you can place shared initialization code or helpers (e.g. the `val x`, `val y`, `val z` above) at the correct place within the tree where it is only visible to the tests that use it.
+Again, by default the `results` iterator includes the results of every node in the test tree, and you can use `.leaves` to only get the leaf nodes. Nesting is a convenient way of organizing related tests, and with the added bonus that you can place shared initialization code or helpers (e.g. the `val x`, `val y`, `val z` above) at the correct place within the tree where it is only visible to the tests that use it.
 
 Despite it being shared lexically, these helpers are re-created for each test that is run, so if you if they contain mutable state (e.g. mutable collections, or `var`s) you do not need to worry about the mutations from multiple tests interfering with each other. For more detail on this and other things related to test execution, see [below](#execution-model).
 
@@ -112,7 +112,7 @@ test.run().toSeq.foreach(println)
 // Result(test3,Failure(java.lang.IndexOutOfBoundsException: 10), ...)
 ```
 
-`Result(name: String, value: Try[Any])` data structure is a simple data structure used to hold the results of the tests. Running the tests gives you a `Tree[Result]`, which is trivially convertible to a `Seq[Result]` and can be manipulated programmatically.
+The `Result(name: String, value: Try[Any])` data structure is a simple data structure used to hold the results of the tests. Running the tests gives you a `Tree[Result]`, which is trivially convertible to a `Seq[Result]` and can be manipulated programmatically.
 
 One of the more common things you want to do with `Result`s is print them out nicely so you can see what happened, and uTest provides the `DefaultFormatter` class for exactly that purpose:
 
