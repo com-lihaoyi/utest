@@ -495,7 +495,7 @@ Apart from these differences, there should be no problem compiling uTest TestSui
 ScalaJS and SBT
 ---------------
 
-To get SBT to run your uTest suites under ScalaJS, download the repo and run `js/publishLocal` and `jsPlugin/publishLocal`, the nadd the following to your `build.sbt`:
+To get SBT to run your uTest suites under ScalaJS, download the repo and run `js/publishLocal` and `jsPlugin/publishLocal`, then add the following to your `build.sbt`:
 
 ```scala
 libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1-JS"
@@ -536,5 +536,5 @@ While improving on the basic things that matters
 
 - Better [macro-asserts](#macro-assserts) which are both more-useful and more-simply-implemented than those provided by ScalaTest
 - Compile-time test registration, which allows [completely separating test-discovery and execution](#execution-model)
-- A simpler, straightforward [API](#test-running-api) that makes user uTest as a library much easier.
+- A simpler, straightforward [API](#test-running-api) that makes using uTest as a library much easier.
 - Raw size: at less than 1000 lines of code, uTest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors).
