@@ -98,7 +98,7 @@ println(results.iterator.count(_.value.isSuccess)) // 4
 println(results.leaves.count(_.value.isSuccess)) // 1
 ```
 
-Again, by default the results iterator includes the results of every node in the test tree, and you can use `.leaves` to only get the leaf nodes. Nesting is a convenient way of organizing related tests, and with the added bonus that you can place shared initialization code or helpers (e.g. the `val x`, `val y`, `val z` above) at the correct place within the tree where it is only visible to the tests that use it.
+Again, by default the `results` iterator includes the results of every node in the test tree, and you can use `.leaves` to only get the leaf nodes. Nesting is a convenient way of organizing related tests, and with the added bonus that you can place shared initialization code or helpers (e.g. the `val x`, `val y`, `val z` above) at the correct place within the tree where it is only visible to the tests that use it.
 
 Despite it being shared lexically, these helpers are re-created for each test that is run, so if you if they contain mutable state (e.g. mutable collections, or `var`s) you do not need to worry about the mutations from multiple tests interfering with each other. For more detail on this and other things related to test execution, see [below](#execution-model).
 
@@ -112,7 +112,7 @@ test.run().toSeq.foreach(println)
 // Result(test3,Failure(java.lang.IndexOutOfBoundsException: 10), ...)
 ```
 
-`Result(name: String, value: Try[Any])` data structure is a simple data structure used to hold the results of the tests. Running the tests gives you a `Tree[Result]`, which is trivially convertible to a `Seq[Result]` and can be manipulated programmatically.
+The `Result(name: String, value: Try[Any])` data structure is a simple data structure used to hold the results of the tests. Running the tests gives you a `Tree[Result]`, which is trivially convertible to a `Seq[Result]` and can be manipulated programmatically.
 
 One of the more common things you want to do with `Result`s is print them out nicely so you can see what happened, and uTest provides the `DefaultFormatter` class for exactly that purpose:
 
@@ -495,7 +495,7 @@ Apart from these differences, there should be no problem compiling uTest TestSui
 ScalaJS and SBT
 ---------------
 
-To get SBT to run your uTest suites under ScalaJS, download the repo and run `js/publishLocal` and `jsPlugin/publishLocal`, the nadd the following to your `build.sbt`:
+To get SBT to run your uTest suites under ScalaJS, download the repo and run `js/publishLocal` and `jsPlugin/publishLocal`, then add the following to your `build.sbt`:
 
 ```scala
 libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1-JS"
@@ -536,5 +536,5 @@ While improving on the basic things that matters
 
 - Better [macro-asserts](#macro-assserts) which are both more-useful and more-simply-implemented than those provided by ScalaTest
 - Compile-time test registration, which allows [completely separating test-discovery and execution](#execution-model)
-- A simpler, straightforward [API](#test-running-api) that makes user uTest as a library much easier.
+- A simpler, straightforward [API](#test-running-api) that makes using uTest as a library much easier.
 - Raw size: at less than 1000 lines of code, uTest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors).
