@@ -6,7 +6,7 @@ addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.3-SNAP
 
 libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0"
 
-organization := "com.lihaoyi"
+organization := "com.lihaoyi.utest"
 
 name := "utest-js-plugin"
 
