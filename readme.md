@@ -6,7 +6,7 @@ uTest (pronounced micro-test) is a lightweight testing library for Scala. It's k
 - [Less than 1000 lines of code](https://github.com/lihaoyi/utest/graphs/contributors)
 - [A fancy set of macro-powered asserts](#macro-asserts)
 - [A unique execution model](#execution-model)
-- [Integration with SBT](#running-tests-with-sbt)
+- [Integration with SBT](#running-teslits-with-sbt)
 - [Cross compiles to ScalaJS](#scalajs)
 - [Parallel testing](#parallel-testing)
 
@@ -32,7 +32,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1"
+libraryDependencies += "com.lihaoyi.utest" % "utest_2.10" % "0.1.1"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -364,7 +364,7 @@ Running tests with SBT
 To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1"
+libraryDependencies += "com.lihaoyi.utest" % "utest_2.10" % "0.1.1"
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
 ```
@@ -498,7 +498,7 @@ ScalaJS and SBT
 To get SBT to run your uTest suites under ScalaJS, download the repo and run `js/publishLocal` and `jsPlugin/publishLocal`, then add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1-JS"
+libraryDependencies += "com.lihaoyi.utest" % "utest_2.10" % "0.1.1-JS"
 
 (loadedTestFrameworks in Test) := {
   (loadedTestFrameworks in Test).value.updated(
@@ -511,9 +511,9 @@ libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1-JS"
 And the following to your `project/build.sbt`
 
 ```scala
-addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.1")
+addSbtPlugin("com.lihaoyi.utest" % "utest-js-plugin" % "0.1.1")
 
-libraryDependencies += "com.lihaoyi" % "utest-runner_2.10" % "0.1.1"
+libraryDependencies += "com.lihaoyi.utest" % "utest-runner_2.10" % "0.1.1"
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `RhinoBasedScalaJSEnvironment` instead of on the JVM. Test selection, coloring, etc. should all work unchanged.
