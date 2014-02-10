@@ -125,6 +125,8 @@ object TestSuite{
         """)
 
       case None =>
+        // jump through some hoops to avoid using scala.Predef implicits,
+        // to make @paulp happy
         c.Expr[util.Tree[Test]](q"""$suite({ val xs = this.getClass.getName.split("[.]") ; xs(xs.length - 1) }, $testTree)""")
     }
 
