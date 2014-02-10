@@ -34,7 +34,7 @@ object TraceLogger{
             val $tempName = $tree
             $loggerName(utest.LoggedValue(
               ${tree.toString()},
-              ${show(tree.symbol.typeSignature)},
+              ${show(tree.tpe.widen)},
               $tempName
             ))
              $tempName
