@@ -6,7 +6,7 @@ uTest (pronounced micro-test) is a lightweight testing library for Scala. It's k
 - [Less than 1000 lines of code](https://github.com/lihaoyi/utest/graphs/contributors)
 - [A fancy set of macro-powered asserts](#macro-asserts)
 - [A unique execution model](#execution-model)
-- [Integration with SBT](#running-teslits-with-sbt)
+- [Integration with SBT](#running-tests-with-sbt)
 - [Cross compiles to ScalaJS](#scalajs)
 - [Parallel testing](#parallel-testing)
 
@@ -32,7 +32,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi.utest" % "utest_2.10" % "0.1.1"
+libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -177,7 +177,7 @@ println(e)
 
 `intercept` allows you to verify that a block raises an exception. This exception is caught and returned so you can perform further validation on it, e.g. checking that the message is what you expect. If the block does not raise one, an `AssertionError` is raised.
 
-`intercept` is not currently macro-powered and does not print the value of local variables on failure.
+As with `assert`, `intercept` adds debugging information to the error messages if the `intercept` fails or throws an unexpected Exception.
 
 Eventually and Continually
 --------------------------
@@ -206,6 +206,7 @@ Would set the retry-loop to happen every 50ms up to a max of 300ms.
 
 Together, these two operations allow you to easily test asynchronous operations. You can use them to help verify Liveness properties (that condition must eventually be met) and Safety properties (that a condition is never met)
 
+As with `assert`, `eventually` and `continually` add debugging information to the error messages if they fail.
 
 Assert Match
 ------------
@@ -217,7 +218,7 @@ assertMatch(Seq(1, 2, 3)){case Seq(1, 2) =>}
 
 `assertMatch` is a convenient way of checking that a value matches a particular shape, using Scala's pattern matching syntax. This includes support for use of `|` or `_` or `if`-guards within the pattern match. This gives you additional flexibility over a traditional `assert(a == Seq(1, 2))`, as you can use `_` as a wildcard e.g. using `assertMatch(a){case Seq(1, _)=>}` to match any 2-item `Seq` whose first item is `1`.
 
-`assertMatch` is not currently macro-powered and does not print the value of local variables on failure.
+As with `assert`, `assertMatch` adds debugging information to the error messages if the value fails to match or throws an unexpected Exception while evaluating.
 
 Execution Model
 ===============
@@ -274,6 +275,8 @@ println(tests.toSeq.map(_.name)) // Seq(_, A, B, C)
 ```
 
 As you can see, even though the `assert(false)` comes before the declaration of tests `B` and `C`, these tests are still listable and inspectable because they were registered at compile time using the `TestSuite{ ... }` macro.
+
+Having a clean separation between test-discovery and test-execution is generally considered to be a good thing, and uTest's execution model strictly enforces this by doing test-discovery at compile-time. Thus, you can always inspect the test hierarchy without having to execute arbitrary test code. At the same time, uTest preserves all the convenience of sharing common setup code via lexical scoping, while avoiding the pitfall of shared-state between tests, giving you the best of both worlds in terms of convenience and isolation.
 
 Test running API
 ================
@@ -364,7 +367,7 @@ Running tests with SBT
 To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "com.lihaoyi.utest" % "utest_2.10" % "0.1.1"
+libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1"
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
 ```
@@ -498,7 +501,7 @@ ScalaJS and SBT
 To get SBT to run your uTest suites under ScalaJS, download the repo and run `js/publishLocal` and `jsPlugin/publishLocal`, then add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.lihaoyi.utest" % "utest_2.10" % "0.1.1-JS"
+libraryDependencies += "com.lihaoyi" % "utest_2.10" % "0.1.1-JS"
 
 (loadedTestFrameworks in Test) := {
   (loadedTestFrameworks in Test).value.updated(
@@ -511,9 +514,9 @@ libraryDependencies += "com.lihaoyi.utest" % "utest_2.10" % "0.1.1-JS"
 And the following to your `project/build.sbt`
 
 ```scala
-addSbtPlugin("com.lihaoyi.utest" % "utest-js-plugin" % "0.1.1")
+addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.1")
 
-libraryDependencies += "com.lihaoyi.utest" % "utest-runner_2.10" % "0.1.1"
+libraryDependencies += "com.lihaoyi" % "utest-runner_2.10" % "0.1.1"
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `RhinoBasedScalaJSEnvironment` instead of on the JVM. Test selection, coloring, etc. should all work unchanged.
@@ -530,11 +533,11 @@ Thus, uTest tries to provide most of what you want as a developer, while leaving
 
 - Fluent english-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must`](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) These add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
 - Legacy code, like ScalaTests [time package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now obsolete with the introduction of [scala.concurrent.duration](http://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.package).
-- Such a a rich command-line interface: with a simple API, any user who wants to do heavy customization of the test running can simply do it in code.
+- Such a a rich command-line interface: with a simple API, any user who wants to do heavy customization of the test running can simply do it in code, and writing a small amount of Scala with a trivial command-line runner will likely be easier than wrestling with mountains of command-line configuration flags to try to make the runner do what you want.
 
 While improving on the basic things that matters
 
 - Better [macro-asserts](#macro-assserts) which are both more-useful and more-simply-implemented than those provided by ScalaTest
-- Compile-time test registration, which allows [completely separating test-discovery and execution](#execution-model)
+- Compile-time test registration, which allows [completely separating test-discovery and execution](#execution-model).
 - A simpler, straightforward [API](#test-running-api) that makes using uTest as a library much easier.
-- Raw size: at less than 1000 lines of code, uTest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors).
+- Raw size: at less than 1000 lines of code, uTest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors), and with almost no dependencies. Its small size means that you can trivially use uTest as a library within a larger application without worrying about it significantly increasing the size of your packaged artifacts, or pulling in weird dependencies.
