@@ -16,7 +16,7 @@ object TraceLogger{
       cause
     )
   }
-  def apply(c: Context)(func: c.Tree, exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
+  def apply[T](c: Context)(func: c.Tree, exprs: c.Expr[T]*): c.Expr[Unit] = {
     import c.universe._
     val loggerName = c.fresh(newTermName("$log"))
     val tempName = c.fresh(newTermName("$temp"))
@@ -27,6 +27,7 @@ object TraceLogger{
         tree match {
           case i @ Ident(name)
             if i.symbol.pos != NoPosition
+            && i.pos != NoPosition
             && i.symbol.pos.source == i.pos.source =>
             // only trace identifiers coming from the same file,
             // since those are the ones people probably care about

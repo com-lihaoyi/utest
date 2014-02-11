@@ -1,5 +1,6 @@
 import scala.reflect.ClassTag
 import scala.reflect.macros.Context
+import scala.util.{Failure, Success, Try}
 import utest.framework.{TestTreeSeq, Test}
 import utest.asserts._
 import utest.util.Tree
@@ -31,6 +32,22 @@ package object utest {
   def continually(exprs: Boolean*): Unit = macro Concurrent.continuallyProxy
 
   /**
+   * Asserts that the given value matches the PartialFunction. Useful for using
+   * pattern matching to validate the shape of a data structure.
+   */
+  def assertMatch[T](t: T)(pf: PartialFunction[T, Unit]): Unit = {
+    if (pf.isDefinedAt(t)) pf(t)
+    else throw new java.lang.AssertionError("Matching failed " + t)
+  }
+
+  /**
+   * Asserts that the given block raises the expected exception. The exception
+   * is returned if raised, and an `AssertionError` is raised if the expected
+   * exception does not appear.
+   */
+  def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
+
+  /**
    * Extension methods to allow you to create tests via the "omg"-{ ... }
    * syntax.
    */
@@ -50,27 +67,7 @@ package object utest {
 
   val ClassTag = scala.reflect.ClassTag
 
-  /**
-   * Asserts that the given value matches the PartialFunction. Useful for using
-   * pattern matching to validate the shape of a data structure.
-   */
-  def assertMatch[T](t: T)(pf: PartialFunction[T, Unit]): Unit = {
-    if (pf.isDefinedAt(t)) pf(t)
-    else throw new java.lang.AssertionError("Matching failed " + t)
-  }
 
-  /**
-   * Asserts that the given block raises the expected exception. The exception
-   * is returned if raised, and an `AssertionError` is raised if the expected
-   * exception does not appear.
-   */
-  def intercept[T: ClassTag](thunk: => Unit): T = {
-    try{
-      thunk
-      val clsName = implicitly[ClassTag[T]].toString()
-      throw new java.lang.AssertionError(s"Thunk failed to raise $clsName!")
-    } catch { case e: T => e }
-  }
 
   val TestSuite = framework.TestSuite
   type TestSuite  = framework.TestSuite

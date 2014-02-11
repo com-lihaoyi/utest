@@ -14,7 +14,7 @@ object Concurrent {
 
   def eventuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
-    TraceLogger(c)(q"utest.asserts.Concurrent.eventuallyImpl", exprs:_*)
+    TraceLogger[Boolean](c)(q"utest.asserts.Concurrent.eventuallyImpl", exprs:_*)
   }
   def eventuallyImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*)
                     (implicit interval: RetryInterval, max: RetryMax): Unit = {
@@ -44,7 +44,7 @@ object Concurrent {
 
   def continuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
-    TraceLogger(c)(q"utest.asserts.Concurrent.continuallyImpl", exprs:_*)
+    TraceLogger[Boolean](c)(q"utest.asserts.Concurrent.continuallyImpl", exprs:_*)
   }
 
   def continuallyImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*)

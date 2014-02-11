@@ -79,18 +79,41 @@ object Core extends TestSuite{
 
     "intercept"-{
       "success"-{
-        intercept[MatchError]{
+        val e = intercept[MatchError]{
           (0: Any) match { case _: String => }
         }
+        Predef.assert(e.toString.contains("MatchError"))
+        e.toString
       }
-      "failure"-{
+      "failureWrongException"-{
         try {
+          val x = 1
+          val y = 2.0
           intercept[NumberFormatException]{
-            (0: Any) match { case _: String => }
+            (x: Any) match { case _: String => y }
           }
           Predef.assert(false) // error wasn't thrown???
-        } catch { case e: MatchError =>
-          "raised"
+        } catch { case e: AssertionError =>
+          Predef.assert(e.msg.contains("(x: Any) match { case _: String => y }"))
+          // This is subtle: only `x` should be logged as an interesting value, for
+          // `y` was not evaluated at all and could not have played a part in the
+          // throwing of the exception
+          Predef.assert(e.captured == Seq(LoggedValue("x", "Int", 1)))
+          e.msg
+        }
+      }
+      "failureNoThrow"-{
+        try{
+          val x = 1
+          val y = 2.0
+          intercept[NullPointerException]{
+            123 + x + y
+          }
+        }catch {case e: AssertionError =>
+          println("XXX " + e.msg)
+          Predef.assert(e.msg.contains("123 + x + y"))
+          Predef.assert(e.captured == Seq(LoggedValue("x", "Int", 1), LoggedValue("y", "Double", 2.0)))
+          e.msg
         }
       }
     }
