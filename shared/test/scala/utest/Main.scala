@@ -5,8 +5,8 @@ package utest
  */
 object Main {
   def main(args: Array[String]): Unit = {
-    intercept[NullPointerException]{
-      (0: Any) match { case _: String => }
-    }
+    val thing = Seq(1, 2, 3)
+    assertMatch(thing){case Seq(1, _, 3) =>}
+    ()
   }
 }

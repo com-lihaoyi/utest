@@ -57,6 +57,35 @@ object Asserts {
     }
     TraceLogger.throwError(src, logged, null)
   }
+
+  def assertMatchProxy(c: Context)
+                      (t: c.Expr[Any])
+                      (pf: c.Expr[PartialFunction[Any, Unit]]): c.Expr[Unit] = {
+    import c.universe._
+    val x = TraceLogger[Any](c)(q"utest.asserts.Asserts.assertMatchImpl", t)
+    c.Expr[Unit](q"$x($pf)")
+  }
+
+  /**
+   * Asserts that the given block raises the expected exception. The exception
+   * is returned if raised, and an `AssertionError` is raised if the expected
+   * exception does not appear.
+   */
+  def assertMatchImpl[T](funcs: (String, (LoggedValue => Unit) => Any))
+                        (pf: PartialFunction[Any, Unit]): Unit = {
+    val (src, func) = funcs
+    val logged = collection.mutable.Buffer.empty[LoggedValue]
+    val value = Try(func(logged.append(_)))
+    value match{
+      case Success(v) =>
+        if (pf.isDefinedAt(v)) ()
+        else TraceLogger.throwError(src, logged, null)
+
+      case Failure(f) =>
+        TraceLogger.throwError(src, logged, f)
+
+    }
+  }
 }
 
 

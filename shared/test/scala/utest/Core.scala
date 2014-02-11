@@ -3,7 +3,13 @@ package utest
 import utest.framework.{TestSuite, Test}
 
 
-
+/**
+ * Test suite for all the assertions that uTest comes bundled with.
+ *
+ * I use Predef.assert and manual try-catch-asserts throughout this suite,
+ * since it is the thing that is meant to be *testing* all the fancy uTest
+ * asserts, we can't assume they work.
+ */
 object Core extends TestSuite{
 
   def tests = TestSuite{
@@ -20,6 +26,7 @@ object Core extends TestSuite{
             x > 0,
             x == y
           )
+
           Predef.assert(false)
         } catch { case e @ AssertionError(_, logged, cause) =>
 
@@ -99,6 +106,7 @@ object Core extends TestSuite{
           // `y` was not evaluated at all and could not have played a part in the
           // throwing of the exception
           Predef.assert(e.captured == Seq(LoggedValue("x", "Int", 1)))
+          Predef.assert(e.cause.isInstanceOf[MatchError])
           e.msg
         }
       }
@@ -123,11 +131,34 @@ object Core extends TestSuite{
         assertMatch(thing){case Seq(1, _, 3) =>}
         ()
       }
+
       "failure"-{
         try {
-          assertMatch(Seq(1, 2, 3)){case Seq(1, 2) =>}
+          val x = 1
+          val iAmCow = Seq("2.0")
+          assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}
           Predef.assert(false)
-        } catch{ case e: java.lang.AssertionError =>
+        } catch{ case e: utest.AssertionError =>
+
+          Predef.assert(e.captured == Seq(
+            LoggedValue("x", "Int", 1), LoggedValue("iAmCow", "Seq[String]", Seq("2.0")))
+          )
+          Predef.assert(e.msg.contains("assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}"))
+
+          e.getMessage
+        }
+      }
+
+      "failureWithException"-{
+        try {
+          val a = 1L
+          val b = 2
+          assertMatch(Seq(a / 0, 3, b)){case Seq(1, 2) =>}
+          Predef.assert(false)
+        } catch{ case e: utest.AssertionError =>
+          Predef.assert(e.captured == Seq(LoggedValue("a", "Long", 1)))
+          Predef.assert(e.cause.isInstanceOf[ArithmeticException])
+          Predef.assert(e.msg.contains("assertMatch(Seq(a / 0, 3, b)){case Seq(1, 2) =>}"))
           e.getMessage
         }
       }

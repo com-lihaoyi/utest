@@ -35,10 +35,8 @@ package object utest {
    * Asserts that the given value matches the PartialFunction. Useful for using
    * pattern matching to validate the shape of a data structure.
    */
-  def assertMatch[T](t: T)(pf: PartialFunction[T, Unit]): Unit = {
-    if (pf.isDefinedAt(t)) pf(t)
-    else throw new java.lang.AssertionError("Matching failed " + t)
-  }
+  def assertMatch(t: Any)(pf: PartialFunction[Any, Unit]): Unit =  macro Asserts.assertMatchProxy
+
 
   /**
    * Asserts that the given block raises the expected exception. The exception
