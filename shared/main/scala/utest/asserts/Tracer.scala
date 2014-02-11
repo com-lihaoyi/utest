@@ -4,18 +4,11 @@ package asserts
 import scala.reflect.macros.Context
 
 /**
- * Created by haoyi on 2/8/14.
+ * Macro implementation to take a block of code and trace through it,
+ * converting it into an [[AssertEntry]] and inserting debug loggers.
  */
-object TraceLogger{
-  def throwError(msgPrefix: String, logged: Seq[LoggedValue], cause: Throwable = null) = {
-    throw AssertionError(
-      msgPrefix + Option(cause).fold("")(e => s"\ncaused by: $e") + logged.map{
-        case LoggedValue(name, tpe, thing) => s"\n$name: $tpe = $thing"
-      }.mkString,
-      logged,
-      cause
-    )
-  }
+object Tracer{
+
   def apply[T](c: Context)(func: c.Tree, exprs: c.Expr[T]*): c.Expr[Unit] = {
     import c.universe._
     val loggerName = c.fresh(newTermName("$log"))

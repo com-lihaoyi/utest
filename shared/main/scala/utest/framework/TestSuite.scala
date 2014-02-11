@@ -25,7 +25,7 @@ abstract class TestSuite{
     addTotal(found.length.toString)
 
     implicit val ec =
-      if (utest.util.ArgParse.find("--parallel=", _.toBoolean, false)(args)){
+      if (utest.util.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
         concurrent.ExecutionContext.global
       }else{
         ExecutionContext.RunNow
@@ -44,9 +44,6 @@ abstract class TestSuite{
 }
 
 object TestSuite{
-
-
-
   /**
    * Macro to demarcate a `Tree[Test]`.
    */

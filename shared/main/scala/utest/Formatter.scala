@@ -22,9 +22,9 @@ abstract class Formatter{
 }
 object DefaultFormatter{
   def apply(implicit args: Array[String]) = {
-    val color = utest.util.ArgParse.find("--color=", _.toBoolean, true)
-    val truncate = utest.util.ArgParse.find("--truncate=", _.toInt, 50)
-    val trace = utest.util.ArgParse.find("--trace=", _.toBoolean, false)
+    val color = utest.util.ArgParse.find("--color", _.toBoolean, true, true)
+    val truncate = utest.util.ArgParse.find("--truncate", _.toInt, 50, 50)
+    val trace = utest.util.ArgParse.find("--trace", _.toBoolean, false, true)
 
     new DefaultFormatter(color, truncate, trace
     )

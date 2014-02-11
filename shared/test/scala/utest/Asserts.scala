@@ -10,7 +10,7 @@ import utest.framework.{TestSuite, Test}
  * since it is the thing that is meant to be *testing* all the fancy uTest
  * asserts, we can't assume they work.
  */
-object Core extends TestSuite{
+object Asserts extends TestSuite{
 
   def tests = TestSuite{
     "assert"-{

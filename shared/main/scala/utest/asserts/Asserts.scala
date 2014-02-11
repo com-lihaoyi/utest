@@ -13,18 +13,13 @@ object Asserts {
 
   def assertProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
-    TraceLogger[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
+    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
   }
 
-  def assertImpl(funcs: (String, (LoggedValue => Unit) => Boolean)*) = {
-    for ((src, func) <- funcs){
-      val logged = collection.mutable.Buffer.empty[LoggedValue]
-      val res = Try(func(logged.append(_)))
-      res match{
-        case Success(true) => // yay
-        case Success(false) => TraceLogger.throwError(src, logged)
-        case Failure(e) => TraceLogger.throwError(src, logged, e)
-      }
+  def assertImpl(funcs: AssertEntry[Boolean]*) = {
+    for (entry <- funcs){
+      val (value, die) = entry.get()
+      if (!value) die(null)
     }
   }
 
@@ -35,7 +30,7 @@ object Asserts {
     import c.universe._
     val typeTree = implicitly[c.WeakTypeTag[T]]
 
-    val x = TraceLogger[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
+    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
     c.Expr[T](q"$x($t)")
 
   }
@@ -45,24 +40,20 @@ object Asserts {
    * is returned if raised, and an `AssertionError` is raised if the expected
    * exception does not appear.
    */
-  def interceptImpl[T: ClassTag](funcs: (String, (LoggedValue => Unit) => Unit)): T = {
-    val (src, func) = funcs
-    val logged = collection.mutable.Buffer.empty[LoggedValue]
-    try{
-      func(logged.append(_))
-    } catch {
-      case e: T => return e
-      case e: Throwable =>
-        TraceLogger.throwError(src, logged, e)
+  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
+    val (res, logged, src) = entry.run()
+    res match{
+      case Failure(e: T) => e
+      case Failure(e: Throwable) => assertError(src, logged, e)
+      case Success(v) => assertError(src, logged, null)
     }
-    TraceLogger.throwError(src, logged, null)
   }
 
   def assertMatchProxy(c: Context)
                       (t: c.Expr[Any])
                       (pf: c.Expr[PartialFunction[Any, Unit]]): c.Expr[Unit] = {
     import c.universe._
-    val x = TraceLogger[Any](c)(q"utest.asserts.Asserts.assertMatchImpl", t)
+    val x = Tracer[Any](c)(q"utest.asserts.Asserts.assertMatchImpl", t)
     c.Expr[Unit](q"$x($pf)")
   }
 
@@ -71,20 +62,11 @@ object Asserts {
    * is returned if raised, and an `AssertionError` is raised if the expected
    * exception does not appear.
    */
-  def assertMatchImpl[T](funcs: (String, (LoggedValue => Unit) => Any))
-                        (pf: PartialFunction[Any, Unit]): Unit = {
-    val (src, func) = funcs
-    val logged = collection.mutable.Buffer.empty[LoggedValue]
-    val value = Try(func(logged.append(_)))
-    value match{
-      case Success(v) =>
-        if (pf.isDefinedAt(v)) ()
-        else TraceLogger.throwError(src, logged, null)
-
-      case Failure(f) =>
-        TraceLogger.throwError(src, logged, f)
-
-    }
+  def assertMatchImpl(entry: AssertEntry[Any])
+                     (pf: PartialFunction[Any, Unit]): Unit = {
+    val (value, die) = entry.get()
+    if (pf.isDefinedAt(value)) ()
+    else die(null)
   }
 }
 

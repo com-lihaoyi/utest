@@ -8,7 +8,7 @@ import scala.util.Success
 import scala.util.Failure
 import utest.SkippedOuterFailure
 
-object Nesting extends TestSuite{
+object Framework extends TestSuite{
   implicit val ec = utest.ExecutionContext.RunNow
   def tests = TestSuite{
     "helloWorld"-{

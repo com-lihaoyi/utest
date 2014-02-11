@@ -15,6 +15,7 @@ package object utest {
   implicit val retryMax = new RetryMax(1.second)
   import language.experimental.macros
 
+
   /**
    * Checks that one or more expressions are true; otherwises raises an
    * exception with some debugging info
@@ -24,12 +25,12 @@ package object utest {
    * Checks that one or more expressions all become true within a certain
    * period of time. Polls at a regular interval to check this.
    */
-  def eventually(exprs: Boolean*): Unit = macro Concurrent.eventuallyProxy
+  def eventually(exprs: Boolean*): Unit = macro Parallel.eventuallyProxy
   /**
    * Checks that one or more expressions all remain true within a certain
    * period of time. Polls at a regular interval to check this.
    */
-  def continually(exprs: Boolean*): Unit = macro Concurrent.continuallyProxy
+  def continually(exprs: Boolean*): Unit = macro Parallel.continuallyProxy
 
   /**
    * Asserts that the given value matches the PartialFunction. Useful for using
