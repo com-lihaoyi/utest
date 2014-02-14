@@ -1,4 +1,4 @@
-addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.3-SNAPSHOT")
+addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.3")
 
 unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".." / "js-plugin")
 
@@ -15,3 +15,4 @@ libraryDependencies ++= Seq(
 )
 
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
+

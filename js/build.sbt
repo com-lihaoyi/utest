@@ -27,7 +27,7 @@ addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
   )
 }
 
-organization := "com.lihaoyi"
+Build.sharedSettings
 
 name := "utest"
 
