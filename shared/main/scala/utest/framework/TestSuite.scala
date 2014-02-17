@@ -5,7 +5,6 @@ import scala.reflect.macros.Context
 import scala.language.experimental.macros
 import utest.framework.Test
 
-
 /**
  * Marker class used to mark an `object` as something containing tests. Used
  * for test-discovery by SBT.

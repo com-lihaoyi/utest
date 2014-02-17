@@ -15,7 +15,8 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.3",
   "org.scalamacros" % "quasiquotes_2.10.3" % "2.0.0-M3",
-  "org.scala-sbt" % "test-interface" % "1.0"
+  "org.scala-sbt" % "test-interface" % "1.0",
+  "com.lihaoyi.acyclic" %% "acyclic" % "0.1.0" % "provided"
 )
 
 addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
@@ -28,6 +29,10 @@ addCompilerPlugin("org.scalamacros" % "paradise_2.10.3" % "2.0.0-M3")
 }
 
 Build.sharedSettings
+
+autoCompilerPlugins := true
+
+addCompilerPlugin("com.lihaoyi.acyclic" %% "acyclic" % "0.1.0")
 
 name := "utest"
 

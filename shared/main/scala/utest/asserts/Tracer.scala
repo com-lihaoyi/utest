@@ -1,6 +1,6 @@
 package utest
 package asserts
-
+import acyclic.file
 import scala.reflect.macros.Context
 
 /**

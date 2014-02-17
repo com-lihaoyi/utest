@@ -1,5 +1,7 @@
 package utest
 
+import acyclic.file
+
 object SkippedOuterFailure{
   def errorMsg(errorPath: Seq[String]) = {
     "Test skipped due to outer failure in " + errorPath.mkString(".")

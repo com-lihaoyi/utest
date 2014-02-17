@@ -1,5 +1,4 @@
 package utest
-
 import utest.framework.Result
 import utest.util.Tree
 import scala.util.{Failure, Success}
