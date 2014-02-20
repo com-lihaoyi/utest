@@ -5,8 +5,7 @@ package utest
  */
 object Main {
   def main(args: Array[String]): Unit = {
-    val thing = Seq(1, 2, 3)
-    assertMatch(thing){case Seq(1, _, 3) =>}
-    ()
+
+
   }
 }

@@ -75,7 +75,9 @@ object TestSuite{
       val retValueName = c.fresh(newTermName("$ret"))
 
       val normal2 =
-        if (normal.isEmpty || normal.last.isInstanceOf[MemberDefApi]) {
+        if (normal.isEmpty
+        || normal.last.isInstanceOf[MemberDefApi]
+        || nested.contains(b.children.last)) {
           normal :+ q"val $retValueName = ()"
         }else{
           val (bulk :+ last) = normal
@@ -123,9 +125,10 @@ object TestSuite{
       case None =>
         // jump through some hoops to avoid using scala.Predef implicits,
         // to make @paulp happy
-        c.Expr[util.Tree[Test]](q"""$suite({ val xs = this.getClass.getName.split("[.]") ; xs(xs.length - 1) }, $testTree)""")
+        c.Expr[util.Tree[Test]](
+          q"""$suite(this.getClass.getName.replace("$$", ""), $testTree)"""
+        )
     }
-
   }
 }
 

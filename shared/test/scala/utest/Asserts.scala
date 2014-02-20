@@ -4,12 +4,12 @@ import utest.framework.{TestSuite, Test}
 
 
 /**
- * Test suite for all the assertions that uTest comes bundled with.
- *
- * I use Predef.assert and manual try-catch-asserts throughout this suite,
- * since it is the thing that is meant to be *testing* all the fancy uTest
- * asserts, we can't assume they work.
- */
+* Test suite for all the assertions that uTest comes bundled with.
+*
+* I use Predef.assert and manual try-catch-asserts throughout this suite,
+* since it is the thing that is meant to be *testing* all the fancy uTest
+* asserts, we can't assume they work.
+*/
 object Asserts extends TestSuite{
 
   def tests = TestSuite{

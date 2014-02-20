@@ -86,30 +86,51 @@ object Framework extends TestSuite{
     }
 
     "extractingResults"-{
-      val test = TestSuite{
-        "test1"-{
-          "i am cow"
-        }
-        "test2"-{
-          "1"-{
-            1
+      "basic"-{
+        val test = TestSuite{
+          "test1"-{
+            "i am cow"
           }
-          "2"-{
-            2
+          "test2"-{
+            "1"-{
+              1
+            }
+            "2"-{
+              2
+            }
+            999
           }
-          999
+          "test3"-{
+            Seq('a', 'b')
+          }
         }
-        "test3"-{
-          Seq('a', 'b')
-        }
+        val results = test.run()
+        val expected = Seq("i am cow", 1, 2, Seq('a', 'b')).map(Success[Any])
+        assert(results.leaves.map(_.value).toList == expected)
+        results.map(_.value.get)
       }
-      val results = test.run()
-      val expected = Seq("i am cow", 1, 2, Seq('a', 'b')).map(Success[Any])
-      assert(results.leaves.map(_.value).toList == expected)
-      results.map(_.value.get)
+      "onlyLastThingReturns"-{
+        val tests = TestSuite {
+          12
+          "omg" - {
+          }
+        }
+        val res = tests.run().value.value
+        assert(res == Success(()))
+      }
     }
+    
     "nesting"-{
-
+      "importStatementsWork"-{
+        // issue #7, just needs to compile
+        val tests = TestSuite {
+          import math._
+          "omg" - {
+          }
+        }
+        val res = tests.run().value.value
+        assert(res == Success(()))
+      }
       "lexicalScopingWorks"-{
         val test = TestSuite{
           val x = 1
