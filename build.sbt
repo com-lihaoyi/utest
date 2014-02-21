@@ -1,3 +1,13 @@
+scalaVersion in Global := "2.10.3"
+
+crossScalaVersions in Global := Seq("2.10.3", "2.11.0-M8")
+
+lazy val js, runner = project
+
+lazy val root = project in file(".") dependsOn runner
+
+lazy val jsPlugin = project in file("js-plugin") dependsOn runner
+
 def versionDependencies(sv: String) = ( // sv: scalaVersion
   ("org.scala-lang" % "scala-reflect" % sv) :: (
     if (sv startsWith "2.10.") List(
@@ -9,12 +19,6 @@ def versionDependencies(sv: String) = ( // sv: scalaVersion
     else Nil
   )
 )
-
-lazy val js, runner = project
-
-lazy val root = project in file(".") dependsOn runner
-
-lazy val jsPlugin = project in file("js-plugin") dependsOn runner
 
 autoCompilerPlugins := true
 
@@ -33,5 +37,3 @@ testFrameworks += new TestFramework("utest.runner.JvmFramework")
 version := "0.1.1"
 
 name := "utest"
-
-scalaVersion := "2.10.3"
