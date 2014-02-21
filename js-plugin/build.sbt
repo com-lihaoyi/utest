@@ -8,8 +8,6 @@ libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0"
 
 name := "utest-js-plugin"
 
-scalaVersion := "2.10.3"
-
 version := "0.1.1"
 
 sbtPlugin := true

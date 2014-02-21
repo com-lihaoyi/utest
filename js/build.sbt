@@ -36,6 +36,4 @@ addCompilerPlugin("com.lihaoyi.acyclic" %% "acyclic" % "0.1.0")
 
 name := "utest"
 
-scalaVersion := "2.10.3"
-
 version := "0.1.1-JS"
