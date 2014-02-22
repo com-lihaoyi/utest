@@ -16,7 +16,11 @@ def versionDependencies(sv: String) = ( // sv: scalaVersion
       compilerPlugin("com.lihaoyi.acyclic" %% s"acyclic" % "0.1.0"),
       "com.lihaoyi.acyclic" %% s"acyclic" % "0.1.0" % "provided"
     )
-    else Nil
+    else List(
+      compilerPlugin("org.scalamacros" % s"paradise_$sv" % "2.0.0-M3"),
+      compilerPlugin("com.lihaoyi.acyclic" %% s"acyclic" % "0.1.1"),
+      "com.lihaoyi.acyclic" %% s"acyclic" % "0.1.1" % "provided"
+    )
   )
 )
 
