@@ -32,7 +32,6 @@ object Asserts {
 
     val x = Tracer[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
     c.Expr[T](q"$x($t)")
-
   }
 
   /**

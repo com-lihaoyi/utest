@@ -2,6 +2,12 @@ import sbt._
 import Keys._
 import scala.scalajs.sbtplugin.ScalaJSPlugin.scalaJSSettings
 object Build extends sbt.Build{
+
+  val crossSetting = crossScalaVersions := Seq("2.10.4", "2.11.0")
+  lazy val root = project.in(file("."))
+                         .aggregate(runner, jvm, runner)
+                         .settings(crossSetting)
+
   lazy val js = project.in(file("js"))
                        .settings(sharedSettings ++ libSettings ++ scalaJSSettings:_*)
                        .settings(
@@ -18,13 +24,12 @@ object Build extends sbt.Build{
   lazy val jvm = project.in(file("jvm"))
                          .dependsOn(runner)
                          .settings(sharedSettings ++ libSettings:_*)
-                         .aggregate(runner, jsPlugin, js)
 
   lazy val jsPlugin = project.in(file("js-plugin"))
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.3"),
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.4.3"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true
@@ -35,16 +40,15 @@ object Build extends sbt.Build{
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.scala-sbt" % "test-interface" % "1.0",
       compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full)
-    ),
-    name := "utest",
-    unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".."/ "shared" / "main" / "scala"),
-    unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala"),
-    libraryDependencies ++= (
+    ) ++ (
       if (scalaVersion.value startsWith "2.11.") Nil
       else Seq(
         "org.scalamacros" %% s"quasiquotes" % "2.0.0"
       )
-    )
+    ),
+    name := "utest",
+    unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".."/ "shared" / "main" / "scala"),
+    unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala")
   )
 
   val sharedSettings = Seq(
@@ -53,7 +57,7 @@ object Build extends sbt.Build{
     version := "0.1.3",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
-    crossScalaVersions := Seq("2.10.4", "2.11.0"),
+    crossSetting,
     // Sonatype
     publishArtifact in Test := false,
     publishTo <<= version { (v: String) =>

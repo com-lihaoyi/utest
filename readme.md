@@ -544,3 +544,10 @@ While improving on the basic things that matters
 - Compile-time test registration, which allows [completely separating test-discovery and execution](#execution-model).
 - A simpler, straightforward [API](#test-running-api) that makes using uTest as a library much easier.
 - Raw size: at less than 1000 lines of code, uTest is 1/400th the size of [ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and 1/50th the size of [Specs2](https://github.com/etorreborre/specs2/graphs/contributors), and with almost no dependencies. Its small size means that you can trivially use uTest as a library within a larger application without worrying about it significantly increasing the size of your packaged artifacts, or pulling in weird dependencies.
+
+Development Tips
+================
+
+Some magic commands to build/develop uTest so I don't forget:
+
+- Run `sbt +publishLocal jsPlugin/publishLocal; cd test; sbt +jvm/test +js/test; cd ..` from the root directory to run tests.

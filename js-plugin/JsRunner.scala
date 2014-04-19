@@ -23,7 +23,10 @@ class JsRunner(val args: Array[String],
     environment.runInContextAndScope { (context, scope) =>
       new CodeBlock(context, scope) with Utilities {
         try {
-          val module = getModule(name.replace('.', '_'))
+          val flatName = name.replace('.', '_')
+          println("flatName " + flatName)
+          val module = getModule(flatName)
+          println("module " + module)
           val results = callMethod(
             module,
             "runSuite",
@@ -33,7 +36,7 @@ class JsRunner(val args: Array[String],
             JsCallback(msg => loggers.foreach(_.info(progressString + name + "." + msg))),
             JsCallback(s => total.addAndGet(s.toInt))
           )
-
+          println("results " + results)
           addResult(results.toString)
         } catch {
           case t: RhinoException =>
