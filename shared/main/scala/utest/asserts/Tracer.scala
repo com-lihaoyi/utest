@@ -1,6 +1,5 @@
 package utest
 package asserts
-import acyclic.file
 import scala.reflect.macros.Context
 
 /**
@@ -39,7 +38,7 @@ object Tracer{
     }
 
     val trees = exprs.map(expr =>
-      q"${expr.tree.pos.lineContent.trim} -> ($loggerName => ${tracingTransformer.transform(expr.tree)})"
+      q"${expr.tree.pos.lineContent.trim} -> ($loggerName: ${tq""} => ${tracingTransformer.transform(expr.tree)})"
     )
 
     c.Expr[Unit](c.resetLocalAttrs(q"""$func(..$trees)"""))

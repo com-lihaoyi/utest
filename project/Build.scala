@@ -1,13 +1,64 @@
 import sbt._
 import Keys._
+import scala.scalajs.sbtplugin.ScalaJSPlugin.scalaJSSettings
 object Build extends sbt.Build{
-  val sharedSettings = Seq(
-    organization := "com.lihaoyi.utest",
+  lazy val js = project.in(file("js"))
+                       .settings(sharedSettings ++ libSettings ++ scalaJSSettings:_*)
+                       .settings(
+    version := version.value + "-JS"
+  )
 
+  lazy val runner = project.in(file("runner"))
+                           .settings(sharedSettings:_*)
+                           .settings(
+    libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
+    name := "utest-runner"
+  )
+
+  lazy val jvm = project.in(file("."))
+                         .dependsOn(runner)
+                         .settings(sharedSettings ++ libSettings:_*)
+                         .settings(
+  )
+
+  lazy val jsPlugin = project.in(file("js-plugin"))
+                             .dependsOn(runner)
+                             .settings(sharedSettings:_*)
+                             .settings(
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.3"),
+    libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
+    name := "utest-js-plugin",
+    sbtPlugin := true
+  )
+
+  val libSettings = Seq(
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.scala-sbt" % "test-interface" % "1.0",
+      compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full)
+    ),
+    name := "utest",
+    unmanagedSourceDirectories in Compile <+= baseDirectory(_ / "shared" / "main" / "scala"),
+    unmanagedSourceDirectories in Test <+= baseDirectory(_ / "shared" / "test" / "scala"),
+    libraryDependencies ++= (
+      if (scalaVersion.value startsWith "2.11.") Nil
+      else Seq(
+        "org.scalamacros" %% s"quasiquotes" % "2.0.0"
+      )
+    )
+  )
+
+  val sharedSettings = Seq(
+    organization := "com.lihaoyi",
+    scalaVersion := "2.10.4",
+    version := "0.1.3",
+    resolvers += Resolver.sonatypeRepo("snapshots"),
+    resolvers += Resolver.sonatypeRepo("releases"),
+    crossScalaVersions := Seq("2.10.4", "2.11.0"),
     // Sonatype
     publishArtifact in Test := false,
     publishTo <<= version { (v: String) =>
-      Some("releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+      Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
     },
 
     pomExtra := (

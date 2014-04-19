@@ -1,6 +1,6 @@
 package utest
 package asserts
-import acyclic.file
+
 import scala.concurrent.duration._
 import scala.annotation.tailrec
 import scala.language.experimental.macros

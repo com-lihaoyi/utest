@@ -15,7 +15,7 @@ object Asserts extends TestSuite{
   def tests = TestSuite{
     "assert"-{
       "success"-{
-        assert(true)
+        assert(true)f
         "success!"
       }
       "failure"-{

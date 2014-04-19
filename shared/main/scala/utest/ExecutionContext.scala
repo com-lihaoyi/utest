@@ -1,7 +1,5 @@
 package utest
-import acyclic.file
 
-import scala.concurrent.ExecutionContext
 
 object ExecutionContext{
 
@@ -12,7 +10,7 @@ object ExecutionContext{
    * as you can be sure the result will be ready as soon as any "async"
    * calls return.
    */
-  implicit object RunNow extends ExecutionContext {
+  implicit object RunNow extends scala.concurrent.ExecutionContext {
     def execute(runnable: Runnable) =
       try   { runnable.run() }
       catch { case t: Throwable => reportFailure(t) }

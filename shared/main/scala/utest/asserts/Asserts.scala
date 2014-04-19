@@ -1,6 +1,6 @@
 package utest
 package asserts
-import acyclic.file
+
 import scala.reflect.macros.Context
 import scala.util.{Failure, Success, Try, Random}
 import scala.reflect.ClassTag
