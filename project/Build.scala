@@ -15,11 +15,10 @@ object Build extends sbt.Build{
     name := "utest-runner"
   )
 
-  lazy val jvm = project.in(file("."))
+  lazy val jvm = project.in(file("jvm"))
                          .dependsOn(runner)
                          .settings(sharedSettings ++ libSettings:_*)
-                         .settings(
-  )
+                         .aggregate(runner, jsPlugin, js)
 
   lazy val jsPlugin = project.in(file("js-plugin"))
                              .dependsOn(runner)
@@ -38,8 +37,8 @@ object Build extends sbt.Build{
       compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full)
     ),
     name := "utest",
-    unmanagedSourceDirectories in Compile <+= baseDirectory(_ / "shared" / "main" / "scala"),
-    unmanagedSourceDirectories in Test <+= baseDirectory(_ / "shared" / "test" / "scala"),
+    unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".."/ "shared" / "main" / "scala"),
+    unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala"),
     libraryDependencies ++= (
       if (scalaVersion.value startsWith "2.11.") Nil
       else Seq(

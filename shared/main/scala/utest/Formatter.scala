@@ -25,8 +25,7 @@ object DefaultFormatter{
     val truncate = utest.util.ArgParse.find("--truncate", _.toInt, 50, 50)
     val trace = utest.util.ArgParse.find("--trace", _.toBoolean, false, true)
 
-    new DefaultFormatter(color, truncate, trace
-    )
+    new DefaultFormatter(color, truncate, trace)
   }
 }
 /**

@@ -1,8 +1,9 @@
 
-lazy val js = project.in(file("."))
+lazy val js = project.in(file("js"))
+  .settings(scalaJSSettings:_*)
   .settings(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS"
-      (loadedTestFrameworks in Test) := {
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS",
+    (loadedTestFrameworks in Test) := {
       import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
       (loadedTestFrameworks in Test).value.updated(
         sbt.TestFramework(classOf[utest.runner.JsFramework].getName),
@@ -15,7 +16,7 @@ lazy val js = project.in(file("."))
     unmanagedSourceDirectories in Test <+= baseDirectory(_ / "src" / "test" / "scala")
   )
 
-lazy val jvm = project.in(file("."))
+lazy val jvm = project.in(file("jvm"))
   .settings(
     libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3",
     testFrameworks += new TestFramework("utest.runner.JvmFramework"),
