@@ -5,6 +5,7 @@ import scala.annotation.tailrec
 import scala.scalajs.sbtplugin.environment.rhino.{Utilities, CodeBlock}
 import scala.scalajs.sbtplugin.ScalaJSEnvironment
 import org.mozilla.javascript.{NativeObject, RhinoException}
+import sbt.TestsFailedException
 
 /**
  * Wraps a Scala callback in a Java-ish object that has the right signature
@@ -23,20 +24,16 @@ class JsRunner(val args: Array[String],
     environment.runInContextAndScope { (context, scope) =>
       new CodeBlock(context, scope) with Utilities {
         try {
-          val flatName = name.replace('.', '_')
-          println("flatName " + flatName)
-          val module = getModule(flatName)
-          println("module " + module)
           val results = callMethod(
-            module,
+            getModule("utest_PlatformShims"),
             "runSuite",
+            getModule(name.replace('.', '_')),
             toScalaJSArray(s.toArray),
             toScalaJSArray(args),
             JsCallback(s => if(s.toBoolean) success.incrementAndGet() else failure.incrementAndGet()),
             JsCallback(msg => loggers.foreach(_.info(progressString + name + "." + msg))),
             JsCallback(s => total.addAndGet(s.toInt))
           )
-          println("results " + results)
           addResult(results.toString)
         } catch {
           case t: RhinoException =>

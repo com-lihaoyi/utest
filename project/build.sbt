@@ -1,9 +1,5 @@
-resolvers += Resolver.sonatypeRepo("releases")
+addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.4.3")
 
-resolvers += Resolver.sonatypeRepo("snapshots")
+// Test-specific requirements; comment out during the first +publishLocal
+addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.3")
 
-libraryDependencies ++= (if (scalaVersion.value startsWith "2.10.") Seq(
-  Defaults.sbtPluginExtra("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.4.3", "0.13", "2.10")
-) else Seq(
-  Defaults.sbtPluginExtra("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.4.3", "0.13", "2.10")
-))

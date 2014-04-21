@@ -22,8 +22,8 @@ abstract class Formatter{
 object DefaultFormatter{
   def apply(implicit args: Array[String]) = {
     val color = utest.util.ArgParse.find("--color", _.toBoolean, true, true)
-    val truncate = utest.util.ArgParse.find("--truncate", _.toInt, 50, 50)
-    val trace = utest.util.ArgParse.find("--trace", _.toBoolean, false, true)
+    val truncate = utest.util.ArgParse.find("--truncate", _.toInt, 100, 100)
+    val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)
 
     new DefaultFormatter(color, truncate, trace)
   }
@@ -33,8 +33,8 @@ object DefaultFormatter{
  * framework. Allows some degree of customization of the formatted test results.
  */
 class DefaultFormatter(color: Boolean = true, 
-                       truncate: Int = 30,
-                       trace: Boolean = false) extends Formatter{
+                       truncate: Int = 100,
+                       trace: Boolean = true) extends Formatter{
   
   def prettyTruncate(r: Result, length: Int = truncate): String = {
 

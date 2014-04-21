@@ -32,11 +32,13 @@ trait GenericRunner extends sbt.testing.Runner{
     taskDefs.map(t => new Task(t, args, path, doStuff): sbt.testing.Task)
   }
 
+
   def done(): String = {
     val header = "-----------------------------------Results-----------------------------------"
 
     val body = results.get.mkString("\n")
 
+    if (failure.get() != 0 && args.contains("--throw")) throw new Exception("Tests Failed")
     Seq(
       header,
       body,

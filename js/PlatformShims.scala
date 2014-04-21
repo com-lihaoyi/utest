@@ -2,6 +2,7 @@ package utest
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import scala.scalajs.js.annotation.JSExport
 
 /**
  * Platform specific stuff that differs between JVM and JS
@@ -18,5 +19,14 @@ object PlatformShims {
   def await[T](f: Future[T]): T = f.value.get.get
   def getTrace(e: Throwable): String = {
     ""
+  }
+  @JSExport
+  def runSuite(suite: TestSuite,
+               path: Array[String],
+               args: Array[String],
+               addCount: String => Unit,
+               log: String => Unit,
+               addTotal: String => Unit) = {
+    utest.runSuite(suite, path, args, addCount, log, addTotal)
   }
 }

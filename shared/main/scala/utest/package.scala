@@ -66,10 +66,35 @@ package object utest {
   implicit def toTestSeq(t: Tree[Test]) = new TestTreeSeq(t)
 
   val ClassTag = scala.reflect.ClassTag
-
-
-
   val TestSuite = framework.TestSuite
   type TestSuite  = framework.TestSuite
+
+  def runSuite(suite: TestSuite,
+               path: Array[String],
+               args: Array[String],
+               addCount: String => Unit,
+               log: String => Unit,
+               addTotal: String => Unit) = {
+    import suite.tests
+    val (indices, found) = tests.resolve(path)
+    addTotal(found.length.toString)
+
+    implicit val ec =
+      if (utest.util.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
+        concurrent.ExecutionContext.global
+      }else{
+        ExecutionContext.RunNow
+      }
+
+    val formatter = DefaultFormatter(args)
+    val results = tests.run(
+      (path, s) => {
+        addCount(s.value.isSuccess.toString)
+        log(formatter.formatSingle(path, s))
+      },
+      testPath = path
+    )(ec)
+    formatter.format(results)
+  }
 }
 

@@ -14,10 +14,12 @@ import scala.concurrent.ExecutionContext
 class JvmRunner(val args: Array[String],
                 val remoteArgs: Array[String])
                 extends GenericRunner{
+
   def doStuff(s: Seq[String], loggers: Seq[Logger], name: String) = {
     val cls = Class.forName(name + "$")
     val suite = cls.getField("MODULE$").get(cls).asInstanceOf[TestSuite]
-    val res = suite.runSuite(
+    val res = utest.runSuite(
+      suite,
       s.toArray,
       args,
       s => if(s.toBoolean) success.incrementAndGet() else failure.incrementAndGet(),
