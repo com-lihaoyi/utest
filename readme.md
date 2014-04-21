@@ -482,7 +482,7 @@ Other flags you can pass to the test suite are:
 - `--truncate=N`: cut off the printing of test results at `N` lines per result
 - `--trace=true` or `--trace=false`: whether or not to print stack traces when things blow up, defaults to false.
 - `--parallel=true` or `--parallel=true`: whether tests within a `TestSuite` should be run in parallel, defaults to `false`. Tests in different suites are always run task-parallel by SBT
-
+- `--throw`: cause the tests to throw an exception if they fail. This is off by default as it causes a bunch of annoying stack traces, but could be useful for telling CI frameworks that tests failed.
 
 ScalaJS
 =======
@@ -548,6 +548,15 @@ While improving on the basic things that matters
 Development Tips
 ================
 
-Some magic commands to build/develop uTest so I don't forget:
+uTest is an unusual project, as it is used to test itself, which is a cyclic dependency not allowed by SBT. Thus it needs to be tested in two stages:
 
-- Run `sbt +publishLocal jsPlugin/publishLocal; cd test; sbt +jvm/test +js/test; cd ..` from the root directory to run tests.
+- Comment out the lines labelled "test specific requirements" in `project/build.sbt` and `TestBuild` in `project/Build.scala', leaving `BootBuild` uncommented.
+- run `sbt +publishLocal plugins/publishLocal`
+- Uncomment the "test specific requirements, and comment out `BootBuild` in favor of `TestBuild`.
+- run `sbt +test`
+
+This publishes uTest locally, and runs tests aliasing `utest` as `utest-test` in order to avoid cyclic dependency problems, against both Javascript and JVM backends for scala 2.10.4 and 2.11.0.
+
+Once you have gone through the bootstrap process once, you can run `sbt +publishLocal plugins/publishLocal +test` every time you make a change to run all tests again, or use more targetted commands e.g. `js/publishLocal js/test` which would only republish and re-test the Javascript backend under scala 2.10.4.
+
+If things get into a weird state or you end up changing too much and the publish-test cycle breaks, re-performing the bootstrap process would allow you to start from scratch.

@@ -14,7 +14,7 @@ import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys.scalaJSEnvironment
  */
 object TestBuild extends Build(
   Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS" ,
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS",
     (loadedTestFrameworks in Test) := {
       (loadedTestFrameworks in Test).value.updated(
         sbt.TestFramework(classOf[utest.runner.JsFramework].getName),
