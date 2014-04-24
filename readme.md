@@ -506,8 +506,8 @@ libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS"
 (loadedTestFrameworks in Test) := {
   import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
   (loadedTestFrameworks in Test).value.updated(
-    sbt.TestFramework(classOf[utest.runner.JsFramework].getName),
-    new utest.runner.JsFramework(environment = (scalaJSEnvironment in Test).value)
+    sbt.TestFramework(classOf[utest.jsrunner.JsFramework].getName),
+    new utest.jsrunner.JsFramework(environment = (scalaJSEnvironment in Test).value)
   )
 }
 ```
