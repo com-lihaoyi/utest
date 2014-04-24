@@ -51,12 +51,12 @@ class DefaultFormatter(color: Boolean = true,
   }
 
   def formatSingle(path: Seq[String], r: Result): String = {
-    val str = path.mkString(".") + "\t\t" + prettyTruncate(r)
+    val str = path.map("." + _).mkString + "\t\t" + prettyTruncate(r)
     if (!trace) str
     else{
       val traceStr = r.value match{
         case Failure(e) => PlatformShims.getTrace(e)
-        case _ =>
+        case _ => ""
       }
       str + traceStr
     }

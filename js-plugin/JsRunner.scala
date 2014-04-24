@@ -31,7 +31,7 @@ class JsRunner(val args: Array[String],
             toScalaJSArray(s.toArray),
             toScalaJSArray(args),
             JsCallback(s => if(s.toBoolean) success.incrementAndGet() else failure.incrementAndGet()),
-            JsCallback(msg => loggers.foreach(_.info(progressString + name + "." + msg))),
+            JsCallback(msg => loggers.foreach(_.info(progressString + name + msg))),
             JsCallback(s => total.addAndGet(s.toInt))
           )
           addResult(results.toString)
