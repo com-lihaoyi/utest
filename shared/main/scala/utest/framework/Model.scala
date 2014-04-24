@@ -33,7 +33,7 @@ object Test{
  */
 case class Test(name: String, TestThunkTree: TestThunkTree){
   require(
-    name.matches("^[a-zA-Z0-9$._]+$"),
+    name.matches("^[a-zA-Z0-9$._\\-]+$"),
     s"Illegal test name: [$name], test names must be non-empty strings containing only [a-zA-Z0-9$$._]"
   )
 }

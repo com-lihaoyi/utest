@@ -17,8 +17,8 @@ object TestBuild extends Build(
     libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS",
     (loadedTestFrameworks in Test) := {
       (loadedTestFrameworks in Test).value.updated(
-        sbt.TestFramework(classOf[utest.runner.JsFramework].getName),
-        new utest.runner.JsFramework(environment = (scalaJSEnvironment in Test).value)
+        sbt.TestFramework(classOf[utest.jsrunner.JsFramework].getName),
+        new utest.jsrunner.JsFramework(environment = (scalaJSEnvironment in Test).value)
       )
     },
     name := "utest-test-js"
@@ -47,9 +47,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
 
   lazy val root = project.in(file("."))
                          .settings(crossScalaVersions := Seq("2.10.4", "2.11.0"))
-                         .aggregate(js, jvm)
-
-  lazy val plugins = project.aggregate(runner, jsPlugin)
+                         .aggregate(js, jvm, runner)
 
   lazy val jvm = project.in(file("jvm"))
                          .dependsOn(runner)

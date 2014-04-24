@@ -516,8 +516,6 @@ And the following to your `project/build.sbt`
 
 ```scala
 addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.3")
-
-libraryDependencies += "com.lihaoyi" %% "utest-runner" % "0.1.3"
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `RhinoBasedScalaJSEnvironment` instead of on the JVM. Test selection, coloring, etc. should all work unchanged.
@@ -557,6 +555,8 @@ uTest is an unusual project, as it is used to test itself, which is a cyclic dep
 
 This publishes uTest locally, and runs tests aliasing `utest` as `utest-test` in order to avoid cyclic dependency problems, against both Javascript and JVM backends for scala 2.10.4 and 2.11.0.
 
-Once you have gone through the bootstrap process once, you can run `sbt +publishLocal plugins/publishLocal +test` every time you make a change to run all tests again, or use more targetted commands e.g. `js/publishLocal js/test` which would only republish and re-test the Javascript backend under scala 2.10.4.
+Once you have gone through the bootstrap process once, you can run `sbt +publishLocal jsPlugin/publishLocal +test` every time you make a change to run all tests again, or use more targetted commands e.g. `js/publishLocal js/test` which would only republish and re-test the Javascript backend under scala 2.10.4.
 
 If things get into a weird state or you end up changing too much and the publish-test cycle breaks, re-performing the bootstrap process would allow you to start from scratch.
+
+Swap back to the Boot configuration before publishing.
