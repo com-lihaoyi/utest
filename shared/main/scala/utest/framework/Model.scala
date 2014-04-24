@@ -31,12 +31,7 @@ object Test{
  * a pretty simple data structure, as much of the information related to it
  * comes contextually when traversing the [[utest.framework.TestTreeSeq]] to reach it.
  */
-case class Test(name: String, TestThunkTree: TestThunkTree){
-  require(
-    name.matches("^[a-zA-Z0-9$._\\-]+$"),
-    s"Illegal test name: [$name], test names must be non-empty strings containing only [a-zA-Z0-9$$._]"
-  )
-}
+case class Test(name: String, TestThunkTree: TestThunkTree)
 
 /**
  * Extension methods on `TreeSeq[Test]`

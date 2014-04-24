@@ -48,21 +48,14 @@ object Framework extends TestSuite{
           e.getMessage
         }
       }
-      "illegalTestName"-{
-        // Ideally should not compile, but until I
-        // figure that out, a runtime error works great
-        try{
-          val test = TestSuite{
-            "t est1"-{
-              1
-            }
+      "weirdTestName"-{
+        val test = TestSuite{
+          "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
+            1
           }
-          test.run()
-        }catch{ case e: IllegalArgumentException =>
-          assert(e.getMessage.contains("Illegal test name"))
-          assert(e.getMessage.contains("t est1"))
-          e.getMessage
         }
+        test.run()
+
       }
       "testNestedBadly"-{
         // Ideally should not compile, but until I
