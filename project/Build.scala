@@ -7,28 +7,28 @@ import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys.scalaJSEnvironment
  * Bootstrapping build, used for the initial publishLocal. Leaves out test
  * dependencies because it hasn't been published to be depended on yet
  */
-//object BootBuild extends Build(Nil, Nil)
+object BootBuild extends Build(Nil, Nil)
 
 /**
  * Test-specific requirements; comment out during the first +publishLocal
  */
-object TestBuild extends Build(
-  Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4-JS",
-    (loadedTestFrameworks in Test) := {
-      (loadedTestFrameworks in Test).value.updated(
-        sbt.TestFramework(classOf[utest.jsrunner.JsFramework].getName),
-        new utest.jsrunner.JsFramework(environment = (scalaJSEnvironment in Test).value)
-      )
-    },
-    name := "utest-test-js"
-  ),
-  Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4",
-    testFrameworks += new TestFramework("utest.runner.JvmFramework"),
-    name := "utest-test"
-  )
-)
+//object TestBuild extends Build(
+//  Seq(
+//    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4-JS",
+//    (loadedTestFrameworks in Test) := {
+//      (loadedTestFrameworks in Test).value.updated(
+//        sbt.TestFramework(classOf[utest.jsrunner.JsFramework].getName),
+//        new utest.jsrunner.JsFramework(environment = (scalaJSEnvironment in Test).value)
+//      )
+//    },
+//    name := "utest-test-js"
+//  ),
+//  Seq(
+//    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4",
+//    testFrameworks += new TestFramework("utest.runner.JvmFramework"),
+//    name := "utest-test"
+//  )
+//)
 
 class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) extends sbt.Build{
 
