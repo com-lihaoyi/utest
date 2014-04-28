@@ -36,6 +36,10 @@ object TestSuite{
     def matcher: PartialFunction[Tree, (Tree, Tree)] = {
       case q"""utest.this.`package`.TestableString($value).-($body)""" => (value, body)
       case q"""utest.`package`.TestableString($value).-($body)""" => (value, body)
+      case q"""utest.this.`package`.TestableSymbol($value).apply($body)""" => (q"$value.name", body)
+      case q"""utest.`package`.TestableSymbol($value).apply($body)""" => (q"$value.name", body)
+      case q"""utest.this.`package`.TestableSymbol($value).-($body)""" => (q"$value.name", body)
+      case q"""utest.`package`.TestableSymbol($value).-($body)""" => (q"$value.name", body)
     }
 
     def recurse(t: Tree): (Tree, Tree) = {

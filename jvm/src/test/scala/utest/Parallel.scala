@@ -1,9 +1,8 @@
 package utest
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.Future
 import scala.concurrent.duration.Deadline
 import scala.util.Random
-import utest.framework.{TestSuite, Test}
 import utest.asserts.{RetryInterval, RetryMax}
 
 
@@ -37,7 +36,7 @@ object Parallel extends TestSuite{
         "test4"-calc(1000000000, Random.nextInt())
       }
 
-      def timedTrial(implicit ec: ExecutionContext) = {
+      def timedTrial(implicit ec: concurrent.ExecutionContext) = {
         val start = Deadline.now
         tests.run()
         val end = Deadline.now

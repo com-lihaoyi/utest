@@ -1,4 +1,4 @@
-µTest 0.1.3
+µTest 0.1.4
 ===========
 
 uTest (pronounced micro-test) is a lightweight testing library for Scala. It's key features are:
@@ -32,7 +32,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -45,13 +45,13 @@ import utest._
 import utest.ExecutionContext.RunNow
 
 val test = TestSuite{
-  "test1"-{
+  'test1{
     throw new Exception("test1")
   }
-  "test2"-{
+  'test2{
     1
   }
-  "test3"-{
+  'test3{
     val a = List[Byte](1, 2)
     a(10)
   }
@@ -78,11 +78,11 @@ Note that tests within the suite can nested within each other, but only directly
 ```scala
 val test = TestSuite{
   val x = 1
-  "outer"-{
+  'outer{
     val y = x + 1
-    "inner"-{
+    'inner{
       val z = y + 1
-      "innerest"-{
+      'innerest{
         assert(
           x == 1,
           y == 2,
@@ -101,6 +101,19 @@ println(results.leaves.count(_.value.isSuccess)) // 1
 Again, by default the `results` iterator includes the results of every node in the test tree, and you can use `.leaves` to only get the leaf nodes. Nesting is a convenient way of organizing related tests, and with the added bonus that you can place shared initialization code or helpers (e.g. the `val x`, `val y`, `val z` above) at the correct place within the tree where it is only visible to the tests that use it.
 
 Despite it being shared lexically, these helpers are re-created for each test that is run, so if you if they contain mutable state (e.g. mutable collections, or `var`s) you do not need to worry about the mutations from multiple tests interfering with each other. For more detail on this and other things related to test execution, see [below](#execution-model).
+
+uTest also allows you to use strings to define test keys, if you wish to make your test names longer and more descriptive:
+
+```scala
+TestSuite{
+  "test with spaces"-{
+    throw new Exception("test1")
+  }
+  'test2-run(1)
+}
+```
+
+Note that you can also use the `'symbol-...` syntax, if your tests are concise and you want to make them *really* concise. The `"string"-{...}`, `'symbol{...}` and `'symbol-...` syntaxes are all entirely equivalent.
 
 Results
 -------
@@ -226,20 +239,20 @@ Execution Model
 ```scala
 val test = TestSuite{
   var x = 0
-  "A"-{
+  'A{
     x += 1
-    "X"-{
+    'X{
       x += 2
       assert(x == 3)
     }
-    "Y"-{
+    'Y{
       x += 3
       assert(x == 4)
     }
   }
-  "B"-{
+  'B{
     x += 4
-    "Z"-{
+    'Z{
       x += 5
       assert(x == 9)
     }
@@ -259,12 +272,11 @@ Test-discovery is done entirely at compile-time by the `TestSuite{ ... }` macro,
 ```scala
 val tests = TestSuite{
   timesRun += 1
-  "A"-{
+  'A{
     assert(false)
-    "B"-{
-        "C"-{
-          1
-        }
+    'B{
+      'C{
+        1
       }
     }
   }
@@ -285,12 +297,12 @@ This section goes into the Scala API for running a uTest suite. For the SBT comm
 
 ```scala
 val tests = TestSuite{
-  "A"-{
-    "C"-1
+  'A{
+    'C-1
   }
-  "B"-{
-    "D"-2
-    "E"-3
+  'B{
+    'D-2
+    'E-3
   }
 }
 
@@ -319,10 +331,10 @@ var timesRun = 0
 
 val tests = TestSuite{
   timesRun += 1
-  "A"-{
+  'A{
     assert(false)
-    "B"-{
-      "C"-{
+    'B{
+      'C{
         1
       }
     }
@@ -367,7 +379,7 @@ Running tests with SBT
 To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4"
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
 ```
@@ -386,15 +398,15 @@ package mytests
 
 object MyTestSuite extends TestSuite{
   val tests = TestSuite{
-    "hello" - {
-      "world" - {
+    'hello{
+      'world{
         val x = 1
         val y = 2
         assert(x != y)
         (x, y)
       }
     }
-    "test2" - {
+    'test2{
       val a = 1
       val b = 2
       assert(a == b)
@@ -501,7 +513,7 @@ ScalaJS and SBT
 To get SBT to run your uTest suites under ScalaJS, add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4-JS"
 
 (loadedTestFrameworks in Test) := {
   import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
@@ -515,7 +527,7 @@ libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS"
 And the following to your `project/build.sbt`
 
 ```scala
-addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.3")
+addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.4")
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `RhinoBasedScalaJSEnvironment` instead of on the JVM. Test selection, coloring, etc. should all work unchanged.

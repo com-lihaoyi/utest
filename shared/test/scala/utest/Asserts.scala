@@ -13,12 +13,12 @@ import utest.framework.{TestSuite, Test}
 object Asserts extends TestSuite{
 
   def tests = TestSuite{
-    "assert"-{
-      "success"-{
+    'assert{
+      'success{
         assert(true)
         "success!"
       }
-      "failure"-{
+      'failure{
         try {
           val x = 1
           val y = "2"
@@ -57,7 +57,7 @@ object Asserts extends TestSuite{
           "caught it! " + logged
         }
       }
-      "failureWithException"-{
+      'failureWithException{
         val x = 1L
         val y = 0l
         try {
@@ -70,7 +70,7 @@ object Asserts extends TestSuite{
         }
       }
 
-      "tracingOnFailure"-{
+      'tracingOnFailure{
         try {
           val a = "i am cow"
           val b = 31337
@@ -84,15 +84,15 @@ object Asserts extends TestSuite{
       }
     }
 
-    "intercept"-{
-      "success"-{
+    'intercept{
+      'success{
         val e = intercept[MatchError]{
           (0: Any) match { case _: String => }
         }
         Predef.assert(e.toString.contains("MatchError"))
         e.toString
       }
-      "failureWrongException"-{
+      'failureWrongException{
         try {
           val x = 1
           val y = 2.0
@@ -110,7 +110,7 @@ object Asserts extends TestSuite{
           e.msg
         }
       }
-      "failureNoThrow"-{
+      'failureNoThrow{
         try{
           val x = 1
           val y = 2.0
@@ -125,14 +125,14 @@ object Asserts extends TestSuite{
         }
       }
     }
-    "assertMatch"-{
-      "success"-{
+    'assertMatch{
+      'success{
         val thing = Seq(1, 2, 3)
         assertMatch(thing){case Seq(1, _, 3) =>}
         ()
       }
 
-      "failure"-{
+      'failure{
         try {
           val x = 1
           val iAmCow = Seq("2.0")
@@ -149,7 +149,7 @@ object Asserts extends TestSuite{
         }
       }
 
-      "failureWithException"-{
+      'failureWithException{
         try {
           val a = 1L
           val b = 2
@@ -165,3 +165,4 @@ object Asserts extends TestSuite{
     }
   }
 }
+

@@ -59,6 +59,19 @@ package object utest {
     def -(x: => Any) = ???
   }
 
+  implicit class TestableSymbol(s: Symbol){
+    /**
+     * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
+     * meaning outside that block
+     */
+    def apply(x: => Any) = ???
+    /**
+     * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
+     * meaning outside that block
+     */
+    def -(x: => Any) = ???
+  }
+
   /**
    * Extension methods on `Tree[Test]` in order to conveniently run the tests
    * and aggregate the results

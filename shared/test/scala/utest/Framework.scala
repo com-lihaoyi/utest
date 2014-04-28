@@ -11,7 +11,17 @@ import utest.SkippedOuterFailure
 object Framework extends TestSuite{
   implicit val ec = utest.ExecutionContext.RunNow
   def tests = TestSuite{
-    "helloWorld"-{
+    def testHelloWorld(test: util.Tree[Test]) = {
+      val results = test.run()
+      assert(test.length == 4)
+      assert(test.leaves.length == 3)
+      assert(results.length == 4)
+      assert(results.leaves.length == 3)
+      assert(results.leaves.count(_.value.isFailure) == 2)
+      assert(results.leaves.count(_.value.isSuccess) == 1)
+      results.leaves.map(_.value).toList
+    }
+    'helloWorld{
       val test = TestSuite{
         "test1"-{
           throw new Exception("test1")
@@ -24,19 +34,42 @@ object Framework extends TestSuite{
           a(10)
         }
       }
-      val results = test.run()
-      assert(test.length == 4)
-      assert(test.leaves.length == 3)
-      assert(results.length == 4)
-      assert(results.leaves.length == 3)
-      assert(results.leaves.count(_.value.isFailure) == 2)
-      assert(results.leaves.count(_.value.isSuccess) == 1)
-      results.leaves.map(_.value).toList
+      testHelloWorld(test)
     }
-    "failures"-{
-      "noSuchTest"-{
+    'helloWorldSymbol{
+      val test = TestSuite{
+        'test1{
+          throw new Exception("test1")
+        }
+        'test2{
+          1
+        }
+        'test3{
+          val a = List[Byte](1, 2)
+          a(10)
+        }
+      }
+      testHelloWorld(test)
+    }
+    'helloWorldSymbol2{
+      val test = TestSuite{
+        'test1-{
+          throw new Exception("test1")
+        }
+        'test2-1
+
+        'test3-{
+          val a = List[Byte](1, 2)
+          a(10)
+        }
+      }
+      testHelloWorld(test)
+    }
+
+    'failures{
+      'noSuchTest{
         val test = TestSuite{
-          "test1"-{
+          'test1{
             1
           }
 
@@ -48,7 +81,7 @@ object Framework extends TestSuite{
           e.getMessage
         }
       }
-      "weirdTestName"-{
+      'weirdTestName{
         val test = TestSuite{
           "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
             1
@@ -57,7 +90,7 @@ object Framework extends TestSuite{
         test.run()
 
       }
-      "testNestedBadly"-{
+      'testNestedBadly{
         // Ideally should not compile, but until I
         // figure that out, a runtime error works great
         try{
@@ -78,13 +111,13 @@ object Framework extends TestSuite{
       }
     }
 
-    "extractingResults"-{
-      "basic"-{
+    'extractingResults{
+     'basic{
         val test = TestSuite{
-          "test1"-{
+          'test1{
             "i am cow"
           }
-          "test2"-{
+          'test2{
             "1"-{
               1
             }
@@ -93,7 +126,7 @@ object Framework extends TestSuite{
             }
             999
           }
-          "test3"-{
+          'test3{
             Seq('a', 'b')
           }
         }
@@ -102,10 +135,10 @@ object Framework extends TestSuite{
         assert(results.leaves.map(_.value).toList == expected)
         results.map(_.value.get)
       }
-      "onlyLastThingReturns"-{
+      'onlyLastThingReturns{
         val tests = TestSuite {
           12
-          "omg" - {
+          'omg{
           }
         }
         val res = tests.run().value.value
@@ -113,25 +146,25 @@ object Framework extends TestSuite{
       }
     }
     
-    "nesting"-{
-      "importStatementsWork"-{
+    'nesting{
+      'importStatementsWork{
         // issue #7, just needs to compile
         val tests = TestSuite {
           import math._
-          "omg" - {
+          'omg{
           }
         }
         val res = tests.run().value.value
         assert(res == Success(()))
       }
-      "lexicalScopingWorks"-{
+      'lexicalScopingWorks{
         val test = TestSuite{
           val x = 1
-          "outer"-{
+          'outer{
             val y = x + 1
-            "inner"-{
+            'inner{
               val z = y + 1
-              "innerest"-{
+              'innerest{
                 assert(
                   x == 1,
                   y == 2,
@@ -148,27 +181,27 @@ object Framework extends TestSuite{
         results.leaves.map(_.value.get).toList
       }
 
-      "runForking"-{
+      'runForking{
         // Make sure that when you deal with mutable variables in the enclosing
         // scopes, multiple test runs don't affect each other.
         val test = TestSuite{
           var x = 0
-          "A"-{
+          'A{
             x += 1
-            "X"-{
+            'X{
               x += 2
               assert(x == 3)
               x
             }
-            "Y"-{
+            'Y{
               x += 3
               assert(x == 4)
               x
             }
           }
-          "B"-{
+          'B{
             x += 4
-            "Z"-{
+            'Z{
               x += 5
               assert(x == 9)
               x
@@ -181,14 +214,14 @@ object Framework extends TestSuite{
       }
     }
 
-    "testSelection"-{
+    'testSelection{
       val tests = TestSuite{
-        "A"-{
-          "C"-1
+        'A{
+          'C{1}
         }
-        "B"-{
-          "D"-2
-          "E"-3
+        'B{
+          'D{2}
+          'E{3}
         }
       }
 
@@ -204,7 +237,7 @@ object Framework extends TestSuite{
         Result("E", Success(3), _)
       )=>}
     }
-    "outerFailures"-{
+    'outerFailures{
       // make sure that even when tests themselves fail, test
       // discovery still works and inner tests are visible
 

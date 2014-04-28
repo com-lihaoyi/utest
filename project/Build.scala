@@ -14,7 +14,7 @@ import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys.scalaJSEnvironment
  */
 object TestBuild extends Build(
   Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3-JS",
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4-JS",
     (loadedTestFrameworks in Test) := {
       (loadedTestFrameworks in Test).value.updated(
         sbt.TestFramework(classOf[utest.jsrunner.JsFramework].getName),
@@ -24,7 +24,7 @@ object TestBuild extends Build(
     name := "utest-test-js"
   ),
   Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.3",
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4",
     testFrameworks += new TestFramework("utest.runner.JvmFramework"),
     name := "utest-test"
   )
@@ -85,7 +85,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
   val sharedSettings = Seq(
     organization := "com.lihaoyi",
     scalaVersion := "2.10.4",
-    version := "0.1.3",
+    version := "0.1.4",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     // Sonatype2
