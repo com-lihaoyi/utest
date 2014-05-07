@@ -542,7 +542,11 @@ uTest began as an attempt to port [ScalaTest](http://www.scalatest.org/) and [Sp
 - They have a large number of dependencies on JVM-specific things, such as [Symbols or Reflection](http://www.scalatest.org/user_guide/using_matchers#checkingArbitraryProperties) or [ClassLoaders](), which are not supported by ScalaJS
 - They have huge codebases: [400,000 lines of code for ScalaTest](https://github.com/scalatest/scalatest/graphs/contributors) and [50,000 lines for Specs2](https://github.com/etorreborre/specs2/graphs/contributors). This huge mass of code makes it difficult to pinpoint the parts which are incompatible with ScalaJS.
 
-Thus, uTest tries to provide most of what you want as a developer, while leaving out all the unnecessary functionality that ScalaTest and Specs2 provide:
+If you don't believe that uTest is much smaller than the alternatives, let the jars speak for themselves:
+
+![Sizes.png](Sizes.png?raw=true)
+
+uTest tries to provide most of what you want as a developer, while leaving out all the unnecessary functionality that ScalaTest and Specs2 provide:
 
 - Fluent english-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must`](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) These add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
 - Legacy code, like ScalaTests [time package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now obsolete with the introduction of [scala.concurrent.duration](http://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.package).
