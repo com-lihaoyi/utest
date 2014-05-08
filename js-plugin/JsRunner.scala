@@ -1,45 +1,39 @@
 package utest.jsrunner
 import sbt.testing._
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
-import scala.annotation.tailrec
-import scala.scalajs.sbtplugin.environment.rhino.{Utilities, CodeBlock}
-import scala.scalajs.sbtplugin.ScalaJSEnvironment
-import org.mozilla.javascript.{NativeObject, RhinoException}
-import sbt.TestsFailedException
 import utest.runner._
-/**
- * Wraps a Scala callback in a Java-ish object that has the right signature
- * for Rhino to call.
- */
-case class JsCallback(f: String => Unit){
-  def apply__O__O(x: String) = f(x)
-}
+import scala.scalajs.tools.env.{ConsoleJSConsole, JSEnv}
+import scala.scalajs.tools.classpath.JSClasspath
+import scala.scalajs.sbtplugin.testing.SbtTestLoggerAccWrapper
+import scala.util.control.NonFatal
+import scala.scalajs.sbtplugin.JSUtils._
+import scala.scalajs.tools.io.MemVirtualJSFile
 
-class JsRunner(val args: Array[String],
-               val remoteArgs: Array[String],
-               environment: ScalaJSEnvironment)
+class JsRunner(environment: JSEnv,
+               jsClasspath: JSClasspath,
+               val args: Array[String],
+               val remoteArgs: Array[String])
                extends GenericRunner{
 
-  def doStuff(s: Seq[String], loggers: Seq[Logger], name: String) = {
-    environment.runInContextAndScope { (context, scope) =>
-      new CodeBlock(context, scope) with Utilities {
-        try {
-          val results = callMethod(
-            getModule("utest_PlatformShims"),
-            "runSuite",
-            getModule(name.replace('.', '_')),
-            toScalaJSArray(s.toArray),
-            toScalaJSArray(args),
-            JsCallback(s => if(s.toBoolean) success.incrementAndGet() else failure.incrementAndGet()),
-            JsCallback(msg => loggers.foreach(_.info(progressString + name + msg))),
-            JsCallback(s => total.addAndGet(s.toInt))
-          )
-          addResult(results.toString)
-        } catch {
-          case t: RhinoException =>
-            println(t.details, t.getScriptStack())
-        }
-      }
+  def doStuff(s: Seq[String], loggers: Seq[Logger], name: String): Unit = {
+
+    val testRunnerFile =
+      new MemVirtualJSFile("Generated test launcher file").withContent(s"""
+        PlatformShims().runSuite(
+          ${name}(),
+          ${listToJS(s.toList)},
+          ${listToJS(args.toList)},
+          function(){},
+          function(){},
+          function(){}
+        );
+      """)
+
+    val logger = new SbtTestLoggerAccWrapper(loggers)
+    try {
+      // Actually execute test
+      environment.runJS(jsClasspath, testRunnerFile, logger, ConsoleJSConsole)
+    } catch {
+      case NonFatal(e) => logger.trace(e)
     }
   }
 }

@@ -9,7 +9,7 @@ import utest.framework.Test
  * Marker class used to mark an `object` as something containing tests. Used
  * for test-discovery by SBT.
  */
-abstract class TestSuite{
+abstract class TestSuite extends PlatformShims.Test{
   /**
    * The tests within this `object`.
    */

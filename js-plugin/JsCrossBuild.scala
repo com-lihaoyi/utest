@@ -3,8 +3,8 @@ package utest.jsrunner
 import sbt._
 import sbt.Keys._
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
-import scala.scalajs.sbtplugin.ScalaJSPlugin.scalaJSSettings
-import utest.runner._
+import scala.scalajs.sbtplugin.ScalaJSPlugin._
+import sbt.TestFramework
 
 class JsCrossBuild(sharedSettings: Def.Setting[_]*){
   val defaultSettings = Seq(
@@ -15,15 +15,14 @@ class JsCrossBuild(sharedSettings: Def.Setting[_]*){
     .settings(sharedSettings ++ scalaJSSettings ++ defaultSettings: _*)
     .settings(
       libraryDependencies ++= Seq(
-        "com.lihaoyi" %% "utest" % "0.1.4-JS" % "test"
+        "com.lihaoyi" %%% "utest" % "0.1.4" % "test"
       ),
-      (loadedTestFrameworks in Test) := {
-        (loadedTestFrameworks in Test).value.updated(
+      loadedTestFrameworks := {
+        loadedTestFrameworks.value.updated(
           sbt.TestFramework(classOf[JsFramework].getName),
-          new utest.jsrunner.JsFramework(environment = (scalaJSEnvironment in Test).value)
+          new JsFramework(environment = jsEnv.value)
         )
-      },
-      version := version.value + "-JS"
+      }
     )
   lazy val jvm = project.in(file("jvm"))
     .settings(sharedSettings ++ defaultSettings:_*)

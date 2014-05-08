@@ -20,4 +20,6 @@ object PlatformShims {
     e.printStackTrace(pw)
     sw.toString
   }
+
+  class Test
 }

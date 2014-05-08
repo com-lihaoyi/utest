@@ -2,11 +2,12 @@ package utest
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExportDescendentObjects, JSExport}
 
 /**
  * Platform specific stuff that differs between JVM and JS
  */
+@JSExport
 object PlatformShims {
   def flatten[T](f: Future[Future[T]]): Future[T] = {
     f.value.get.map(_.value.get) match{
@@ -29,4 +30,6 @@ object PlatformShims {
                addTotal: String => Unit) = {
     utest.runSuite(suite, path, args, addCount, log, addTotal)
   }
+  @JSExportDescendentObjects
+  class Test
 }

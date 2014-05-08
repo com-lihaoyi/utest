@@ -1,34 +1,36 @@
 import sbt._
 import Keys._
-import scala.scalajs.sbtplugin.ScalaJSPlugin.scalaJSSettings
-import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys.scalaJSEnvironment
+import scala.scalajs.sbtplugin.ScalaJSPlugin._
+
+import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
 
 /**
  * Bootstrapping build, used for the initial publishLocal. Leaves out test
  * dependencies because it hasn't been published to be depended on yet
  */
-object BootBuild extends Build(Nil, Nil)
+//object BootBuild extends Build(Nil, Nil)
 
 /**
  * Test-specific requirements; comment out during the first +publishLocal
  */
-//object TestBuild extends Build(
-//  Seq(
-//    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4-JS",
-//    (loadedTestFrameworks in Test) := {
-//      (loadedTestFrameworks in Test).value.updated(
-//        sbt.TestFramework(classOf[utest.jsrunner.JsFramework].getName),
-//        new utest.jsrunner.JsFramework(environment = (scalaJSEnvironment in Test).value)
-//      )
-//    },
-//    name := "utest-test-js"
-//  ),
-//  Seq(
-//    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4",
-//    testFrameworks += new TestFramework("utest.runner.JvmFramework"),
-//    name := "utest-test"
-//  )
-//)
+import utest.jsrunner._
+object TestBuild extends Build(
+  Seq(
+    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.4",
+    (loadedTestFrameworks in Test) := {
+      (loadedTestFrameworks in Test).value.updated(
+        sbt.TestFramework(classOf[JsFramework].getName),
+        new JsFramework(environment = (jsEnv in Test).value)
+      )
+    },
+    name := "utest-test-js"
+  ),
+  Seq(
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4",
+    testFrameworks += new TestFramework("utest.runner.JvmFramework"),
+    name := "utest-test"
+  )
+)
 
 class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) extends sbt.Build{
 
@@ -36,7 +38,6 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
 
   lazy val js = project.in(file("js"))
                        .settings(sharedSettings ++ libSettings ++ scalaJSSettings ++ jsSettings:_*)
-                       .settings(version := version.value + "-JS")
 
   lazy val runner = project.in(file("runner"))
                            .settings(sharedSettings:_*)
@@ -58,7 +59,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.4.3"),
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-M2"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true
