@@ -565,7 +565,7 @@ Development Tips
 uTest is an unusual project, as it is used to test itself, which is a cyclic dependency not allowed by SBT. Thus it needs to be tested in two stages:
 
 - Comment out the lines labelled "test specific requirements" in `project/build.sbt` and `TestBuild` in `project/Build.scala', leaving `BootBuild` uncommented.
-- run `sbt +publishLocal plugins/publishLocal`
+- run `sbt +publishLocal jsPlugin/publishLocal`
 - Uncomment the "test specific requirements, and comment out `BootBuild` in favor of `TestBuild`.
 - run `sbt +test`
 
