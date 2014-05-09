@@ -43,11 +43,11 @@ class DefaultFormatter(color: Boolean = true,
       if (r.value == Success(())) "Success"
       else r.value.toString
 
-    val s2 = if (color) colorStr + cutUnit + Console.RESET else cutUnit
+    val truncUnit =
+      if (cutUnit.length > length) cutUnit.take(length) + "..."
+      else cutUnit
 
-
-    if (s2.length > length) s2.take(length) + "..."
-    else s2
+    if (color) colorStr + truncUnit + Console.RESET else truncUnit
   }
 
   def formatSingle(path: Seq[String], r: Result): String = {
