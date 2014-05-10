@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+import scala.scalajs.sbtplugin.env.nodejs.NodeJSEnv
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
@@ -23,6 +24,7 @@ object TestBuild extends Build(
         new JsFramework(environment = (jsEnv in Test).value)
       )
     },
+    (jsEnv in Test) := new NodeJSEnv,
     name := "utest-test-js"
   ),
   Seq(

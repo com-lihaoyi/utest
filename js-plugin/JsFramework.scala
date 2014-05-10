@@ -15,7 +15,11 @@ class JsFramework(environment: JSEnv) extends utest.runner.GenericTestFramework{
     val classpath = classLoader2Classpath(testClassLoader)
 
     val jsClasspath = JSClasspath.fromClasspath(classpath)
-
+    println("::::::")
+    println(classpath)
+    println(jsClasspath.jsFiles.map(_.content).mkString)
+    println(jsClasspath.jsDependencies)
+    println(jsClasspath.mainJSFiles.map(_.content).mkString)
     new JsRunner(environment, jsClasspath, args, remoteArgs)
   }
 
