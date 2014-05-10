@@ -9,7 +9,7 @@ import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
  * Bootstrapping build, used for the initial publishLocal. Leaves out test
  * dependencies because it hasn't been published to be depended on yet
  */
-//object BootBuild extends Build(Nil, Nil)
+object BootBuild extends Build(Nil, Nil)
 
 /**
  * Test-specific requirements; comment out during the first +publishLocal
@@ -61,7 +61,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-M2"),
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-SNAPSHOT"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true
