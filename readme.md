@@ -1,7 +1,7 @@
 µTest 0.1.4
 ===========
 
-uTest (pronounced micro-test) is a lightweight testing library for Scala. It's key features are:
+uTest (pronounced micro-test) is a lightweight testing library for Scala. Its key features are:
 
 - [Less than 1000 lines of code](https://github.com/lihaoyi/utest/graphs/contributors)
 - [A fancy set of macro-powered asserts](#macro-asserts)
