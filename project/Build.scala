@@ -18,7 +18,7 @@ import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 import utest.jsrunner._
 object TestBuild extends Build(
   Seq(
-    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.4",
+    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.5",
     (loadedTestFrameworks in Test) := {
       (loadedTestFrameworks in Test).value.updated(
         sbt.TestFramework(classOf[JsFramework].getName),
@@ -26,11 +26,11 @@ object TestBuild extends Build(
       )
     },
     (jsEnv in Test) := new NodeJSEnv,
-    testLoader := JSClasspathLoader(execClasspath.value),
+    testLoader := JSClasspathLoader((execClasspath in Compile).value),
     name := "utest-test-js"
   ),
   Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.4",
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.5",
     testFrameworks += new TestFramework("utest.runner.JvmFramework"),
     name := "utest-test"
   )
@@ -90,7 +90,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
   val sharedSettings = Seq(
     organization := "com.lihaoyi",
     scalaVersion := "2.10.4",
-    version := "0.1.4",
+    version := "0.1.5",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     // Sonatype2

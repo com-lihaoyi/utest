@@ -1,13 +1,9 @@
 package utest.jsrunner
-import sbt.testing.{Runner, SubclassFingerprint}
+
 
 import utest.runner._
 import scala.scalajs.tools.env.JSEnv
-import scala.scalajs.tools.classpath.CompleteClasspath
-import sbt._
-import sbt.classpath.ClasspathFilter
-import java.net.URLClassLoader
-import scala.scalajs.sbtplugin.testing.{JSClasspathLoader, TestRunner}
+import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 
 class JsFramework(environment: JSEnv) extends utest.runner.GenericTestFramework{
   def runner(args: Array[String],

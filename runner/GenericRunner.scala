@@ -18,7 +18,7 @@ trait GenericRunner extends sbt.testing.Runner{
     if (!results.compareAndSet(old, r :: old)) addResult(r)
   }
 
-  def doStuff(s: Seq[String], loggers: Seq[Logger], name: String): Unit
+  def doStuff(selector: Seq[String], loggers: Seq[Logger], name: String): Unit
 
   def progressString = {
     s"${success.get + failure.get}/${total.get}".padTo(8, ' ')

@@ -3,6 +3,7 @@ package utest
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import scala.scalajs.js.annotation.{JSExportDescendentObjects, JSExport}
+import scala.scalajs.js
 
 /**
  * Platform specific stuff that differs between JVM and JS
@@ -19,19 +20,25 @@ object PlatformShims {
 
   def await[T](f: Future[T]): T = f.value.get.get
   def getTrace(e: Throwable): String = {
-    ""
+    e.getStackTraceString
   }
   @JSExport
   def runSuite(suite: TestSuite,
-               path: Array[String],
-               args: Array[String]) = {
-    utest.runSuite(
+               path: js.Array[String],
+               args: js.Array[String]) = {
+    println("PlatformShims.runSuite")
+    println(suite)
+    println(path)
+    println(args)
+    val res = utest.runSuite(
       suite,
       path,
       args,
-      s => println("addCount" + s),
-      s => println("log" + s),
-      s => println("addTotal" + s))
+      s => println("XXSecretXX/addCount/" + s),
+      s => println("XXSecretXX/log/" + s),
+      s => println("XXSecretXX/addTotal/" + s)
+    )
+    println("XXSecretXX/result/" + res.replace("\n", "ZZZZ"))
   }
   @JSExportDescendentObjects
   class Test
