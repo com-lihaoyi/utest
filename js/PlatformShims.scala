@@ -24,11 +24,14 @@ object PlatformShims {
   @JSExport
   def runSuite(suite: TestSuite,
                path: Array[String],
-               args: Array[String],
-               addCount: String => Unit,
-               log: String => Unit,
-               addTotal: String => Unit) = {
-    utest.runSuite(suite, path, args, addCount, log, addTotal)
+               args: Array[String]) = {
+    utest.runSuite(
+      suite,
+      path,
+      args,
+      s => println("addCount" + s),
+      s => println("log" + s),
+      s => println("addTotal" + s))
   }
   @JSExportDescendentObjects
   class Test

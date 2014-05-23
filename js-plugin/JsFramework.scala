@@ -1,35 +1,28 @@
 package utest.jsrunner
-import sbt.testing.SubclassFingerprint
+import sbt.testing.{Runner, SubclassFingerprint}
 
 import utest.runner._
 import scala.scalajs.tools.env.JSEnv
-import scala.scalajs.tools.classpath.JSClasspath
+import scala.scalajs.tools.classpath.CompleteClasspath
 import sbt._
 import sbt.classpath.ClasspathFilter
 import java.net.URLClassLoader
+import scala.scalajs.sbtplugin.testing.{JSClasspathLoader, TestRunner}
 
 class JsFramework(environment: JSEnv) extends utest.runner.GenericTestFramework{
   def runner(args: Array[String],
              remoteArgs: Array[String],
              testClassLoader: ClassLoader) = {
-    val classpath = classLoader2Classpath(testClassLoader)
-
-    val jsClasspath = JSClasspath.fromClasspath(classpath)
-    println("::::::")
-    println(classpath)
-    println(jsClasspath.jsFiles.map(_.content).mkString)
-    println(jsClasspath.jsDependencies)
-    println(jsClasspath.mainJSFiles.map(_.content).mkString)
+    val jsClasspath = extractClasspath(testClassLoader)
     new JsRunner(environment, jsClasspath, args, remoteArgs)
   }
 
-  private def classLoader2Classpath(cl: ClassLoader): Seq[File] = cl match {
-    case cl: URLClassLoader =>
-      cl.getURLs().map(url => new File(url.toURI())).toList
-    case sbtFilter: ClasspathFilter =>
-      classLoader2Classpath(sbtFilter.getParent())
+
+  /** extract classpath from ClassLoader (which must be a JSClasspathLoader) */
+  private def extractClasspath(cl: ClassLoader) = cl match {
+    case cl: JSClasspathLoader => cl.cp
     case _ =>
-      sys.error("You cannot use a Scala.js framework with a class loader of " +
-        s"type: ${cl.getClass()}.")
+      sys.error("The Scala.js framework only works with a class loader of " +
+        s"type JSClasspathLoader (${cl.getClass} given)")
   }
 }

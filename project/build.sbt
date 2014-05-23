@@ -1,4 +1,4 @@
-addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-SNAPSHOT")
+addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-M3")
 
 resolvers += Resolver.url("scala-js-snapshots",
   url("http://repo.scala-js.org/repo/snapshots/")

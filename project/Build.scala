@@ -4,12 +4,13 @@ import scala.scalajs.sbtplugin.env.nodejs.NodeJSEnv
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
+import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 
 /**
  * Bootstrapping build, used for the initial publishLocal. Leaves out test
  * dependencies because it hasn't been published to be depended on yet
  */
-object BootBuild extends Build(Nil, Nil)
+//object BootBuild extends Build(Nil, Nil)
 
 /**
  * Test-specific requirements; comment out during the first +publishLocal
@@ -25,6 +26,7 @@ object TestBuild extends Build(
       )
     },
     (jsEnv in Test) := new NodeJSEnv,
+    testLoader := JSClasspathLoader(execClasspath.value),
     name := "utest-test-js"
   ),
   Seq(
@@ -61,7 +63,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-SNAPSHOT"),
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-M3"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true
