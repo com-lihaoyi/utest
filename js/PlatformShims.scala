@@ -4,6 +4,7 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import scala.scalajs.js.annotation.{JSExportDescendentObjects, JSExport}
 import scala.scalajs.js
+import scala.scalajs.runtime.StackTrace.ColumnStackTraceElement
 
 /**
  * Platform specific stuff that differs between JVM and JS
@@ -19,17 +20,19 @@ object PlatformShims {
   }
 
   def await[T](f: Future[T]): T = f.value.get.get
-  def getTrace(e: Throwable): String = {
-    e.getStackTraceString
+
+  def printTrace(e: Throwable): Unit = {
+    println(
+      e.getStackTrace
+       .map(s => s"XXSecretXX/trace/${s.getClassName}/${s.getMethodName}/${s.getFileName}/${s.getLineNumber}/${s.getColumnNumber}")
+       .mkString("\n")
+    )
   }
+
   @JSExport
   def runSuite(suite: TestSuite,
                path: js.Array[String],
                args: js.Array[String]) = {
-    println("PlatformShims.runSuite")
-    println(suite)
-    println(path)
-    println(args)
     val res = utest.runSuite(
       suite,
       path,

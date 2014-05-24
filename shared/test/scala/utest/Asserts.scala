@@ -17,6 +17,7 @@ object Asserts extends TestSuite{
       'success{
         assert(true)
         "success!"
+        if (true) 1 match {case 2 => ()}
       }
       'failure{
         try {

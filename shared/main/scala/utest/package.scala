@@ -104,6 +104,11 @@ package object utest {
       (path, s) => {
         addCount(s.value.isSuccess.toString)
         log(formatter.formatSingle(path, s))
+        val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)(args)
+        if (trace) s.value match{
+          case Failure(e) => PlatformShims.printTrace(e)
+          case _ => ""
+        }
       },
       testPath = path
     )(ec)

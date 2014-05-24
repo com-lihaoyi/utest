@@ -7,6 +7,7 @@ import scala.scalajs.sbtplugin.testing.SbtTestLoggerAccWrapper
 import scala.util.control.NonFatal
 import scala.scalajs.sbtplugin.JSUtils._
 import scala.scalajs.tools.io.MemVirtualJSFile
+import scala.scalajs.tools.sourcemap.SourceMapper
 
 class JsRunner(environment: JSEnv,
                jsClasspath: CompleteClasspath,
@@ -23,7 +24,7 @@ class JsRunner(environment: JSEnv,
           ${listToJS(args.toList)}
         );
       """)
-
+    val sourceMapper = new SourceMapper(jsClasspath)
     val logger = new SbtTestLoggerAccWrapper(loggers)
     try {
       // Actually execute test
@@ -38,7 +39,19 @@ class JsRunner(environment: JSEnv,
               case Array("XXSecretXX", "log", s) => loggers.foreach(_.info(progressString + name + s))
               case Array("XXSecretXX", "addTotal", s) => total.addAndGet(s.toInt)
               case Array("XXSecretXX", "result", s) => addResult(s.replace("ZZZZ", "\n"))
-              case _ => Console.println(msg)
+              case Array("XXSecretXX", "trace", s) =>
+                val Array(cls, method, file, line, col) = s.split("/")
+                val candidates = jsClasspath.allCode.filter(_.path == file)
+                val origFile =
+                  if (candidates.size != 1) None // better no sourcemap than a wrong one
+                  else candidates.head.sourceMap
+                println(s"findFile $file $origFile")
+                val newStackTraceElem = sourceMapper.map(
+                  new StackTraceElement(cls, method, file, line.toInt),
+                  col.toInt
+                )
+                Console.println("trace " + newStackTraceElem.toString)
+              case _ => Console.println("RAW" + msg)
             }
           }
         }
