@@ -18,7 +18,7 @@ import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 import utest.jsrunner._
 object TestBuild extends Build(
   Seq(
-    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.5",
+    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.6",
     (loadedTestFrameworks in Test) := {
       (loadedTestFrameworks in Test).value.updated(
         sbt.TestFramework(classOf[JsFramework].getName),
@@ -30,7 +30,7 @@ object TestBuild extends Build(
     name := "utest-test-js"
   ),
   Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.5",
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.6",
     testFrameworks += new TestFramework("utest.runner.JvmFramework"),
     name := "utest-test"
   )
@@ -63,7 +63,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-M3"),
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-RC1"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true
@@ -90,7 +90,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
   val sharedSettings = Seq(
     organization := "com.lihaoyi",
     scalaVersion := "2.10.4",
-    version := "0.1.5",
+    version := "0.1.6",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     // Sonatype2
