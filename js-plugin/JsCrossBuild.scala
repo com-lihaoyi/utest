@@ -15,12 +15,12 @@ class JsCrossBuild(sharedSettings: Def.Setting[_]*){
     .settings(sharedSettings ++ scalaJSSettings ++ defaultSettings: _*)
     .settings(
       libraryDependencies ++= Seq(
-        "com.lihaoyi" %%% "utest" % "0.1.4" % "test"
+        "com.lihaoyi" %%% "utest" % "0.1.6" % "test"
       ),
-      loadedTestFrameworks := {
-        loadedTestFrameworks.value.updated(
+      (loadedTestFrameworks in Test) := {
+        (loadedTestFrameworks in Test).value.updated(
           sbt.TestFramework(classOf[JsFramework].getName),
-          new JsFramework(environment = jsEnv.value)
+          new JsFramework(environment = (jsEnv in Test).value)
         )
       }
     )
@@ -28,7 +28,7 @@ class JsCrossBuild(sharedSettings: Def.Setting[_]*){
     .settings(sharedSettings ++ defaultSettings:_*)
     .settings(
       libraryDependencies ++= Seq(
-        "com.lihaoyi" %% "utest" % "0.1.4" % "test"
+        "com.lihaoyi" %% "utest" % "0.1.6" % "test"
       ),
       testFrameworks += new TestFramework("utest.runner.JvmFramework")
     )

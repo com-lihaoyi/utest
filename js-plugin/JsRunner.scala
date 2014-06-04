@@ -15,6 +15,9 @@ class JsRunner(environment: JSEnv,
                val remoteArgs: Array[String])
                extends GenericRunner{
 
+  def unescape(s: String) = {
+    s.replace("\\t", "\t").replace("\\\\", "\\")
+  }
   def doStuff(selector: Seq[String], loggers: Seq[Logger], name: String): Unit = {
     val testRunnerFile =
       new MemVirtualJSFile("Generated test launcher file").withContent(s"""
@@ -40,7 +43,9 @@ class JsRunner(environment: JSEnv,
               case Array("XXSecretXX", "addTotal", s) => total.addAndGet(s.toInt)
               case Array("XXSecretXX", "result", s) => addResult(s.replace("ZZZZ", "\n"))
               case Array("XXSecretXX", "trace", s) =>
-                val Array(cls, method, file, line, col) = s.split("/")
+                println("LOLOLOL " + s)
+                val Array(cls, method, file, line, col) = s.split("\t").map(unescape)
+                println("WTFWTF " + s.split("\t").toSeq)
                 val candidates = jsClasspath.allCode.filter(_.path == file)
                 val origFile =
                   if (candidates.size != 1) None // better no sourcemap than a wrong one

@@ -59,3 +59,4 @@ class DefaultFormatter(color: Boolean = true,
            .reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n    "))
   }
 }
+

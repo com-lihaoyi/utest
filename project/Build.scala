@@ -1,6 +1,8 @@
 import sbt._
 import Keys._
 import scala.scalajs.sbtplugin.env.nodejs.NodeJSEnv
+import scala.scalajs.sbtplugin.env.phantomjs.PhantomJSEnv
+import scala.scalajs.sbtplugin.env.rhino.RhinoJSEnv
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
@@ -10,12 +12,12 @@ import scala.scalajs.sbtplugin.testing.JSClasspathLoader
  * Bootstrapping build, used for the initial publishLocal. Leaves out test
  * dependencies because it hasn't been published to be depended on yet
  */
-//object BootBuild extends Build(Nil, Nil)
+object BootBuild extends Build(Nil, Nil)
 
 /**
  * Test-specific requirements; comment out during the first +publishLocal
  */
-import utest.jsrunner._
+/*import utest.jsrunner._
 object TestBuild extends Build(
   Seq(
     libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.6",
@@ -25,7 +27,8 @@ object TestBuild extends Build(
         new JsFramework(environment = (jsEnv in Test).value)
       )
     },
-    (jsEnv in Test) := new NodeJSEnv,
+    (jsEnv in Test) := new NodeJSEnv(),
+
     testLoader := JSClasspathLoader((execClasspath in Compile).value),
     name := "utest-test-js"
   ),
@@ -34,7 +37,7 @@ object TestBuild extends Build(
     testFrameworks += new TestFramework("utest.runner.JvmFramework"),
     name := "utest-test"
   )
-)
+)*/
 
 class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) extends sbt.Build{
 
