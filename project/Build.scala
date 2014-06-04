@@ -27,7 +27,7 @@ object TestBuild extends Build(
         new JsFramework(environment = (jsEnv in Test).value)
       )
     },
-    (jsEnv in Test) := new NodeJSEnv(),
+    (jsEnv in Test) := new PhantomJSEnv(),
 
     testLoader := JSClasspathLoader((execClasspath in Compile).value),
     name := "utest-test-js"
@@ -41,7 +41,7 @@ object TestBuild extends Build(
 
 class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) extends sbt.Build{
 
-  val crossSetting = crossScalaVersions := Seq("2.10.4", "2.11.0")
+  val crossSetting = crossScalaVersions := Seq("2.10.4", "2.11.1")
 
   lazy val js = project.in(file("js"))
                        .settings(sharedSettings ++ libSettings ++ scalaJSSettings ++ jsSettings:_*)

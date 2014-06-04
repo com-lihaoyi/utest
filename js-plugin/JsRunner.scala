@@ -43,20 +43,17 @@ class JsRunner(environment: JSEnv,
               case Array("XXSecretXX", "addTotal", s) => total.addAndGet(s.toInt)
               case Array("XXSecretXX", "result", s) => addResult(s.replace("ZZZZ", "\n"))
               case Array("XXSecretXX", "trace", s) =>
-                println("LOLOLOL " + s)
                 val Array(cls, method, file, line, col) = s.split("\t").map(unescape)
-                println("WTFWTF " + s.split("\t").toSeq)
                 val candidates = jsClasspath.allCode.filter(_.path == file)
                 val origFile =
                   if (candidates.size != 1) None // better no sourcemap than a wrong one
                   else candidates.head.sourceMap
-                println(s"findFile $file $origFile")
                 val newStackTraceElem = sourceMapper.map(
                   new StackTraceElement(cls, method, file, line.toInt),
                   col.toInt
                 )
-                Console.println("trace " + newStackTraceElem.toString)
-              case _ => Console.println("RAW" + msg)
+                Console.println(newStackTraceElem.toString)
+              case _ => Console.println(msg)
             }
           }
         }
