@@ -119,7 +119,6 @@ object Asserts extends TestSuite{
             123 + x + y
           }
         }catch {case e: AssertionError =>
-          println("XXX " + e.msg)
           Predef.assert(e.msg.contains("123 + x + y"))
           Predef.assert(e.captured == Seq(LoggedValue("x", "Int", 1), LoggedValue("y", "Double", 2.0)))
           e.msg

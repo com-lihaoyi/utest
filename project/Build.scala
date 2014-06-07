@@ -93,7 +93,7 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
   val sharedSettings = Seq(
     organization := "com.lihaoyi",
     scalaVersion := "2.10.4",
-    version := "0.1.6",
+    version := "0.1.6-RC1",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     // Sonatype2

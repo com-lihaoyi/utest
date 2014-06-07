@@ -15,7 +15,9 @@ object ExecutionContext{
       try   { runnable.run() }
       catch { case t: Throwable => reportFailure(t) }
 
-    def reportFailure(t: Throwable) =
+    def reportFailure(t: Throwable) = {
       Console.err.println("Failure in async execution: " + t)
+      Console.err.println(t.getStackTraceString)
+    }
   }
 }
