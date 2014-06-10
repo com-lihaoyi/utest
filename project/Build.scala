@@ -8,19 +8,15 @@ import scala.scalajs.sbtplugin.ScalaJSPlugin._
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
 import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 
-/**
- * Bootstrapping build, used for the initial publishLocal. Leaves out test
- * dependencies because it hasn't been published to be depended on yet
- */
-object BootBuild extends Build(Nil, Nil)
+import utest.jsrunner._
 
-/**
- * Test-specific requirements; comment out during the first +publishLocal
- */
-/*import utest.jsrunner._
-object TestBuild extends Build(
-  Seq(
-    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.6",
+object Build extends sbt.Build{
+
+  val crossSetting = crossScalaVersions := Seq("2.10.4", "2.11.1")
+
+  lazy val js = project.in(file("js"))
+                       .settings(sharedSettings ++ libSettings ++ scalaJSSettings:_*)
+                       .settings(
     (loadedTestFrameworks in Test) := {
       (loadedTestFrameworks in Test).value.updated(
         sbt.TestFramework(classOf[JsFramework].getName),
@@ -29,22 +25,8 @@ object TestBuild extends Build(
     },
     (jsEnv in Test) := new PhantomJSEnv(),
 
-    testLoader := JSClasspathLoader((execClasspath in Compile).value),
-    name := "utest-test-js"
-  ),
-  Seq(
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.6",
-    testFrameworks += new TestFramework("utest.runner.JvmFramework"),
-    name := "utest-test"
+    testLoader := JSClasspathLoader((execClasspath in Compile).value)
   )
-)*/
-
-class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) extends sbt.Build{
-
-  val crossSetting = crossScalaVersions := Seq("2.10.4", "2.11.1")
-
-  lazy val js = project.in(file("js"))
-                       .settings(sharedSettings ++ libSettings ++ scalaJSSettings ++ jsSettings:_*)
 
   lazy val runner = project.in(file("runner"))
                            .settings(sharedSettings:_*)
@@ -59,7 +41,10 @@ class Build(jsSettings: Seq[Def.Setting[_]], jvmSettings: Seq[Def.Setting[_]]) e
 
   lazy val jvm = project.in(file("jvm"))
                          .dependsOn(runner)
-                         .settings(sharedSettings ++ libSettings ++ jvmSettings:_*)
+                         .settings(sharedSettings ++ libSettings:_*)
+                         .settings(
+    testFrameworks += new TestFramework("utest.runner.JvmFramework")
+  )
 
 
   lazy val jsPlugin = project.in(file("js-plugin"))

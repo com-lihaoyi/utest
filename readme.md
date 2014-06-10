@@ -562,17 +562,8 @@ While improving on the basic things that matters
 Development Tips
 ================
 
-uTest is an unusual project, as it is used to test itself, which is a cyclic dependency not allowed by SBT. Thus it needs to be tested in two stages:
+To run all the test on the entire matrix of Scala versions (2.10.4 and 2.11.0) and backends (JVM and JS), simply run:
 
-- Comment out the lines labelled "test specific requirements" in `project/build.sbt` and `TestBuild` in `project/Build.scala', leaving `BootBuild` uncommented.
-- run `sbt +publishLocal jsPlugin/publishLocal`
-- Uncomment the "test specific requirements, and comment out `BootBuild` in favor of `TestBuild`.
-- run `sbt +test`
+    sbt +test
 
-This publishes uTest locally, and runs tests aliasing `utest` as `utest-test` in order to avoid cyclic dependency problems, against both Javascript and JVM backends for scala 2.10.4 and 2.11.0.
-
-Once you have gone through the bootstrap process once, you can run `sbt +publishLocal jsPlugin/publishLocal +test` every time you make a change to run all tests again, or use more targetted commands e.g. `js/publishLocal js/test` which would only republish and re-test the Javascript backend under scala 2.10.4.
-
-If things get into a weird state or you end up changing too much and the publish-test cycle breaks, re-performing the bootstrap process would allow you to start from scratch.
-
-Swap back to the Boot configuration before publishing.
+You can also use more targeted commands e.g. `js/test` which would only re-test the Javascript backend under scala 2.10.4.
