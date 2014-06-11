@@ -30,7 +30,7 @@ trait GenericRunner extends sbt.testing.Runner{
    * in Javascript using Rhino/NodeJS/PhantomJS
    *
    * @param selector The name of the test within the test class/object
-   * @param loggers
+   * @param loggers SBT loggers which are interested in the logspam generated
    * @param name The name of the test class/object
    */
   def doStuff(selector: Seq[String], loggers: Seq[Logger], name: String): Unit

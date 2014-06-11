@@ -28,7 +28,7 @@ object Build extends sbt.Build{
   )
 
   lazy val root = cross.root
-  lazy val js = cross.js.settings((jsEnv in Test) := new PhantomJSEnv())
+  lazy val js = cross.js.settings((jsEnv in Test) := new NodeJSEnv())
   lazy val jvm = cross.jvm.dependsOn(runner)
 
   lazy val runner = project.settings(sharedSettings:_*)
