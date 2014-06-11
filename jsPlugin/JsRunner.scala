@@ -40,8 +40,9 @@ class JsRunner(environment: JSEnv,
             msg.toString.split("/", 3) match{
               case Array("XXSecretXX", "addCount", s) => (if (s.toBoolean) success else failure).incrementAndGet()
               case Array("XXSecretXX", "log", s) => loggers.foreach(_.info(progressString + name + s))
+              case Array("XXSecretXX", "logFailure", s) => addFailure(progressString + name + s)
               case Array("XXSecretXX", "addTotal", s) => total.addAndGet(s.toInt)
-              case Array("XXSecretXX", "result", s) => addResult(s.replace("ZZZZ", "\n"))
+              case Array("XXSecretXX", "result", s) => addResult(s.replace("\\n", "\n").replace("\\\\", "\\"))
               case Array("XXSecretXX", "trace", s) =>
                 val Array(cls, method, file, line, col) = s.split("\t").map(unescape)
                 val candidates = jsClasspath.allCode.filter(_.path == file)

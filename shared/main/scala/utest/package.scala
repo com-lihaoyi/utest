@@ -87,6 +87,7 @@ package object utest {
                args: Array[String],
                addCount: String => Unit,
                log: String => Unit,
+               logFailure: String => Unit,
                addTotal: String => Unit) = {
     import suite.tests
     val (indices, found) = tests.resolve(path)
@@ -103,10 +104,13 @@ package object utest {
     val results = tests.run(
       (path, s) => {
         addCount(s.value.isSuccess.toString)
-        log(formatter.formatSingle(path, s))
+        val str = formatter.formatSingle(path, s)
+        log(str)
         val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)(args)
-        if (trace) s.value match{
-          case Failure(e) => PlatformShims.printTrace(e)
+        s.value match{
+          case Failure(e) =>
+            if (trace) PlatformShims.printTrace(e)
+            logFailure(str)
           case _ => ""
         }
       },

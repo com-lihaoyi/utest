@@ -12,10 +12,15 @@ trait GenericRunner extends sbt.testing.Runner{
   val total = new AtomicInteger(0)
   val success = new AtomicInteger(0)
   val failure = new AtomicInteger(0)
+  val failures = new AtomicReference[List[String]](Nil)
 
   @tailrec final def addResult(r: String): Unit = {
     val old = results.get()
     if (!results.compareAndSet(old, r :: old)) addResult(r)
+  }
+  @tailrec final def addFailure(r: String): Unit = {
+    val old = failures.get()
+    if (!failures.compareAndSet(old, r :: old)) addFailure(r)
   }
 
   def doStuff(selector: Seq[String], loggers: Seq[Logger], name: String): Unit
@@ -42,6 +47,8 @@ trait GenericRunner extends sbt.testing.Runner{
     Seq(
       header,
       body,
+      "Failures:",
+      failures.get().mkString("\n"),
       s"Tests: $total",
       s"Passed: $success",
       s"Failed: $failure"

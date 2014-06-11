@@ -24,6 +24,7 @@ class JvmRunner(val args: Array[String],
       args,
       s => if(s.toBoolean) success.incrementAndGet() else failure.incrementAndGet(),
       msg => loggers.foreach(_.info(progressString + name + "" + msg)),
+      msg => addFailure(progressString + name + "" + msg),
       s => total.addAndGet(s.toInt)
     )
 

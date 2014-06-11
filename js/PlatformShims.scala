@@ -50,9 +50,10 @@ object PlatformShims {
       args,
       s => println("XXSecretXX/addCount/" + s),
       s => println("XXSecretXX/log/" + s),
+      s => println("XXSecretXX/logFailure/" + s),
       s => println("XXSecretXX/addTotal/" + s)
     )
-    println("XXSecretXX/result/" + res.replace("\n", "ZZZZ"))
+    println("XXSecretXX/result/" + res.replace("\\", "\\\\").replace("\n", "\\n"))
   }
 
   @JSExportDescendentObjects
