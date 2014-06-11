@@ -1,4 +1,4 @@
-addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-RC1")
+addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-RC2")
 
 /* uTest uses itself to test itself. At the library level, this is not a
  * problem. But the runner must be available to the build project. So we
@@ -6,5 +6,5 @@ addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-RC
  */
 unmanagedSources in Compile ++= {
   val root = baseDirectory.value.getParentFile
-  ((root / "runner" * "*.scala") +++ (root / "js-plugin" * "*.scala")).get
+  ((root / "runner" * "*.scala") +++ (root / "jsPlugin" * "*.scala")).get
 }
