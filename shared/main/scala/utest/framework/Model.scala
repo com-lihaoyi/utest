@@ -54,7 +54,7 @@ class TestTreeSeq(tests: Tree[Test]) {
                outerError: Option[SkippedOuterFailure] = None)
               (implicit ec: ExecutionContext): Future[Tree[Result]] = {
 
-    PlatformShims.flatten(Future{
+    Future{
       val start = Deadline.now
       val tryResult =
         outerError.fold(Try(tests.value.TestThunkTree.run(path.toList)))(Failure(_))
@@ -72,7 +72,7 @@ class TestTreeSeq(tests: Tree[Test]) {
         }
 
       val temp = childRuns.foldLeft(Future(List.empty[Tree[Result]])){
-        case (a, b) => PlatformShims.flatten(a.map(a => b.map(b => a :+ b)))
+        case (a, b) => a.flatMap(a => b.map(b => a :+ b))
       }
 
       val sequenced = temp.map{ results =>
@@ -86,7 +86,7 @@ class TestTreeSeq(tests: Tree[Test]) {
       }
 
       sequenced
-    })
+    }.flatMap(x => x)
   }
 
   def resolve(testPath: Seq[String]) = {

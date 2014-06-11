@@ -11,7 +11,7 @@ import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 import utest.jsrunner._
 
 object Build extends sbt.Build{
-  lazy val cross = new SelfCrossBuild(
+  lazy val cross = new BootstrapCrossBuild(
     Seq(
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value,
@@ -27,17 +27,15 @@ object Build extends sbt.Build{
     ) ++ sharedSettings
   )
 
+  lazy val root = cross.root
   lazy val js = cross.js.settings((jsEnv in Test) := new PhantomJSEnv())
+  lazy val jvm = cross.jvm.dependsOn(runner)
 
   lazy val runner = project.settings(sharedSettings:_*)
                            .settings(
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-runner"
   )
-
-  lazy val root = cross.root
-
-  lazy val jvm = cross.jvm.dependsOn(runner)
 
   lazy val jsPlugin = project.in(file("jsPlugin"))
                              .dependsOn(runner)
@@ -48,7 +46,6 @@ object Build extends sbt.Build{
     name := "utest-js-plugin",
     sbtPlugin := true
   )
-
 
   lazy val sharedSettings = Seq(
     organization := "com.lihaoyi",

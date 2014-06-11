@@ -23,6 +23,16 @@ trait GenericRunner extends sbt.testing.Runner{
     if (!failures.compareAndSet(old, r :: old)) addFailure(r)
   }
 
+  /**
+   * Actually performs the running of a particular test; this method is
+   * abstract an intended to be overriden by each implementation, since
+   * e.g. running a test on the JVM is much different from running a test
+   * in Javascript using Rhino/NodeJS/PhantomJS
+   *
+   * @param selector The name of the test within the test class/object
+   * @param loggers
+   * @param name The name of the test class/object
+   */
   def doStuff(selector: Seq[String], loggers: Seq[Logger], name: String): Unit
 
   def progressString = {

@@ -7,18 +7,27 @@ import scala.scalajs.sbtplugin.ScalaJSPlugin._
 import sbt.TestFramework
 import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 
-class JsCrossBuild(sharedSettings: Def.Setting[_]*) extends SelfCrossBuild(
+/**
+ * A standard way of defining cross-js/jvm builds. Defines two sub-projects
+ * in the `jvm/` and `js/` folders, and a `shared/` folder which contains
+ * any sources shared by both projects.
+ * 
+ * @param sharedSettings Settings that will get applied to both projects, 
+ *                       not strictly necessary but pretty convenient.
+ */
+class JsCrossBuild(sharedSettings: Def.Setting[_]*) extends BootstrapCrossBuild(
   libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.6-RC1" % "test",
   libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.6-RC1" % "test",
   sharedSettings
 )
 
 /**
- *
+ * A limited version of [[JsCrossBuild]] that does not add dependencies
+ * on the utest artifacts, used to bootstrap utest's own test process.
  */
-class SelfCrossBuild(sharedSettings: Seq[Def.Setting[_]] = Nil,
-                     jvmSettings: Seq[Def.Setting[_]] = Nil,
-                     jsSettings: Seq[Def.Setting[_]] = Nil){
+class BootstrapCrossBuild(sharedSettings: Seq[Def.Setting[_]] = Nil,
+                          jvmSettings: Seq[Def.Setting[_]] = Nil,
+                          jsSettings: Seq[Def.Setting[_]] = Nil){
   val defaultSettings = Seq(
     unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".." / "shared" / "main" / "scala"),
     unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala")
