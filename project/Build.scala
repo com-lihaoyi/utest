@@ -41,7 +41,7 @@ object Build extends sbt.Build{
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0-RC2"),
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true
@@ -49,7 +49,7 @@ object Build extends sbt.Build{
 
   lazy val sharedSettings = Seq(
     organization := "com.lihaoyi",
-    version := "0.1.6-RC2",
+    version := "0.1.6",
     // Sonatype2
     publishArtifact in Test := false,
     publishTo <<= version { (v: String) =>

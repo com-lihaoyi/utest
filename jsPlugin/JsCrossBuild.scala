@@ -17,8 +17,8 @@ import scala.scalajs.sbtplugin.testing.JSClasspathLoader
  */
 class JsCrossBuild(sharedSettings: Def.Setting[_]*) extends BootstrapCrossBuild(
   sharedSettings,
-  libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.6-RC2" % "test",
-  libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.6-RC2" % "test"
+  libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.6" % "test",
+  libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.6" % "test"
 )
 
 /**
@@ -51,5 +51,8 @@ class BootstrapCrossBuild(sharedSettings: Seq[Def.Setting[_]] = Nil,
 
   lazy val root = project.in(file("."))
     .aggregate(js, jvm)
-    .settings( publish := () )
+    .settings( 
+      publish := (),
+      crossScalaVersions := Seq("2.11.1", "2.10.4")
+    )
 }
