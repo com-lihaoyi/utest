@@ -33,21 +33,9 @@ class BootstrapCrossBuild(sharedSettings: Seq[Def.Setting[_]] = Nil,
     unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala")
   )
   lazy val js = project.in(file("js"))
-    .settings(jsSettings ++ sharedSettings ++ scalaJSSettings ++ defaultSettings: _*)
-    .settings(
-      (loadedTestFrameworks in Test) := {
-        (loadedTestFrameworks in Test).value.updated(
-          sbt.TestFramework(classOf[JsFramework].getName),
-          new JsFramework(environment = (jsEnv in Test).value)
-        )
-      },
-      testLoader := JSClasspathLoader((execClasspath in Compile).value)
-    )
+    .settings(jsSettings ++ Plugin.internal.utestJsSettings ++ sharedSettings ++ scalaJSSettings ++ defaultSettings: _*)
   lazy val jvm = project.in(file("jvm"))
-    .settings(jvmSettings ++ sharedSettings ++ defaultSettings:_*)
-    .settings(
-      testFrameworks += new TestFramework("utest.runner.JvmFramework")
-    )
+    .settings(jvmSettings ++ Plugin.internal.utestJvmSettings ++ sharedSettings ++ defaultSettings:_*)
 
   lazy val root = project.in(file("."))
     .aggregate(js, jvm)
