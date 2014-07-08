@@ -20,7 +20,8 @@ object Tracer{
           case i @ Ident(name)
             if i.symbol.pos != NoPosition
             && i.pos != NoPosition
-            && i.symbol.pos.source == i.pos.source =>
+            && i.symbol.pos.source == i.pos.source 
+            && !i.symbol.isMethod =>
             // only trace identifiers coming from the same file,
             // since those are the ones people probably care about
             q"""{
