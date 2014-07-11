@@ -494,7 +494,7 @@ Other flags you can pass to the test suite are:
 - `--color=true` or `--color=false`: toggle console color output, defaults to `true`
 - `--truncate=N`: cut off the printing of test results at `N` lines per result
 - `--trace=true` or `--trace=false`: whether or not to print stack traces when things blow up, defaults to false.
-- `--parallel=true` or `--parallel=true`: whether tests within a `TestSuite` should be run in parallel, defaults to `false`. Tests in different suites are always run task-parallel by SBT
+- `--parallel=true` or `--parallel=false`: whether tests within a `TestSuite` should be run in parallel, defaults to `false`. Tests in different suites are always run task-parallel by SBT
 - `--throw`: cause the tests to throw an exception if they fail. This is off by default as it causes a bunch of annoying stack traces, but could be useful for telling CI frameworks that tests failed.
 
 ScalaJS
