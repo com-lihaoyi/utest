@@ -16,4 +16,6 @@ object PlatformShims {
   }
 
   class Test
+
+  val globalExecutionContext = concurrent.ExecutionContext.global
 }

@@ -95,7 +95,7 @@ package object utest {
 
     implicit val ec =
       if (utest.util.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
-        concurrent.ExecutionContext.global
+        PlatformShims.globalExecutionContext
       }else{
         ExecutionContext.RunNow
       }

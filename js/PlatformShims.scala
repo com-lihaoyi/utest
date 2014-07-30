@@ -1,6 +1,6 @@
 package utest
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import scala.scalajs.js.annotation.{JSExportDescendentObjects, JSExport}
 import scala.scalajs.js
@@ -50,4 +50,8 @@ object PlatformShims {
 
   @JSExportDescendentObjects
   class Test
+
+  def globalExecutionContext: ExecutionContext = {
+    throw new Exception("global ExecutionContext doesn't exist in Scala.js")
+  }
 }

@@ -1,4 +1,4 @@
-µTest 0.1.8
+µTest 0.1.9
 ===========
 
 uTest (pronounced micro-test) is a lightweight testing library for Scala. Its key features are:
@@ -33,7 +33,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.8"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.9"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -380,7 +380,7 @@ Running tests with SBT
 To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.8"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.9"
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
 ```
@@ -520,12 +520,12 @@ utest.jsrunner.Plugin.utestJsSettings
 And the following to your `project/build.sbt`
 
 ```scala
-addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.8")
+addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.9")
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `JsEnv`, instead of on the JVM. By default this is Rhino, but it can be configured to use NodeJS or PhantomJS if you have them installed. Test selection, coloring, etc. should all work unchanged.
 
-This version of uTest is compatible with ScalaJS 0.5.X.
+This version of uTest is compatible with ScalaJS 0.5.3+.
 
 JsCrossBuild
 ------------

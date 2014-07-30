@@ -15,11 +15,11 @@ object Build extends sbt.Build{
     Seq(
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-        "org.scala-sbt" % "test-interface" % "1.0",
-        compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full)
+        "org.scala-sbt" % "test-interface" % "1.0"
       ) ++ (
         if (scalaVersion.value startsWith "2.11.") Nil
         else Seq(
+          compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full),
           "org.scalamacros" %% s"quasiquotes" % "2.0.0"
         )
       ),
@@ -34,14 +34,15 @@ object Build extends sbt.Build{
   lazy val runner = project.settings(sharedSettings:_*)
                            .settings(
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
-    name := "utest-runner"
+    name := "utest-runner",
+    crossScalaVersions := Seq("2.11.2", "2.10.4")
   )
 
   lazy val jsPlugin = project.in(file("jsPlugin"))
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.0"),
+    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.3"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true
@@ -49,7 +50,7 @@ object Build extends sbt.Build{
 
   lazy val sharedSettings = Seq(
     organization := "com.lihaoyi",
-    version := "0.1.8",
+    version := "0.1.9",
     // Sonatype2
     publishArtifact in Test := false,
     publishTo <<= version { (v: String) =>
