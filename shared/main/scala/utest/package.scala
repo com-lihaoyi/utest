@@ -16,7 +16,12 @@ package object utest {
   implicit val retryMax = new RetryMax(1.second)
   import language.experimental.macros
 
-
+  /**
+   * Asserts that the given expression fails to compile, and returns a
+   * [[CompileError]] containing the message of the failure. If the expression
+   * compile successfully, this macro itself will raise a compilation error.
+   */
+  def compileError(expr: String): CompileError = macro Asserts.compileError
   /**
    * Checks that one or more expressions are true; otherwises raises an
    * exception with some debugging info

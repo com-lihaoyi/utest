@@ -1,6 +1,8 @@
 package utest
 
 import utest.framework.{TestSuite, Test}
+import scala.reflect.ClassTag
+
 
 
 /**
@@ -161,6 +163,55 @@ object Asserts extends TestSuite{
           Predef.assert(e.msg.contains("assertMatch(Seq(a / 0, 3, b)){case Seq(1, 2) =>}"))
           e.getMessage
         }
+      }
+    }
+    'compileError{
+      def check[T: ClassTag](x: CompileError, contents: String) = {
+        val ct = implicitly[ClassTag[T]]
+        Predef.assert(
+          ct.unapply(x).isDefined,
+          s"Error was of wrong type: got ${x.getClass} expected ${ct.runtimeClass.getName}"
+        )
+        Predef.assert(
+          x.msg.contains(contents),
+          s"[${x.msg}] does not contain [$contents]"
+        )
+      }
+      'success {
+
+        check[CompileError.Type](
+          compileError("1 + abc"),
+          "not found: value abc"
+        )
+        check[CompileError.Type](
+          compileError("true * false"),
+          "value * is not a member of Boolean"
+        )
+        check[CompileError.Parse](
+          compileError("ab ( cd }"),
+          "')' expected but '}' found."
+        )
+      }
+      'failure{
+        check[CompileError.Type](
+          compileError("""
+            check[CompileError.Type](
+              compileError("1 + 1"),
+              ""
+            )
+          """),
+          "compileError check failed to have a compilation error"
+        )
+        check[CompileError.Type](
+          compileError("""
+            val x = 0
+            check[CompileError.Type](
+              compileError("x + x"),
+              ""
+            )
+          """),
+          "compileError check failed to have a compilation error"
+        )
       }
     }
   }

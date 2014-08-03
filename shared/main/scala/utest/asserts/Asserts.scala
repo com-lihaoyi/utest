@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.{ParseException, TypecheckException, Context}
 import scala.util.{Failure, Success, Try, Random}
 import scala.reflect.ClassTag
 
@@ -10,6 +10,20 @@ import scala.reflect.ClassTag
  * message for boolean expression assertion.
  */
 object Asserts {
+  def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
+    import c.universe._
+    val Literal(Constant(s: String)) = expr.tree
+
+    try{
+      c.typeCheck(c.parse(s))
+      c.abort(c.enclosingPosition, "compileError check failed to have a compilation error")
+    } catch{
+      case TypecheckException(pos, msg) =>
+        c.Expr[CompileError](q"""utest.CompileError.Type($msg)""")
+      case ParseException(pos, msg) =>
+        c.Expr[CompileError](q"""utest.CompileError.Parse($msg)""")
+    }
+  }
 
   def assertProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._

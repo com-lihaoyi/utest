@@ -20,6 +20,7 @@ Contents
   - [Intercept](#intercept)
   - [Eventually and Continually](#eventually-and-continually)
   - [Assert Match](#assert-match)
+  - [Compile Error](#compile-error)
 - [Execution Model](#execution-model)
 - [Test running API](#test-running-api)
   - [Parallel Testing](#parallel-testing)
@@ -233,6 +234,33 @@ assertMatch(Seq(1, 2, 3)){case Seq(1, 2) =>}
 `assertMatch` is a convenient way of checking that a value matches a particular shape, using Scala's pattern matching syntax. This includes support for use of `|` or `_` or `if`-guards within the pattern match. This gives you additional flexibility over a traditional `assert(a == Seq(1, 2))`, as you can use `_` as a wildcard e.g. using `assertMatch(a){case Seq(1, _)=>}` to match any 2-item `Seq` whose first item is `1`.
 
 As with `assert`, `assertMatch` adds debugging information to the error messages if the value fails to match or throws an unexpected Exception while evaluating.
+
+Compile Error
+-------------
+
+```scala
+compileError("true * false")
+// CompileError.Type("value * is not a member of Boolean")
+
+compileError("(}")
+// CompileError.Parse("')' expected but '}' found.")
+```
+
+`compileError` is a macro that can be used to assert that a fragment of code (given as a literal String) fails to compile. 
+
+- If the code compiles successfully, `compileError` will fail the compilation run with am message.
+- If the code fails to compile, `compileError` will return an instance of `CompileError`, one of `CompileError.Type(msg: String)` or `CompileError.Parse(msg: String)` to represent typechecker errors or parser errors
+ 
+In general, `compileError` works similarly to `intercept`, except it does its checks (that a snippet of code fails) and errors (if it doesn't fail) at compile-time rather than run-time. If the code fails as expected, the failure message is propagated to runtime in the form of a `CompileError` object. You can then do whatever additional checks you want on the failure message, such as verifying that the failure message contains some string you expect to be there.
+
+The `compileError` macro compiles the given string in the local scope and context. This means that you can refer to variables in the enclosing scope, i.e. the following example will fail to compile because the variable `x` exists.  
+
+```scala
+val x = 0
+
+compileError("x + x"),
+// [error] compileError check failed to have a compilation error
+```
 
 Execution Model
 ===============

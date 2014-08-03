@@ -29,3 +29,24 @@ case class AssertionError(msg: String,
  * `assert` functions
  */
 case class LoggedValue(name: String, tpeName: String, value: Any)
+
+/**
+ * Simplified versions of the errors thrown during compilation, for use with the
+ * [[compileError]] macro. Contains only a single message and no position since
+ * things compiled using macros don't really have source positions.
+ */
+trait CompileError{
+  def msg: String
+}
+
+object CompileError{
+
+  /**
+   * A [[CompileError]] representing a failure to typecheck.
+   */
+  case class Type(msg: String) extends CompileError
+  /**
+   * A [[CompileError]] representing a failure to parse.
+   */
+  case class Parse(msg: String) extends CompileError
+}
