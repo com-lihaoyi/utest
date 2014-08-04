@@ -11,8 +11,13 @@ import java.io.{PrintWriter, StringWriter}
 object PlatformShims {
   def await[T](f: Future[T]): T = Await.result(f, 10.hours)
 
-  def printTrace(e: Throwable): Unit = {
-    println(e.getStackTrace.map(_.toString).mkString("\n"))
+  def printTrace(ex: Throwable): Unit = {
+    println(
+      ex.getStackTrace
+        .takeWhile(_.getClassName != "utest.framework.TestThunkTree")
+        .map(_.toString)
+        .mkString("\n")
+    )
   }
 
   class Test

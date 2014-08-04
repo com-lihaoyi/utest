@@ -36,6 +36,7 @@ case class LoggedValue(name: String, tpeName: String, value: Any)
  * things compiled using macros don't really have source positions.
  */
 trait CompileError{
+  def pos: String
   def msg: String
 }
 
@@ -44,9 +45,9 @@ object CompileError{
   /**
    * A [[CompileError]] representing a failure to typecheck.
    */
-  case class Type(msg: String) extends CompileError
+  case class Type(pos: String, msg: String) extends CompileError
   /**
    * A [[CompileError]] representing a failure to parse.
    */
-  case class Parse(msg: String) extends CompileError
+  case class Parse(pos: String, msg: String) extends CompileError
 }

@@ -1,4 +1,4 @@
-µTest 0.1.9
+µTest 0.2.0
 ===========
 
 uTest (pronounced micro-test) is a lightweight testing library for Scala. Its key features are:
@@ -34,7 +34,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.9"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.0"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -116,6 +116,29 @@ TestSuite{
 ```
 
 Note that you can also use the `'symbol-...` syntax, if your tests are concise and you want to make them *really* concise. The `"string"-{...}`, `'symbol{...}` and `'symbol-...` syntaxes are all entirely equivalent.
+
+The last way of defining tests is with the `utest.*` symbol, e.g.
+
+```scala
+import utest._
+
+val test = TestSuite{
+  'test1{
+    throw new Exception("test1")
+  }
+  'test2{
+    * - {1 == 1}
+    * - {2 == 2}
+    * - {3 == 3}
+  }
+  'test3{
+    val a = List[Byte](1, 2)
+    a(10)
+  }
+}
+```
+
+Tests defined using the `*` symbol are give the numerical names "0", "1", "2", etc.. This is handy if you have a very large number of very simple test cases, but still want to be able to run them separately.  
 
 Results
 -------
@@ -408,7 +431,7 @@ Running tests with SBT
 To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.9"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.0"
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
 ```
@@ -548,7 +571,7 @@ utest.jsrunner.Plugin.utestJsSettings
 And the following to your `project/build.sbt`
 
 ```scala
-addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.1.9")
+addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.2.0")
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `JsEnv`, instead of on the JVM. By default this is Rhino, but it can be configured to use NodeJS or PhantomJS if you have them installed. Test selection, coloring, etc. should all work unchanged.
@@ -620,10 +643,16 @@ You can also use more targeted commands e.g. `js/test` which would only re-test 
 Changelog
 =========
 
+0.2.0
+-----
+- Introduced the `compileError` macro to allow testing of compilation errors.
+- Stack traces are now only shown for the user code, with the uTest/SBT internal stack trace ignored, making them much less spammy and noisy.
+- Introduced the `*` symbol, which can be used in place of a test name to get sequentially numbered test names.
+
 0.1.9
 -----
 
-- Introduced the `compileError` macro to allow testing of compilation errors.
+
 - ScalaJS version is now built against ScalaJS 0.5.3
 - Fixed linking errors in ScalaJS version, to allow proper operation of the new optimization
 

@@ -4,24 +4,53 @@ package asserts
 import scala.reflect.macros.{ParseException, TypecheckException, Context}
 import scala.util.{Failure, Success, Try, Random}
 import scala.reflect.ClassTag
+import scala.reflect.internal.util.{Position, OffsetPosition}
+import scala.reflect.internal.util.OffsetPosition
+import scala.reflect.macros.{TypecheckException, Context}
+
+import scala.language.experimental.macros
+
 
 /**
  * Macro implementation that provides rich error
  * message for boolean expression assertion.
  */
 object Asserts {
+
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
+    def calcPosMsg(pos: scala.reflect.api.Position) = {
+      if (pos == NoPosition) ""
+      else {
+        val stringStart =
+          pos.lineContent
+            .drop(expr.tree.pos.column)
+            .take(2)
+
+        val newPos = new OffsetPosition(
+          pos.source,
+          pos.point + (if (stringStart == "\"\"") 1 else -1)
+        ).asInstanceOf[c.universe.Position]
+
+        newPos.lineContent + "\n" + (" " * newPos.column) + "^"
+      }
+    }
     expr.tree match {
       case Literal(Constant(s: String)) =>
         try{
-          c.typeCheck(c.parse(s))
+
+          val tree = c.parse(s)
+          for(x <- tree if x.pos != NoPosition){
+            x.pos = new OffsetPosition(expr.tree.pos.source, x.pos.point + expr.tree.pos.point).asInstanceOf[c.universe.Position]
+          }
+          c.typeCheck(tree)
+
           c.abort(c.enclosingPosition, "compileError check failed to have a compilation error")
         } catch{
           case TypecheckException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.CompileError.Type($msg)""")
+            c.Expr[CompileError](q"""utest.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
           case ParseException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.CompileError.Parse($msg)""")
+            c.Expr[CompileError](q"""utest.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
         }
       case e =>
         c.abort(

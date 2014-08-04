@@ -3,7 +3,7 @@ package framework
 
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
-import utest.framework.Test
+
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
@@ -33,13 +33,20 @@ object TestSuite{
   def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[util.Tree[Test]] = {
     import c.universe._
 
-    def matcher: PartialFunction[Tree, (Tree, Tree)] = {
-      case q"""utest.this.`package`.TestableString($value).-($body)""" => (value, body)
-      case q"""utest.`package`.TestableString($value).-($body)""" => (value, body)
-      case q"""utest.this.`package`.TestableSymbol($value).apply($body)""" => (q"$value.name", body)
-      case q"""utest.`package`.TestableSymbol($value).apply($body)""" => (q"$value.name", body)
-      case q"""utest.this.`package`.TestableSymbol($value).-($body)""" => (q"$value.name", body)
-      case q"""utest.`package`.TestableSymbol($value).-($body)""" => (q"$value.name", body)
+    def matcher(i: Int): PartialFunction[Tree, (Tree, Tree, Int)] = {
+      // Special case for *
+      case q"""utest.this.`package`.*.-($body)""" => (q"${i.toString}", body, i + 1)
+      case q"""utest.`package`.*.-($body)""" => (q"${i.toString}", body, i + 1)
+
+      // Strings using -
+      case q"""utest.this.`package`.TestableString($value).-($body)""" => (value, body, i)
+      case q"""utest.`package`.TestableString($value).-($body)""" => (value, body, i)
+
+      // Symbols using - or apply
+      case q"""utest.this.`package`.TestableSymbol($value).apply($body)""" => (q"$value.name", body, i)
+      case q"""utest.`package`.TestableSymbol($value).apply($body)""" => (q"$value.name", body, i)
+      case q"""utest.this.`package`.TestableSymbol($value).-($body)""" => (q"$value.name", body, i)
+      case q"""utest.`package`.TestableSymbol($value).-($body)""" => (q"$value.name", body, i)
     }
 
     def recurse(t: Tree): (Tree, Tree) = {
@@ -48,7 +55,7 @@ object TestSuite{
         case t => Block(Nil, t)
       }
 
-      val (nested, normal) = b.children.partition(matcher.isDefinedAt)
+      val (nested, normal) = b.children.partition(matcher(0).isDefinedAt)
 
       val retValueName = c.fresh(newTermName("$ret"))
 
@@ -62,7 +69,12 @@ object TestSuite{
           bulk :+ q"val $retValueName = $last"
         }
 
-      val (names, bodies) = nested.map(matcher).unzip
+      val thingies = nested.foldLeft(0 -> Seq[(Tree, Tree)]()) { case ((index, trees), nextTree) =>
+        val (tree1, tree2, newIndex) = matcher(index)(nextTree)
+        (newIndex, trees :+(tree1, tree2))
+      }
+
+      val (names, bodies) = thingies._2.unzip
 
       val (testTrees, suites) = bodies.map{recurse(_)}.unzip
 
@@ -88,7 +100,7 @@ object TestSuite{
     val transformer = new Transformer{
       override def transform(t: Tree) = {
         //          println("transforming " + t)
-        found = found.orElse(matcher.lift(t).map(_._1))
+        found = found.orElse(matcher(0).lift(t).map(_._1))
         super.transform(t)
       }
     }

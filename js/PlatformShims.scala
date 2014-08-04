@@ -27,6 +27,7 @@ object PlatformShims {
 
     println(
       e.getStackTrace
+        .takeWhile(_.getClassName != "utest.framework.TestThunkTree")
         .map(s => s"XXSecretXX/trace/${bundle(s)}")
         .mkString("\n")
     )

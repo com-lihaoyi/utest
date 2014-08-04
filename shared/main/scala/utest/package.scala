@@ -83,10 +83,12 @@ package object utest {
    */
   implicit def toTestSeq(t: Tree[Test]) = new TestTreeSeq(t)
 
-  val ClassTag = scala.reflect.ClassTag
   val TestSuite = framework.TestSuite
   type TestSuite  = framework.TestSuite
 
+  object * {
+    def -(x: => Any) = ???
+  }
   def runSuite(suite: TestSuite,
                path: Array[String],
                args: Array[String],
@@ -116,7 +118,7 @@ package object utest {
           case Failure(e) =>
             if (trace) PlatformShims.printTrace(e)
             logFailure(str)
-          case _ => ""
+          case _ => ()
         }
       },
       testPath = path

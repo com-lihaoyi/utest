@@ -1,10 +1,5 @@
 package utest
 
-import utest.framework.{TestSuite, Test}
-import scala.reflect.ClassTag
-
-
-
 /**
 * Test suite for all the assertions that uTest comes bundled with.
 *
@@ -22,43 +17,39 @@ object Asserts extends TestSuite{
         "success!"
       }
       'failure{
-        try {
+        val (e, logged, cause) = try {
           val x = 1
           val y = "2"
           assert(
             x > 0,
-            x == y
+            x.toString == y
           )
 
           Predef.assert(false)
+          ???
         } catch { case e @ AssertionError(_, logged, cause) =>
-
-          val expected = Seq(LoggedValue("x", "Int", 1), LoggedValue("y", "String", "2"))
-
-          Predef.assert(
-            cause == null,
-            "cause should be null for boolean failure"
-          )
-
-          Predef.assert(
-            logged == expected,
-            "Logging didn't capture the locals properly " + logged
-          )
-
-          Predef.assert(
-            e.toString.contains("y: String = 2") && e.toString.contains("x: Int = 1"),
-            "Logging doesn't display local values properly " + e.toString
-          )
-
-          Predef.assert(
-            e.toString.contains("x == y"),
-            "Message didnt contain source text " + e.toString
-          )
-
-
-
-          "caught it! " + logged
+          (e, logged, cause)
         }
+        val expected = Seq(LoggedValue("x", "Int", 1), LoggedValue("y", "String", "2"))
+        * - Predef.assert(
+          cause == null,
+          "cause should be null for boolean failure"
+        )
+
+        * - Predef.assert(
+          logged == expected,
+          "Logging didn't capture the locals properly " + logged
+        )
+
+        * - Predef.assert(
+          e.toString.contains("y: String = 2") && e.toString.contains("x: Int = 1"),
+          "Logging doesn't display local values properly " + e.toString
+        )
+
+        * - Predef.assert(
+          e.toString.contains("x.toString == y"),
+          "Message didnt contain source text " + e.toString
+        )
       }
       'failureWithException{
         val x = 1L
@@ -100,11 +91,11 @@ object Asserts extends TestSuite{
           val x = 1
           val y = 2.0
           intercept[NumberFormatException]{
-            (x: Any) match { case _: String => y }
+            (x: Any) match { case _: String => y + 1 }
           }
           Predef.assert(false) // error wasn't thrown???
         } catch { case e: AssertionError =>
-          Predef.assert(e.msg.contains("(x: Any) match { case _: String => y }"))
+          Predef.assert(e.msg.contains("(x: Any) match { case _: String => y + 1 }"))
           // This is subtle: only `x` should be logged as an interesting value, for
           // `y` was not evaluated at all and could not have played a part in the
           // throwing of the exception
@@ -166,8 +157,8 @@ object Asserts extends TestSuite{
       }
     }
     'compileError{
-      def check[T: ClassTag](x: CompileError, contents: String) = {
-        val ct = implicitly[ClassTag[T]]
+      def check[T: reflect.ClassTag](x: CompileError, contents: String, pos: String) = {
+        val ct = implicitly[reflect.ClassTag[T]]
         Predef.assert(
           ct.unapply(x).isDefined,
           s"Error was of wrong type: got ${x.getClass} expected ${ct.runtimeClass.getName}"
@@ -176,50 +167,80 @@ object Asserts extends TestSuite{
           x.msg.contains(contents),
           s"[${x.msg}] does not contain [$contents]"
         )
+        val whitespace = " \t\n".toSet
+        val strippedPos = pos.dropWhile(_ == '\n').reverse.dropWhile(whitespace.contains).reverse
+        if (pos != "") Predef.assert(
+          x.pos == strippedPos,
+          s"\n${x.pos} \n!= \n$strippedPos"
+        )
       }
       'success {
-
-        check[CompileError.Type](
+        * - check[CompileError.Type](
           compileError("1 + abc"),
-          "not found: value abc"
+          "not found: value abc",
+          """
+          compileError("1 + abc"),
+                           ^
+          """
         )
-        check[CompileError.Type](
+        * - check[CompileError.Type](
+          compileError("""
+            1 + abc
+          """),
+          "not found: value abc",
+          """
+            1 + abc
+             ^
+          """
+        )
+        * - check[CompileError.Type](
           compileError("true * false"),
-          "value * is not a member of Boolean"
+          "value * is not a member of Boolean",
+          """
+          compileError("true * false"),
+                            ^
+          """
         )
-        check[CompileError.Parse](
+        * - check[CompileError.Parse](
           compileError("ab ( cd }"),
-          "')' expected but '}' found."
+          "')' expected but '}' found.",
+          """"""
         )
       }
       'failure{
-        check[CompileError.Type](
+        * - check[CompileError.Type](
           compileError("""
             check[CompileError.Type](
               compileError("1 + 1"),
+              "",
               ""
             )
           """),
-          "compileError check failed to have a compilation error"
+          "compileError check failed to have a compilation error",
+          ""
         )
-        check[CompileError.Type](
+        * - check[CompileError.Type](
           compileError("""
             val x = 0
             check[CompileError.Type](
               compileError("x + x"),
+              "",
               ""
             )
           """),
-          "compileError check failed to have a compilation error"
+          "compileError check failed to have a compilation error",
+          ""
         )
-        check[CompileError.Type](
+        * - check[CompileError.Type](
           compileError("""
             check[CompileError.Type](
               compileError("1" * 2),
+              "",
               ""
             )
           """),
-          "You can only have literal strings in compileError"
+          "You can only have literal strings in compileError",
+          ""
         )
       }
     }

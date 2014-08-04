@@ -50,7 +50,8 @@ object Build extends sbt.Build{
 
   lazy val sharedSettings = Seq(
     organization := "com.lihaoyi",
-    version := "0.1.9",
+    version := "0.2.0",
+    scalaVersion := "2.10.4",
     // Sonatype2
     publishArtifact in Test := false,
     publishTo <<= version { (v: String) =>
