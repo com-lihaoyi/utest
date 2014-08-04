@@ -85,8 +85,16 @@ package object utest {
 
   val TestSuite = framework.TestSuite
   type TestSuite  = framework.TestSuite
-
-  object * {
+  
+  /**
+   * Placeholder object used to declare test cases which you don't want to 
+   * bother naming. These test cases are named with sequential numbers 
+   * starting from "0", "1", "2", etc.
+   */
+  object * { 
+    /**
+     * Declares a numbered test-case
+     */
     def -(x: => Any) = ???
   }
   def runSuite(suite: TestSuite,
