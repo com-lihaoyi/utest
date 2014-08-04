@@ -616,3 +616,28 @@ To run all the test on the entire matrix of Scala versions (2.10.4 and 2.11.0) a
     sbt +test
 
 You can also use more targeted commands e.g. `js/test` which would only re-test the Javascript backend under scala 2.10.4.
+
+Changelog
+=========
+
+0.1.9
+-----
+
+- Introduced the `compileError` macro to allow testing of compilation errors.
+- ScalaJS version is now built against ScalaJS 0.5.3
+- Fixed linking errors in ScalaJS version, to allow proper operation of the new optimization
+
+0.1.8
+-----
+
+- Fixed bug causing local-defs in assert macro to fail
+ 
+0.1.7
+-----
+
+- Extracted out `utestJvmSettings` and `utestJsSettings` for use outside the `JsCrossBuild` plugin, for people who don't want to use the plugin.
+ 
+0.1.6
+-----
+
+- Print paths of failing tests after completion to make C&P-ing re-runs more convenient
