@@ -212,6 +212,15 @@ object Asserts extends TestSuite{
           """),
           "compileError check failed to have a compilation error"
         )
+        check[CompileError.Type](
+          compileError("""
+            check[CompileError.Type](
+              compileError("1" * 2),
+              ""
+            )
+          """),
+          "You can only have literal strings in compileError"
+        )
       }
     }
   }

@@ -12,16 +12,22 @@ import scala.reflect.ClassTag
 object Asserts {
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
-    val Literal(Constant(s: String)) = expr.tree
-
-    try{
-      c.typeCheck(c.parse(s))
-      c.abort(c.enclosingPosition, "compileError check failed to have a compilation error")
-    } catch{
-      case TypecheckException(pos, msg) =>
-        c.Expr[CompileError](q"""utest.CompileError.Type($msg)""")
-      case ParseException(pos, msg) =>
-        c.Expr[CompileError](q"""utest.CompileError.Parse($msg)""")
+    expr.tree match {
+      case Literal(Constant(s: String)) =>
+        try{
+          c.typeCheck(c.parse(s))
+          c.abort(c.enclosingPosition, "compileError check failed to have a compilation error")
+        } catch{
+          case TypecheckException(pos, msg) =>
+            c.Expr[CompileError](q"""utest.CompileError.Type($msg)""")
+          case ParseException(pos, msg) =>
+            c.Expr[CompileError](q"""utest.CompileError.Parse($msg)""")
+        }
+      case e =>
+        c.abort(
+          expr.tree.pos,
+          s"You can only have literal strings in compileError, not ${expr.tree}"
+        )
     }
   }
 
