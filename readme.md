@@ -138,7 +138,7 @@ val test = TestSuite{
 }
 ```
 
-Tests defined using the `*` symbol are give the numerical names "0", "1", "2", etc.. This is handy if you have a very large number of very simple test cases, but still want to be able to run them separately.  
+Tests defined using the `*` symbol are give the numerical names "0", "1", "2", etc.. This is handy if you have a very large number of very simple test cases (perhaps you've delegated the heavy lifting to a helper function), but still want to be able to run them separately.  
 
 Results
 -------
