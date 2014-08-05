@@ -1,1 +1,2 @@
-script: "sbt +test"
+language: scala
+script: "./sbt +test"
