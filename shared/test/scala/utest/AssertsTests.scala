@@ -7,7 +7,7 @@ package utest
 * since it is the thing that is meant to be *testing* all the fancy uTest
 * asserts, we can't assume they work.
 */
-object Asserts extends TestSuite{
+object AssertsTests extends TestSuite{
 
   def tests = TestSuite{
     'assert{
@@ -157,6 +157,12 @@ object Asserts extends TestSuite{
       }
     }
     'compileError{
+      /**
+       * Do some basic checks around compileError to make sure the error
+       * messages are what you'd expect. Not sure if it's worth building
+       * into the library itself, but it can live here (and in other
+       * libraries' test utils) for now since it's not hard to write.
+       */
       def check[T: reflect.ClassTag](x: CompileError, contents: String, pos: String) = {
         val ct = implicitly[reflect.ClassTag[T]]
         Predef.assert(
@@ -175,12 +181,24 @@ object Asserts extends TestSuite{
         )
       }
       'success {
+        // Make sure that on successfully catching a compilation
+        // error, the error it reports is in the correct place for
+        // a variety of inputs
+        val qq = "\"" * 3
         * - check[CompileError.Type](
           compileError("1 + abc"),
           "not found: value abc",
           """
           compileError("1 + abc"),
-                           ^
+                            ^
+          """
+        )
+        * - check[CompileError.Type](
+          compileError(""" 1 + abc"""),
+          "not found: value abc",
+          s"""
+          compileError($qq 1 + abc$qq),
+                               ^
           """
         )
         * - check[CompileError.Type](
@@ -190,7 +208,21 @@ object Asserts extends TestSuite{
           "not found: value abc",
           """
             1 + abc
-             ^
+                ^
+          """
+        )
+        * - check[CompileError.Type](
+          compileError("""
+
+
+            1 + abc
+
+
+          """),
+          "not found: value abc",
+          """
+            1 + abc
+                ^
           """
         )
         * - check[CompileError.Type](
@@ -198,7 +230,17 @@ object Asserts extends TestSuite{
           "value * is not a member of Boolean",
           """
           compileError("true * false"),
-                            ^
+                             ^
+          """
+        )
+        // need to work around inability to use """ in string
+
+        * - check[CompileError.Type](
+          compileError(""" true * false"""),
+          "value * is not a member of Boolean",
+          s"""
+          compileError($qq true * false$qq),
+                                ^
           """
         )
         * - check[CompileError.Parse](
@@ -207,7 +249,10 @@ object Asserts extends TestSuite{
           """"""
         )
       }
+
       'failure{
+        // Use compileError to check itself to verify that when it
+        // doesn't throw an error, it actually does (super meta!)
         * - check[CompileError.Type](
           compileError("""
             check[CompileError.Type](
@@ -217,7 +262,10 @@ object Asserts extends TestSuite{
             )
           """),
           "compileError check failed to have a compilation error",
-          ""
+          """
+              compileError("1 + 1"),
+                          ^
+          """
         )
         * - check[CompileError.Type](
           compileError("""
@@ -229,7 +277,10 @@ object Asserts extends TestSuite{
             )
           """),
           "compileError check failed to have a compilation error",
-          ""
+          """
+              compileError("x + x"),
+                          ^
+          """
         )
         * - check[CompileError.Type](
           compileError("""
@@ -240,7 +291,10 @@ object Asserts extends TestSuite{
             )
           """),
           "You can only have literal strings in compileError",
-          ""
+          """
+              compileError("1" * 2),
+                               ^
+          """
         )
       }
     }

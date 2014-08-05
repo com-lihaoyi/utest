@@ -21,27 +21,28 @@ object Asserts {
     import c.universe._
     def calcPosMsg(pos: scala.reflect.api.Position) = {
       if (pos == NoPosition) ""
-      else {
-        val stringStart =
-          pos.lineContent
-            .drop(expr.tree.pos.column)
-            .take(2)
-
-        val newPos = new OffsetPosition(
-          pos.source,
-          pos.point + (if (stringStart == "\"\"") 1 else -1)
-        ).asInstanceOf[c.universe.Position]
-
-        newPos.lineContent + "\n" + (" " * newPos.column) + "^"
-      }
+      else pos.lineContent + "\n" + (" " * pos.column) + "^"
     }
+    val stringStart =
+      expr.tree
+         .pos
+         .lineContent
+         .drop(expr.tree.pos.column)
+         .take(2)
+
+    val quoteOffset = if (stringStart == "\"\"") 2 else 0
+
     expr.tree match {
       case Literal(Constant(s: String)) =>
         try{
 
           val tree = c.parse(s)
           for(x <- tree if x.pos != NoPosition){
-            x.pos = new OffsetPosition(expr.tree.pos.source, x.pos.point + expr.tree.pos.point).asInstanceOf[c.universe.Position]
+            import compat._
+            x.pos = new OffsetPosition(
+              expr.tree.pos.source,
+              x.pos.point + expr.tree.pos.point + quoteOffset
+            ).asInstanceOf[c.universe.Position]
           }
           c.typeCheck(tree)
 

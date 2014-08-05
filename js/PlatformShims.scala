@@ -1,8 +1,9 @@
 package utest
 
-import scala.concurrent.{ExecutionContext, Future}
+
 import scala.util.{Failure, Success}
 import scala.scalajs.js.annotation.{JSExportDescendentObjects, JSExport}
+import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.runtime.StackTrace.ColumnStackTraceElement
 
@@ -52,7 +53,7 @@ object PlatformShims {
   @JSExportDescendentObjects
   class Test
 
-  def globalExecutionContext: ExecutionContext = {
+  def globalExecutionContext: scala.concurrent.ExecutionContext = {
     throw new Exception("global ExecutionContext doesn't exist in Scala.js")
   }
 }

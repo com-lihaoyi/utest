@@ -8,7 +8,7 @@ import scala.util.Success
 import scala.util.Failure
 
 
-object Framework extends TestSuite{
+object FrameworkTests extends TestSuite{
   implicit val ec = utest.ExecutionContext.RunNow
   def tests = TestSuite{
     def testHelloWorld(test: util.Tree[Test]) = {

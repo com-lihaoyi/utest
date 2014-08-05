@@ -42,6 +42,7 @@ object Build extends sbt.Build{
                              .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
+
     addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.3"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
