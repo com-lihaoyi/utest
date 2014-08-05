@@ -39,8 +39,10 @@ class BootstrapCrossBuild(sharedSettings: Seq[Def.Setting[_]] = Nil,
 
   lazy val root = project.in(file("."))
     .aggregate(js, jvm)
-    .settings( 
+    .settings(
       publish := (),
+      // dummy to make SBT shut up http://stackoverflow.com/a/18522706/871202
+      publishTo := Some(Resolver.file("Unused transient repository", file("target/unusedrepo"))),
       crossScalaVersions := Seq("2.11.2", "2.10.4")
     )
 }

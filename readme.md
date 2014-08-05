@@ -640,6 +640,10 @@ To run all the test on the entire matrix of Scala versions (2.10.4 and 2.11.0) a
 
 You can also use more targeted commands e.g. `js/test` which would only re-test the Javascript backend under scala 2.10.4.
 
+To publish use
+
+    sbt +publishSigned jsPlugin/publishSigned
+
 Changelog
 =========
 

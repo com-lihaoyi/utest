@@ -27,15 +27,14 @@ object Build extends sbt.Build{
     ) ++ sharedSettings
   )
 
-  lazy val root = cross.root
+  lazy val root = cross.root.aggregate(runner)
   lazy val js = cross.js.settings((jsEnv in Test) := new NodeJSEnv())
   lazy val jvm = cross.jvm.dependsOn(runner)
 
   lazy val runner = project.settings(sharedSettings:_*)
                            .settings(
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
-    name := "utest-runner",
-    crossScalaVersions := Seq("2.11.2", "2.10.4")
+    name := "utest-runner"
   )
 
   lazy val jsPlugin = project.in(file("jsPlugin"))
@@ -55,9 +54,7 @@ object Build extends sbt.Build{
     scalaVersion := "2.10.4",
     // Sonatype2
     publishArtifact in Test := false,
-    publishTo <<= version { (v: String) =>
-      Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
-    },
+    publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
 
     pomExtra := (
       <url>https://github.com/lihaoyi/utest</url>
