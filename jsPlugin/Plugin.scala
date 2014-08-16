@@ -25,9 +25,9 @@ object Plugin extends sbt.Plugin{
     }
   }
   val utestJvmSettings = internal.utestJvmSettings :+ {
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.1.8" % "test"
+    libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.1" % "test"
   }
   val utestJsSettings = internal.utestJsSettings :+ {
-    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.1.8" % "test"
+    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.2.1" % "test"
   }
 }
