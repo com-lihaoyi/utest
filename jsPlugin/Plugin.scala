@@ -6,6 +6,7 @@ import utest.jsrunner._
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 object Plugin extends sbt.Plugin{
+  val utestVersion = "0.2.1"
   object internal {
     val utestJvmSettings = Seq(
       testFrameworks += new TestFramework("utest.runner.JvmFramework")
@@ -25,9 +26,9 @@ object Plugin extends sbt.Plugin{
     }
   }
   val utestJvmSettings = internal.utestJvmSettings :+ {
-    libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.1" % "test"
+    libraryDependencies += "com.lihaoyi" %% "utest" % utestVersion % "test"
   }
   val utestJsSettings = internal.utestJsSettings :+ {
-    libraryDependencies += "com.lihaoyi" %%% "utest" % "0.2.1" % "test"
+    libraryDependencies += "com.lihaoyi" %%% "utest" % utestVersion % "test"
   }
 }
