@@ -39,12 +39,46 @@ trait CompileError{
   def pos: String
   def msg: String
 
+  /**
+   * Performs some basic, common checking on the compilation error object,
+   * to verify that it matches what you expect
+   *
+   * @param errorPos The expected position-message returned by the compile
+   *                 error. Usually something like
+   *
+   * """
+   * true * false
+   *      ^
+   * """
+   *
+   * This mimicks the position-message shown in the terminal, and should be a
+   * convenient way of indicating where you expect the error to occur. Pass
+   * in an empty-string to skip this check.
+   *
+   * @param msgs A list of snippets that should appear in the error message.
+   *             Typically something like "value * is not a member of Boolean"
+   *             to ensure that the message is what you want
+   */
   def check(errorPos: String, msgs: String*) = {
     val stripped = errorPos.reverse.dropWhile("\n ".toSet.contains).reverse
-    val pos = "\n" + pos
-    assert(pos == stripped)
+    val normalizedPos = "\n" + pos
+    if (errorPos != "") Predef.assert(
+      normalizedPos == stripped,
+      "Compile error positions do not match\n" +
+      "Expected Position\n" +
+      stripped + "\n" +
+      "Actual Position\n" +
+      normalizedPos
+    )
     for(msg <- msgs){
-      assert(msg.contains(msg))
+      Predef.assert(
+        this.msg.contains(msg),
+        "Error message did not contain expected snippet\n" +
+        "Error message\n" +
+        this.msg + "\n" +
+        "Expected Snippet\n" +
+        msg
+      )
     }
   }
 }

@@ -157,144 +157,107 @@ object AssertsTests extends TestSuite{
       }
     }
     'compileError{
-      /**
-       * Do some basic checks around compileError to make sure the error
-       * messages are what you'd expect. Not sure if it's worth building
-       * into the library itself, but it can live here (and in other
-       * libraries' test utils) for now since it's not hard to write.
-       */
-      def check[T: reflect.ClassTag](x: CompileError, contents: String, pos: String) = {
-        val ct = implicitly[reflect.ClassTag[T]]
-        Predef.assert(
-          ct.unapply(x).isDefined,
-          s"Error was of wrong type: got ${x.getClass} expected ${ct.runtimeClass.getName}"
-        )
-        Predef.assert(
-          x.msg.contains(contents),
-          s"[${x.msg}] does not contain [$contents]"
-        )
-        val whitespace = " \t\n".toSet
-        val strippedPos = pos.dropWhile(_ == '\n').reverse.dropWhile(whitespace.contains).reverse
-        if (pos != "") Predef.assert(
-          x.pos == strippedPos,
-          s"\n${x.pos} \n!= \n$strippedPos"
-        )
-      }
       'success {
         // Make sure that on successfully catching a compilation
         // error, the error it reports is in the correct place for
         // a variety of inputs
         val qq = "\"" * 3
-        * - check[CompileError.Type](
-          compileError("1 + abc"),
-          "not found: value abc",
+        * - compileError("1 + abc").check(
           """
-          compileError("1 + abc"),
-                            ^
-          """
+        * - compileError("1 + abc").check(
+                              ^
+          """,
+          "not found: value abc"
         )
-        * - check[CompileError.Type](
-          compileError(""" 1 + abc"""),
-          "not found: value abc",
+        * - compileError(""" 1 + abc""").check(
           s"""
-          compileError($qq 1 + abc$qq),
+        * - compileError($qq 1 + abc$qq).check(
+                                 ^
+          """,
+          "not found: value abc"
+        )
+        * - compileError("""
+            1 + abc
+        """).check(
+          """
+            1 + abc
+                ^
+          """,
+          "not found: value abc"
+        )
+        * - compileError("""
+
+
+
+            1 + abc
+
+
+        """).check(
+          """
+            1 + abc
+                ^
+          """,
+          "not found: value abc"
+        )
+        * - compileError("true * false").check(
+          """
+        * - compileError("true * false").check(
                                ^
-          """
-        )
-        * - check[CompileError.Type](
-          compileError("""
-            1 + abc
-          """),
-          "not found: value abc",
-          """
-            1 + abc
-                ^
-          """
-        )
-        * - check[CompileError.Type](
-          compileError("""
-
-
-            1 + abc
-
-
-          """),
-          "not found: value abc",
-          """
-            1 + abc
-                ^
-          """
-        )
-        * - check[CompileError.Type](
-          compileError("true * false"),
-          "value * is not a member of Boolean",
-          """
-          compileError("true * false"),
-                             ^
-          """
+          """,
+          "value * is not a member of Boolean"
         )
         // need to work around inability to use """ in string
 
-        * - check[CompileError.Type](
-          compileError(""" true * false"""),
-          "value * is not a member of Boolean",
+        * - compileError(""" true * false""").check(
           s"""
-          compileError($qq true * false$qq),
-                                ^
-          """
+        * - compileError($qq true * false$qq).check(
+                                  ^
+          """,
+          "value * is not a member of Boolean"
         )
-        * - check[CompileError.Parse](
-          compileError("ab ( cd }"),
-          "')' expected but '}' found.",
-          """"""
+        * - compileError("ab ( cd }").check(
+          """""",
+          "')' expected but '}' found."
+
         )
       }
 
       'failure{
         // Use compileError to check itself to verify that when it
         // doesn't throw an error, it actually does (super meta!)
-        * - check[CompileError.Type](
-          compileError("""
-            check[CompileError.Type](
-              compileError("1 + 1"),
-              "",
+        * - compileError("""
+            compileError("1 + 1").check(
               ""
             )
-          """),
-          "compileError check failed to have a compilation error",
+          """).check(
           """
-              compileError("1 + 1"),
-                          ^
-          """
+            compileError("1 + 1").check(
+                        ^
+          """,
+          "compileError check failed to have a compilation error"
         )
-        * - check[CompileError.Type](
-          compileError("""
+        * - compileError("""
             val x = 0
-            check[CompileError.Type](
-              compileError("x + x"),
-              "",
-              ""
-            )
-          """),
-          "compileError check failed to have a compilation error",
+            compileError("x + x").check(
+            ""
+          )
+          """).check(
           """
-              compileError("x + x"),
-                          ^
-          """
+            compileError("x + x").check(
+                        ^
+          """,
+          "compileError check failed to have a compilation error"
         )
-        * - check[CompileError.Type](
-          compileError("""
-            check[CompileError.Type](
-              compileError("1" * 2),
-              "",
+        * - compileError("""
+            compileError("1" * 2).check(
               ""
             )
-          """),
-          "You can only have literal strings in compileError",
+        """).check(
           """
-              compileError("1" * 2),
-                               ^
-          """
+            compileError("1" * 2).check(
+                             ^
+          """,
+          "You can only have literal strings in compileError"
         )
       }
     }
