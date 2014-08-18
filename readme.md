@@ -612,7 +612,13 @@ object Build extends sbt.Build{
 
 This creates two projects, `js` and `jvm`, together with their respective folders `js/` and `jvm/` and makes them both use any code placed in `js/shared/` and `jvm/shared/` respectively. Note that `cross.root`, `cross.js`, `cross.jvm` are all normal SBT projects, and can be modified via normal `.settings` calls and other modifiers. It also cross-versions your project against the latest Scala 2.10.x and 2.11.x releases. 
 
-Typically `js/shared/` and `jvm/shared/` are symlinked so the code exists only in one place. This symlinked split-shared-layout should interact much better with IDEs than the old shared-folder layout.
+Typically `js/shared/` and `jvm/shared/` are symlinked so the code exists only in one place. This symlinked split-shared-layout should interact much better with IDEs than the old shared-folder layout. If you have an old projectl ayout with the shared files in `shared/`, running
+
+```bash
+ln -s ../shared js/shared; ln -s ../shared jvm/shared
+```
+
+In the terminal from the project root should be sufficient to set up symlinks.
 
 To cross-cross test your project against {2.11.x, 2.10.x} X {JVM, JS} using JsCrossBuild, simply use:
 
