@@ -38,6 +38,15 @@ case class LoggedValue(name: String, tpeName: String, value: Any)
 trait CompileError{
   def pos: String
   def msg: String
+
+  def check(errorPos: String, msgs: String*) = {
+    val stripped = errorPos.reverse.dropWhile("\n ".toSet.contains).reverse
+    val pos = "\n" + pos
+    assert(pos == stripped)
+    for(msg <- msgs){
+      assert(msg.contains(msg))
+    }
+  }
 }
 
 object CompileError{

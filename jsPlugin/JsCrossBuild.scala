@@ -29,8 +29,8 @@ class BootstrapCrossBuild(sharedSettings: Seq[Def.Setting[_]] = Nil,
                           jvmSettings: Seq[Def.Setting[_]] = Nil,
                           jsSettings: Seq[Def.Setting[_]] = Nil){
   val defaultSettings = Seq(
-    unmanagedSourceDirectories in Compile <+= baseDirectory(_ / ".." / "shared" / "main" / "scala"),
-    unmanagedSourceDirectories in Test <+= baseDirectory(_ / ".." / "shared" / "test" / "scala")
+    unmanagedSourceDirectories in Compile <+= baseDirectory(_ /  "shared" / "main" / "scala"),
+    unmanagedSourceDirectories in Test <+= baseDirectory(_ / "shared" / "test" / "scala")
   )
   lazy val js = project.in(file("js"))
     .settings(jsSettings ++ Plugin.internal.utestJsSettings ++ sharedSettings ++ scalaJSSettings ++ defaultSettings: _*)
