@@ -590,7 +590,7 @@ addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.2.3")
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `JsEnv`, instead of on the JVM. By default this is Rhino, but it can be configured to use NodeJS or PhantomJS if you have them installed. Test selection, coloring, etc. should all work unchanged.
 
-This version of uTest is compatible with ScalaJS 0.5.4+.
+uTest 0.2.3 is compatible with ScalaJS 0.5.4, while uTest 0.2.2 is compatible with ScalaJS 0.5.3.
 
 JsCrossBuild
 ------------
