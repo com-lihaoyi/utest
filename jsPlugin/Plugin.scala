@@ -6,7 +6,7 @@ import utest.jsrunner._
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 object Plugin extends sbt.Plugin{
-  val utestVersion = "0.2.2"
+  val utestVersion = "0.2.3"
   object internal {
     val utestJvmSettings = Seq(
       testFrameworks += new TestFramework("utest.runner.JvmFramework")
