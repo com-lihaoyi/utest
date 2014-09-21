@@ -12,11 +12,15 @@ object ExecutionContext{
    */
   implicit object RunNow extends scala.concurrent.ExecutionContext {
     def execute(runnable: Runnable) =
-      try   { runnable.run() }
-      catch { case t: Throwable => reportFailure(t) }
+      try {
+        runnable.run()
+      } catch {
+        case ae: AssertionError => throw ae
+        case t: Throwable => reportFailure(t)
+      }
 
     def reportFailure(t: Throwable) = {
-      Console.err.println("Failure in async execution: " + t)
+      Console.err.println("Failure in RunNow async execution: " + t)
       Console.err.println(t.getStackTraceString)
     }
   }

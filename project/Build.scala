@@ -1,8 +1,6 @@
 import sbt._
 import Keys._
 import scala.scalajs.sbtplugin.env.nodejs.NodeJSEnv
-import scala.scalajs.sbtplugin.env.phantomjs.PhantomJSEnv
-import scala.scalajs.sbtplugin.env.rhino.RhinoJSEnv
 import scala.scalajs.sbtplugin.ScalaJSPlugin._
 
 import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._

@@ -1,5 +1,7 @@
 package utest.framework
 
+import java.util.concurrent.{ExecutionException, TimeUnit}
+
 import scala.util.{Random, Success, Failure, Try}
 import scala.concurrent.duration.Deadline
 
@@ -48,44 +50,56 @@ class TestTreeSeq(tests: Tree[Test]) {
    *                   be failed immediately without running
    * @param ec Used to
    */
-  def runAsync(onComplete: (Seq[String], Result) => Unit,
+  def runFuture(onComplete: (Seq[String], Result) => Unit,
                path: Seq[Int],
                strPath: Seq[String] = Nil,
-               outerError: Option[SkippedOuterFailure] = None)
+               outerError: Future[Option[SkippedOuterFailure]] = Future.successful(Option.empty[SkippedOuterFailure]))
               (implicit ec: ExecutionContext): Future[Tree[Result]] = {
 
     Future{
       val start = Deadline.now
-      val tryResult =
-        outerError.fold(Try(tests.value.TestThunkTree.run(path.toList)))(Failure(_))
+      val tryResult = outerError.map(_.fold(Try(tests.value.TestThunkTree.run(path.toList)))(Failure(_)))
 
-      val thisError = tryResult match{
+      def matchError(t: Try[Any]): Option[SkippedOuterFailure] = t match {
         case Success(_) => None
         case Failure(e: SkippedOuterFailure) => Some(e)
         case Failure(e) => Some(SkippedOuterFailure(strPath, e))
+        case x => None
+      }
+
+      val thisError = tryResult.flatMap {
+        case Success(f: Future[Try[Any] @unchecked]) =>
+          f.map(matchError).recover { case ex: Throwable => Some(SkippedOuterFailure(strPath, ex.getCause)) }
+        case t =>
+          Future.successful(matchError(t))
       }
 
       val childRuns =
         tests.children
           .zipWithIndex.map{ case (v, i) =>
-          v.runAsync(onComplete, path :+ i, strPath :+ v.value.name, thisError)
+          v.runFuture(onComplete, path :+ i, strPath :+ v.value.name, thisError)
         }
 
-      val temp = childRuns.foldLeft(Future(List.empty[Tree[Result]])){
+      val futureResults = childRuns.foldLeft(Future(List.empty[Tree[Result]])){
         case (a, b) => a.flatMap(a => b.map(b => a :+ b))
       }
 
-      val sequenced = temp.map{ results =>
-        val end = Deadline.now
-        val result = Result(tests.value.name, tryResult, end.time.toMillis - start.time.toMillis)
-        onComplete(strPath, result)
-        new Tree(
-          result,
-          results
+      tryResult.flatMap{
+        case Success(f: Future[_]) => f.map(Success(_)).recover { case ex: Throwable => Failure(ex.getCause) }
+        case Success(value) => Future.successful(Success(value))
+        case Failure(ex) => Future.successful(Failure(ex))
+      }.flatMap(res =>
+          futureResults.map { results => {
+            val end = Deadline.now
+            val result = Result(tests.value.name, res, end.time.toMillis - start.time.toMillis)
+            onComplete(strPath, result)
+            new Tree(
+              result,
+              results
+            )
+          }
+          }
         )
-      }
-
-      sequenced
     }.flatMap(x => x)
   }
 
@@ -106,15 +120,21 @@ class TestTreeSeq(tests: Tree[Test]) {
     (indices, current)
   }
 
+  def runAsync(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
+          strPath: Seq[String] = Nil,
+          testPath: Seq[String] = Nil)
+         (implicit ec: ExecutionContext): Future[Tree[Result]] = {
+
+    val (indices, current) = resolve(testPath)
+    current.runFuture(onComplete, indices, strPath)
+  }
+
   def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
           strPath: Seq[String] = Nil,
           testPath: Seq[String] = Nil)
          (implicit ec: ExecutionContext): Tree[Result] = {
 
-    val (indices, current) = resolve(testPath)
-    val future = current.runAsync(onComplete, indices, strPath)
-
-    PlatformShims.await(future)
+    PlatformShims.await(runAsync(onComplete, strPath, testPath))
   }
 }
 

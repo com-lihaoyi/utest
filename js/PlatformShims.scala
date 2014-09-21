@@ -1,18 +1,23 @@
 package utest
 
 
-import scala.util.{Failure, Success}
-import scala.scalajs.js.annotation.{JSExportDescendentObjects, JSExport}
 import scala.concurrent.Future
 import scala.scalajs.js
+import scala.scalajs.js.annotation.{JSExport, JSExportDescendentObjects}
 import scala.scalajs.runtime.StackTrace.ColumnStackTraceElement
+import scala.util.{Failure, Success}
 
 /**
  * Platform specific stuff that differs between JVM and JS
  */
 @JSExport
 object PlatformShims {
-  def await[T](f: Future[T]): T = f.value.get.get
+  def await[T](f: Future[T]): T = {
+    f.value match {
+      case Some(v) => v.get
+      case None => throw new IllegalStateException("Test that returns Future must be run asynchronously TestTreeSeq::runAsync")
+    }
+  }
 
   def escape(s: String) = {
     s.replace("\\", "\\\\").replace("\t", "\\t")
@@ -47,7 +52,11 @@ object PlatformShims {
       s => println("XXSecretXX/logFailure/" + s),
       s => println("XXSecretXX/addTotal/" + s)
     )
-    println("XXSecretXX/result/" + res.replace("\\", "\\\\").replace("\n", "\\n"))
+    res.onComplete {
+      case Failure(ex) => Console.err.println(ex.getStackTraceString)
+      case Success(results) =>
+        println("XXSecretXX/result/" + results.replace("\\", "\\\\").replace("\n", "\\n"))
+    }(ExecutionContext.RunNow)
   }
 
   @JSExportDescendentObjects

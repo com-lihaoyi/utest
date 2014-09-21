@@ -1,12 +1,12 @@
 
-import scala.reflect.ClassTag
-import scala.reflect.macros.Context
-import scala.util.{Failure, Success, Try}
-import utest.framework.{TestTreeSeq, Test}
 import utest.asserts._
+import utest.framework.{Test, TestTreeSeq}
 import utest.util.Tree
-import concurrent.duration._
-import utest.util.Tree
+
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.reflect.ClassTag
+import scala.util.Failure
 
 /**
  * Created by haoyi on 1/24/14.
@@ -14,7 +14,7 @@ import utest.util.Tree
 package object utest {
   implicit val retryInterval = new RetryInterval(100.millis)
   implicit val retryMax = new RetryMax(1.second)
-  import language.experimental.macros
+  import scala.language.experimental.macros
 
 
   /**
@@ -104,7 +104,7 @@ package object utest {
                addCount: String => Unit,
                log: String => Unit,
                logFailure: String => Unit,
-               addTotal: String => Unit) = {
+               addTotal: String => Unit): Future[String] = {
     import suite.tests
     val (indices, found) = tests.resolve(path)
     addTotal(found.length.toString)
@@ -117,7 +117,7 @@ package object utest {
       }
 
     val formatter = DefaultFormatter(args)
-    val results = tests.run(
+    val results = tests.runAsync(
       (path, s) => {
         addCount(s.value.isSuccess.toString)
         val str = formatter.formatSingle(path, s)
@@ -132,7 +132,7 @@ package object utest {
       },
       testPath = path
     )(ec)
-    formatter.format(results)
+    results.map { formatter.format }
   }
 }
 
