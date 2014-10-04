@@ -9,7 +9,7 @@ object FrameworkAsyncTests extends TestSuite{
     'hello{
       Future(10)
     }
-    
+
     'asyncFailures {
       val tests = TestSuite {
         "testSuccessAsync" - {

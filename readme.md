@@ -16,6 +16,7 @@ Contents
 - [Getting Started](#getting-started)
 - [Defining and Running a Test Suite](#defining-and-running-a-test-suite)
   - [Results](#results)
+  - [Asynchronous Tests](#asynchronous-tests)
 - [Macro Asserts](#macro-asserts)
   - [Intercept](#intercept)
   - [Eventually and Continually](#eventually-and-continually)
@@ -201,7 +202,9 @@ tests.runAsync().map {    results =>
 
 You can have tests which return (have a last expression being) a `Future[T]` instead of a normal value. You can run the suite using `.runAsync` to return a `Future` of the results, or you can continue using `.run` which will wait for all the futures to complete before returning.
 
-In Scala.js, calling `.run` on a test suite with futures in it throws an error instead of waiting, since you cannot wait in Scala.js
+In Scala.js, calling `.run` on a test suite with futures in it throws an error instead of waiting, since you cannot wait in Scala.js.
+
+When running the test suites from SBT, you do not need worry about any of this `run` vs `runAsync` stuff: the test runner will handle it for you and provide the correct results. 
 
 Macro Asserts
 =============
