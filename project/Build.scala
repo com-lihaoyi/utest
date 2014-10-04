@@ -26,8 +26,12 @@ object Build extends sbt.Build{
   )
 
   lazy val root = cross.root.aggregate(runner)
-  lazy val js = cross.js.settings((jsEnv in Test) := new NodeJSEnv())
-  lazy val jvm = cross.jvm.dependsOn(runner)
+  lazy val js = cross.js.settings(
+    (jsEnv in Test) := new NodeJSEnv()
+  )
+  lazy val jvm = cross.jvm.dependsOn(runner).settings(
+    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test"
+  )
 
   lazy val runner = project.settings(sharedSettings:_*)
                            .settings(

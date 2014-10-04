@@ -1,4 +1,4 @@
-µTest 0.2.3
+µTest 0.2.4
 ===========
 
 uTest (pronounced micro-test) is a lightweight testing library for Scala. Its key features are:
@@ -34,7 +34,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.3"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.4"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -167,6 +167,41 @@ println(new DefaultFormatter().format(test.run()))
 `DefaultFormatter` has a number of optional arguments that allow you to set the line-length-cutoff, whether the output uses console colors, whether stack traces are printed and other useful things.
 
 You may have noticed that each `Result` contains a `Try[Any]` rather than an `Option[Throwable]`. This value is the last value in the test block, and is generally useful to pass data "out of" tests. For example, the `DefaultFormatter` displays it together with `Success` message, making it a nice sanity-check to let you confirm (visually) that the tests indeed did what they were supposed to.
+
+Asynchronous Tests
+------------------
+
+```scala
+val tests = TestSuite {
+  "testSuccess" - {
+    Future {
+      assert(true)
+    }
+  }
+  "testFail" - {
+    Future {
+      assert(false)
+    }
+  }
+  "normalSuccess" - {
+    assert(true)
+  }
+  "normalFail" - {
+    assert(false)
+  }
+}
+
+tests.runAsync().map {    results =>
+  assert(results.toSeq(0).value.isSuccess) // root
+  assert(results.toSeq(1).value.isSuccess) // testSuccess
+  assert(results.toSeq(2).value.isFailure) // testFail
+  assert(results.toSeq(3).value.isSuccess) // normalSuccess
+}
+```
+
+You can have tests which return (have a last expression being) a `Future[T]` instead of a normal value. You can run the suite using `.runAsync` to return a `Future` of the results, or you can continue using `.run` which will wait for all the futures to complete before returning.
+
+In Scala.js, calling `.run` on a test suite with futures in it throws an error instead of waiting, since you cannot wait in Scala.js
 
 Macro Asserts
 =============
@@ -445,7 +480,7 @@ Running tests with SBT
 To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.3"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.4"
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
 ```
@@ -585,12 +620,12 @@ utest.jsrunner.Plugin.utestJsSettings
 And the following to your `project/build.sbt`
 
 ```scala
-addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.2.3")
+addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.2.4")
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `JsEnv`, instead of on the JVM. By default this is Rhino, but it can be configured to use NodeJS or PhantomJS if you have them installed. Test selection, coloring, etc. should all work unchanged.
 
-uTest 0.2.3 is compatible with ScalaJS 0.5.4, while uTest 0.2.2 is compatible with ScalaJS 0.5.3.
+uTest 0.2.4 is compatible with ScalaJS 0.5.4, while uTest 0.2.2 is compatible with ScalaJS 0.5.3.
 
 JsCrossBuild
 ------------
@@ -668,6 +703,11 @@ To publish use
 
 Changelog
 =========
+
+0.2.4
+-----
+
+- Added support for asynchronous tests which return a `Future`. 
 
 0.2.3
 -----

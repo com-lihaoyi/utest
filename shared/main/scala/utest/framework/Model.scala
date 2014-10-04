@@ -85,6 +85,7 @@ class TestTreeSeq(tests: Tree[Test]) {
       }
 
       tryResult.flatMap{
+        // Special-case tests which return a future, in order to wait for them to finish
         case Success(f: Future[_]) => f.map(Success(_)).recover { case ex: Throwable => Failure(ex.getCause) }
         case Success(value) => Future.successful(Success(value))
         case Failure(ex) => Future.successful(Failure(ex))

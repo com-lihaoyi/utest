@@ -15,8 +15,8 @@ object ExecutionContext{
       try {
         runnable.run()
       } catch {
-        case ae: AssertionError => throw ae
-        case t: Throwable => reportFailure(t)
+
+        case t: Throwable => throw t
       }
 
     def reportFailure(t: Throwable) = {
