@@ -116,6 +116,7 @@ package object utest {
         ExecutionContext.RunNow
       }
 
+    val formatAll = utest.util.ArgParse.find("--formatAll", _.toBoolean, false, true)(args)
     val formatter = DefaultFormatter(args)
     val results = tests.runAsync(
       (path, s) => {
@@ -132,7 +133,13 @@ package object utest {
       },
       testPath = path
     )(ec)
-    results.map { formatter.format }
+    log(tests.length + "\t" + path.length + "\t" + suite.getClass.toString.split('.').length)
+    results.map { res =>
+//      if (res.leaves.length > 1 || (tests.leaves.length == 1))
+        formatter.format(res)
+//      else
+//        ""
+    }
   }
 }
 

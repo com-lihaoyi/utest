@@ -12,6 +12,7 @@ object AssertsTests extends TestSuite{
   def tests = TestSuite{
     'assert{
       'success{
+        assert(false)
         def f(x: Boolean) = x
         assert(f(true))
         "success!"
@@ -52,6 +53,7 @@ object AssertsTests extends TestSuite{
         )
       }
       'failureWithException{
+        1/0
         val x = 1L
         val y = 0l
         try {
@@ -65,6 +67,7 @@ object AssertsTests extends TestSuite{
       }
 
       'tracingOnFailure{
+        (new Array(1))(10)
         try {
           val a = "i am cow"
           val b = 31337
