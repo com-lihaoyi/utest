@@ -1,10 +1,9 @@
 import sbt._
 import Keys._
-import scala.scalajs.sbtplugin.env.nodejs.NodeJSEnv
-import scala.scalajs.sbtplugin.ScalaJSPlugin._
+import org.scalajs.sbtplugin.ScalaJSPlugin._
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
-import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
-import scala.scalajs.sbtplugin.testing.JSClasspathLoader
+import org.scalajs.core.tools.sem.CheckedBehavior
 
 import utest.jsrunner._
 
@@ -12,8 +11,7 @@ object Build extends sbt.Build{
   lazy val cross = new BootstrapCrossBuild(
     Seq(
       libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-        "org.scala-sbt" % "test-interface" % "1.0"
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value
       ) ++ (
         if (scalaVersion.value startsWith "2.11.") Nil
         else Seq(
@@ -25,26 +23,25 @@ object Build extends sbt.Build{
     ) ++ sharedSettings
   )
 
-  lazy val root = cross.root.aggregate(runner)
+  lazy val root = cross.root
   lazy val js = cross.js.settings(
-    (jsEnv in Test) := new NodeJSEnv()
+    libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion,
+    scalaJSStage in Test := FastOptStage,
+    scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant))
   )
-  lazy val jvm = cross.jvm.dependsOn(runner).settings(
-    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test"
-  )
-
-  lazy val runner = project.settings(sharedSettings:_*)
-                           .settings(
-    libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
-    name := "utest-runner"
+  lazy val jvm = cross.jvm.settings(
+    libraryDependencies ++= Seq(
+      "org.scala-sbt" % "test-interface" % "1.0",
+      "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
+      "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test"
+    )
   )
 
   lazy val jsPlugin = project.in(file("jsPlugin"))
-                             .dependsOn(runner)
                              .settings(sharedSettings:_*)
                              .settings(
 
-    addSbtPlugin("org.scala-lang.modules.scalajs" % "scalajs-sbt-plugin" % "0.5.4"),
+    addSbtPlugin("org.scala-js" % "scalajs-sbt-plugin" % "0.5.4"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true

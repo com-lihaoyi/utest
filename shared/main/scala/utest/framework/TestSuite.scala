@@ -4,12 +4,14 @@ package framework
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
 
+import scala.scalajs.js.annotation.JSExportDescendentObjects
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
  * for test-discovery by SBT.
  */
-abstract class TestSuite extends PlatformShims.Test{
+@JSExportDescendentObjects
+abstract class TestSuite{
   /**
    * The tests within this `object`.
    */

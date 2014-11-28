@@ -2,10 +2,10 @@ package utest.jsrunner
 
 import sbt._
 import sbt.Keys._
-import scala.scalajs.sbtplugin.ScalaJSPlugin.ScalaJSKeys._
-import scala.scalajs.sbtplugin.ScalaJSPlugin._
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+import org.scalajs.sbtplugin.ScalaJSPlugin._
 import sbt.TestFramework
-import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 
 /**
  * A standard way of defining cross-js/jvm builds. Defines two sub-projects
@@ -18,7 +18,7 @@ import scala.scalajs.sbtplugin.testing.JSClasspathLoader
 class JsCrossBuild(sharedSettings: Def.Setting[_]*) extends BootstrapCrossBuild(
   sharedSettings,
   libraryDependencies += "com.lihaoyi" %% "utest" % Plugin.utestVersion % "test",
-  libraryDependencies += "com.lihaoyi" %%% "utest" % Plugin.utestVersion % "test"
+  libraryDependencies += "com.lihaoyi" %%%! "utest" % Plugin.utestVersion % "test"
 )
 
 /**
@@ -34,7 +34,8 @@ class BootstrapCrossBuild(sharedSettings: Seq[Def.Setting[_]] = Nil,
   )
 
   lazy val js = project.in(file("js"))
-    .settings(jsSettings ++ Plugin.internal.utestJsSettings ++ sharedSettings ++ scalaJSSettings ++ defaultSettings: _*)
+    .enablePlugins(ScalaJSPlugin)
+    .settings(jsSettings ++ Plugin.internal.utestJsSettings ++ sharedSettings ++ defaultSettings: _*)
 
   lazy val jvm = project.in(file("jvm"))
     .settings(jvmSettings ++ Plugin.internal.utestJvmSettings ++ sharedSettings ++ defaultSettings:_*)

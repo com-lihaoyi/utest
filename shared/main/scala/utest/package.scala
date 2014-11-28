@@ -104,6 +104,7 @@ package object utest {
                addCount: String => Unit,
                log: String => Unit,
                logFailure: String => Unit,
+               logTrace: Throwable => Unit,
                addTotal: String => Unit): Future[String] = {
     import suite.tests
     val (indices, found) = tests.resolve(path)
@@ -111,7 +112,7 @@ package object utest {
 
     implicit val ec =
       if (utest.util.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
-        PlatformShims.globalExecutionContext
+        scala.concurrent.ExecutionContext.global
       }else{
         ExecutionContext.RunNow
       }
@@ -126,7 +127,7 @@ package object utest {
         val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)(args)
         s.value match{
           case Failure(e) =>
-            if (trace) PlatformShims.printTrace(e)
+            if (trace) logTrace(e)
             logFailure(str)
           case _ => ()
         }
