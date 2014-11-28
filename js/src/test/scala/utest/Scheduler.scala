@@ -7,6 +7,6 @@ object Scheduler {
   def scheduleOnce[T](interval: FiniteDuration)
                      (thunk: => T)
                      (implicit executor: ExecutionContext): Unit = {
-    scalajs.js.Dynamic.global.setTimeout(() => thunk, 10000)
+    scalajs.js.Dynamic.global.setTimeout(() => thunk, interval.toMillis)
   }
 }
