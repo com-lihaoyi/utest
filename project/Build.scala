@@ -27,21 +27,23 @@ object Build extends sbt.Build{
   lazy val js = cross.js.settings(
     libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion,
     scalaJSStage in Test := FastOptStage,
-    scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant))
+    scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant)),
+    resolvers += Resolver.sonatypeRepo("snapshots")
   )
   lazy val jvm = cross.jvm.settings(
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
       "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test"
-    )
+    ),
+    resolvers += Resolver.sonatypeRepo("snapshots")
   )
 
   lazy val jsPlugin = project.in(file("jsPlugin"))
                              .settings(sharedSettings:_*)
                              .settings(
 
-    addSbtPlugin("org.scala-js" % "scalajs-sbt-plugin" % "0.5.4"),
+    addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.0-SNAPSHOT"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true

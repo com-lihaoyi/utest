@@ -39,15 +39,19 @@ final class MasterRunner(args: Array[String],
     val body = results.get.mkString("\n")
 
     if (failure.get() != 0 && args.contains("--throw")) throw new Exception("Tests Failed")
-    Seq(
-      header,
-      body,
-      "Failures:",
-      failures.get().mkString("\n"),
-      s"Tests: $total",
-      s"Passed: $success",
-      s"Failed: $failure"
-    ).mkString("\n")
+    else if (total.get == 1) " " // can't be empty because then SBT will fill it with trash
+    else {
+      Seq(
+        header,
+        body,
+        "Failures:",
+        failures.get().mkString("\n"),
+        s"Tests: $total",
+        s"Passed: $success",
+        s"Failed: $failure"
+      ).mkString("\n")
+    }
+
   }
 
   def receiveMessage(msg: String): Option[String] = {

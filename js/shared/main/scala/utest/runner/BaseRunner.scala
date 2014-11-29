@@ -24,11 +24,11 @@ abstract class BaseRunner(val args: Array[String],
    * @param loggers SBT loggers which are interested in the logspam generated
    * @param name The name of the test class/object
    */
-  def runUTestTask(s: Seq[String], loggers: Seq[Logger], name: String) = {
+  def runUTestTask(selector: Seq[String], loggers: Seq[Logger], name: String) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
     utest.runSuite(
       suite,
-      s.toArray,
+      selector.toArray,
       args,
       s => if(s.toBoolean) incSuccess() else  incFailure(),
       msg => loggers.foreach(_.info(progressString + name + "" + msg)),

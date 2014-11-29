@@ -174,7 +174,7 @@ object AssertsTests extends TestSuite{
         * - compileError($qq 1 + abc$qq).check(
                                  ^
           """,
-          "not found: value abc"
+          Thread.sleep(10000) + "not found: value abc"
         )
         * - compileError("""
             1 + abc

@@ -99,8 +99,8 @@ class TestTreeSeq(tests: Tree[Test]) {
               results
             )
           }
-          }
-        )
+        }
+      )
     }.flatMap(x => x)
   }
 

@@ -120,9 +120,9 @@ package object utest {
     val formatAll = utest.util.ArgParse.find("--formatAll", _.toBoolean, false, true)(args)
     val formatter = DefaultFormatter(args)
     val results = tests.runAsync(
-      (path, s) => {
+      (subpath, s) => {
         addCount(s.value.isSuccess.toString)
-        val str = formatter.formatSingle(path, s)
+        val str = formatter.formatSingle(path ++ subpath, s)
         log(str)
         val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)(args)
         s.value match{
@@ -134,13 +134,8 @@ package object utest {
       },
       testPath = path
     )(ec)
-    log(tests.length + "\t" + path.length + "\t" + suite.getClass.toString.split('.').length)
-    results.map { res =>
-//      if (res.leaves.length > 1 || (tests.leaves.length == 1))
-        formatter.format(res)
-//      else
-//        ""
-    }
+
+    results.map(formatter.format)
   }
 }
 

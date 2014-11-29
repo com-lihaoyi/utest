@@ -36,27 +36,34 @@ class DefaultFormatter(color: Boolean = true,
                        truncate: Int = 500,
                        trace: Boolean = true) extends Formatter{
   
-  def prettyTruncate(r: Result, length: Int = truncate): String = {
+  def prettyTruncate(r: Result, errorFormatter: Throwable => String): String = {
 
-    val colorStr  = if (r.value.isSuccess) Console.GREEN else Console.RED
-    val cutUnit =
-      if (r.value == Success(())) "Success"
-      else r.value.toString
+    val colorStr = if (r.value.isSuccess) Console.GREEN else Console.RED
+    val cutUnit = r.value match{
+      case Success(()) => "Success"
+      case Success(v) => v.toString
+      case Failure(e) => errorFormatter(e)
+    }
 
     val truncUnit =
-      if (cutUnit.length > length) cutUnit.take(length) + "..."
+      if (cutUnit.length > truncate) cutUnit.take(truncate) + "..."
       else cutUnit
 
     if (color) colorStr + truncUnit + Console.RESET else truncUnit
   }
 
   def formatSingle(path: Seq[String], r: Result): String = {
-    path.map("." + _).mkString + "\t\t" + prettyTruncate(r)
+    path.map("." + _).mkString + "\t\t" + prettyTruncate(
+      r,
+      e => s"Failure ${("\n"+e.toString).replace("\n", "\n    \t\t" + Console.RED)}"
+    )
   }
 
   def format(results: Tree[Result]): String = {
-    results.map(r => r.name + "\t\t" + prettyTruncate(r))
-           .reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n    "))
+
+    results.map(r =>
+      r.name + "\t\t" + prettyTruncate(r, e => s"Failure(${e.getClass.getName})")
+    ).reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n    "))
   }
 }
 
