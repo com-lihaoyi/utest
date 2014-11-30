@@ -103,8 +103,7 @@ package object utest {
                args: Array[String],
                addCount: String => Unit,
                log: String => Unit,
-               logFailure: String => Unit,
-               logTrace: Throwable => Unit,
+               logFailure: (String, Throwable) => Unit,
                addTotal: String => Unit): Future[String] = {
     import suite.tests
     val (indices, found) = tests.resolve(path)
@@ -127,8 +126,7 @@ package object utest {
         val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)(args)
         s.value match{
           case Failure(e) =>
-            if (trace) logTrace(e)
-            logFailure(str)
+            logFailure(str, e)
           case _ => ()
         }
       },

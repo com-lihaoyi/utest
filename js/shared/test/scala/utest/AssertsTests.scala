@@ -14,6 +14,7 @@ object AssertsTests extends TestSuite{
       'success{
         def f(x: Boolean) = x
         assert(f(true))
+        assert(1 == 2)
         "success!"
       }
       'failure{
@@ -174,7 +175,7 @@ object AssertsTests extends TestSuite{
         * - compileError($qq 1 + abc$qq).check(
                                  ^
           """,
-          Thread.sleep(10000) + "not found: value abc"
+          "not found: value abc"
         )
         * - compileError("""
             1 + abc

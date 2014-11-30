@@ -10,7 +10,7 @@ import utest.ExecutionContext
 class Task(val taskDef: TaskDef,
            args: Array[String],
            path: String,
-           runUTestTask: (Seq[String], Seq[Logger], String) => Future[Unit])
+           runUTestTask: (Seq[String], Seq[Logger], String, EventHandler) => Future[Unit])
            extends sbt.testing.Task{
 
   def tags(): Array[String] = Array()
@@ -43,12 +43,16 @@ class Task(val taskDef: TaskDef,
     val fqName = taskDef.fullyQualifiedName()
 
     if (allPaths.exists(fqName.startsWith)){
-      runUTestTask(Nil, loggers, fqName)
+      runUTestTask(Nil, loggers, fqName, eventHandler)
     } else {
       implicit val ex = ExecutionContext.RunNow
       val futs = allPaths.filter(_.startsWith(fqName)).map{p =>
-        runUTestTask(p.drop(fqName.length).split("\\.").filter(_.length > 0),
-          loggers, fqName)
+        runUTestTask(
+          p.drop(fqName.length).split("\\.").filter(_.length > 0),
+          loggers,
+          fqName,
+          eventHandler
+        )
       }
       Future.sequence(futs)
     } // else do nothing

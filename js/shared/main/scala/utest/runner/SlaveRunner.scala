@@ -18,7 +18,12 @@ final class SlaveRunner(args: Array[String],
 
   def addResult(r: String): Unit = send(s"r$r")
 
-  def addFailure(r: String): Unit = send(s"f$r")
+  def addFailure(r: String): Unit = {
+    send(s"f$r")
+  }
+  def addTrace(trace: String): Unit = {
+    send(s"c$trace")
+  }
 
   def addTotal(v: Int): Unit = {
     totalCount += v // temporarily

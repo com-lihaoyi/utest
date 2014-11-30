@@ -1,5 +1,5 @@
 package utest.runner
-import sbt.testing.{Logger, TaskDef}
+import sbt.testing._
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.annotation.tailrec
 
@@ -11,7 +11,6 @@ import scala.util.{Failure, Success}
 import concurrent.duration._
 
 import org.scalajs.testinterface.TestUtils
-
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader)
@@ -24,22 +23,33 @@ abstract class BaseRunner(val args: Array[String],
    * @param loggers SBT loggers which are interested in the logspam generated
    * @param name The name of the test class/object
    */
-  def runUTestTask(selector: Seq[String], loggers: Seq[Logger], name: String) = {
+  def runUTestTask(selector: Seq[String],
+                   loggers: Seq[Logger],
+                   name: String,
+                   eventHandler: EventHandler) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
+
     utest.runSuite(
       suite,
       selector.toArray,
       args,
       s => if(s.toBoolean) incSuccess() else  incFailure(),
-      msg => loggers.foreach(_.info(progressString + name + "" + msg)),
-      msg => addFailure(progressString + name + "" + msg),
-      t => loggers.foreach(_.trace(t)),
+      msg => {
+        loggers.foreach(_.info(progressString + name + "" + msg))
+      },
+      (msg, trace) => {
+        trace.setStackTrace(trace.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree"))
+        loggers.foreach(_.trace(trace))
+        addFailure(progressString + name + "" + msg)
+        addTrace(trace.getStackTrace.map(_.toString).mkString("\n"))
+      },
       s => addTotal(s.toInt)
     ).map(addResult)(ExecutionContext.RunNow)
   }
 
   def addResult(r: String): Unit
   def addFailure(r: String): Unit
+  def addTrace(trace: String): Unit
   def addTotal(v: Int): Unit
   def incSuccess(): Unit
   def incFailure(): Unit

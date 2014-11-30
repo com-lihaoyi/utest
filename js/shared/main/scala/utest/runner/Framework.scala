@@ -1,6 +1,6 @@
 package utest.runner
 import sbt.testing.SubclassFingerprint
-
+import sbt.testing.EventHandler;
 final class Framework extends sbt.testing.Framework{
 
   def name(): String = "utest"

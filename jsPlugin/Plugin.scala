@@ -6,7 +6,7 @@ import utest.jsrunner._
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 import org.scalajs.sbtplugin.ScalaJSPlugin._
 object Plugin extends sbt.Plugin{
-  val utestVersion = "0.2.4"
+  val utestVersion = "0.2.5-M1"
   object internal {
     val utestSettings = Seq(
       testFrameworks += new TestFramework("utest.runner.Framework")

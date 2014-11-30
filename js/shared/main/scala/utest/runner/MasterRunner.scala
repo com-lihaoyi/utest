@@ -14,8 +14,8 @@ final class MasterRunner(args: Array[String],
   val success = new AtomicInteger(0)
   val failure = new AtomicInteger(0)
   val failures = new AtomicReference[List[String]](Nil)
-
-  @tailrec final def addResult(r: String): Unit = {
+  val traces = new AtomicReference[List[String]](Nil)
+  @tailrec def addResult(r: String): Unit = {
     val old = results.get()
     if (!results.compareAndSet(old, r :: old)) addResult(r)
   }
@@ -23,6 +23,10 @@ final class MasterRunner(args: Array[String],
   @tailrec final def addFailure(r: String): Unit = {
     val old = failures.get()
     if (!failures.compareAndSet(old, r :: old)) addFailure(r)
+  }
+  @tailrec final def addTrace(r: String): Unit = {
+    val old = traces.get()
+    if (!traces.compareAndSet(old, r :: old)) addTrace(r)
   }
 
   def addTotal(v: Int): Unit = total.addAndGet(v)
@@ -45,7 +49,7 @@ final class MasterRunner(args: Array[String],
         header,
         body,
         "Failures:",
-        failures.get().mkString("\n"),
+        failures.get().zip(traces.get()).map(x => x._1 + "\n" + x._2).mkString("\n").replace("\n", "\n"+Console.RED),
         s"Tests: $total",
         s"Passed: $success",
         s"Failed: $failure"
@@ -58,12 +62,10 @@ final class MasterRunner(args: Array[String],
     def badMessage = sys.error("bad message: " + msg)
     msg(0) match {
       case 'h' => // hello message. nothing special to do
-      case 'r' =>
-        addResult(msg.tail)
-      case 'f' =>
-        addFailure(msg.tail)
-      case 't' =>
-        addTotal(msg.tail.toInt)
+      case 'r' => addResult(msg.tail)
+      case 'f' => addFailure(msg.tail)
+      case 't' => addTotal(msg.tail.toInt)
+      case 'c' => addTrace(msg.tail)
       case 'i' => msg(1) match {
         case 's' => incSuccess
         case 'f' => incFailure
