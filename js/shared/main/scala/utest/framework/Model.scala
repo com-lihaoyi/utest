@@ -74,15 +74,15 @@ class TestTreeSeq(tests: Tree[Test]) {
           Future.successful(matchError(t))
       }
 
-      val childRuns =
-        tests.children
-          .zipWithIndex.map{ case (v, i) =>
-          v.runFuture(onComplete, path :+ i, strPath :+ v.value.name, thisError)
+      def runChildren(tail: Seq[Tree[Test]], results: List[Tree[Result]], index: Int): Future[List[Tree[Result]]] = {
+        tail.headOption.fold(Future(results)) { head =>
+          head.runFuture(onComplete, path :+ index, strPath :+ head.value.name, thisError).flatMap { result =>
+            runChildren(tail.tail, results :+ result, index+1)
+          }
         }
-
-      val futureResults = childRuns.foldLeft(Future(List.empty[Tree[Result]])){
-        case (a, b) => a.flatMap(a => b.map(b => a :+ b))
       }
+
+      val futureResults = runChildren(tests.children, List(), 0)
 
       tryResult.flatMap{
         // Special-case tests which return a future, in order to wait for them to finish
