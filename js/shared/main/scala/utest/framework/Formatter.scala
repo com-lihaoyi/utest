@@ -60,8 +60,11 @@ class DefaultFormatter(color: Boolean = true,
   }
 
   def format(results: Tree[Result]): String = {
+    def errorFormatter(ex: Throwable): String =
+      s"Failure('$ex'${Option(ex.getCause).fold("")(cause => s" caused by '$cause'")})"
+
     results.map(r =>
-      r.name + "\t\t" + prettyTruncate(r, e => s"Failure ${e.getClass.getName}", r => (" " * r.name.length))
+      r.name + "\t\t" + prettyTruncate(r, errorFormatter, r => (" " * r.name.length))
     ).reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n    "))
   }
 }
