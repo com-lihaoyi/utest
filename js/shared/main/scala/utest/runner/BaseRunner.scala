@@ -29,40 +29,37 @@ abstract class BaseRunner(val args: Array[String],
                    eventHandler: EventHandler) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
     val selectorString = selector.mkString(".")
+    def handleEvent(op: OptionalThrowable, st: Status) = {
+      eventHandler.handle(new Event {
+        def fullyQualifiedName() = selectorString
+        def throwable() = op
+        def status() = st
+        def selector() = new TestSelector(selectorString)
+        def fingerprint() = new SubclassFingerprint {
+          def superclassName = "utest.framework.TestSuite"
+          def isModule = true
+          def requireNoArgConstructor = true
+        }
+        def duration() = 0
+      })
+    }
     utest.runSuite(
       suite,
-      selector.toArray,
+      selector,
       args,
-      s => if(s.toBoolean) incSuccess() else  incFailure(),
-      msg => {
-        eventHandler.handle(new Event {
-          def fullyQualifiedName() = selectorString
-          def throwable() = new OptionalThrowable()
-          def status() = Status.Success
-          def selector() = new TestSelector(selectorString)
-          def fingerprint() = new SubclassFingerprint {
-            def superclassName = "utest.framework.TestSuite"
-            def isModule = true
-            def requireNoArgConstructor = true
-          }
-          def duration() = 0
-        })
+      addCount = b => if(b) incSuccess() else  incFailure(),
+      log = msg => {
+        handleEvent(new OptionalThrowable(), Status.Success)
         loggers.foreach(_.info(progressString + name + "" + msg))
       },
-      (msg, thrown) => {
-        eventHandler.handle(new Event {
-          def fullyQualifiedName() = selectorString
-          def throwable() = new OptionalThrowable(thrown)
-          def status() = Status.Failure
-          def selector() = new TestSelector(selectorString)
-          def fingerprint() = new SubclassFingerprint {
-            def superclassName = "utest.framework.TestSuite"
-            def isModule = true
-            def requireNoArgConstructor = true
-          }
-          def duration() = 0
-        })
-        thrown.setStackTrace(thrown.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree"))
+      logFailure = (msg, thrown) => {
+        handleEvent(new OptionalThrowable(thrown), Status.Failure)
+
+        // Trim the stack trace so all the utest internals don't get shown,
+        // since the user probably doesn't care about those anyway
+        thrown.setStackTrace(
+          thrown.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
+        )
         addFailure(progressString + name + "" + msg)
         addTrace(
           if (thrown.isInstanceOf[utest.SkippedOuterFailure]) ""
