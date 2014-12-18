@@ -55,13 +55,13 @@ class DefaultFormatter(color: Boolean = true,
   def formatSingle(path: Seq[String], r: Result): String = {
     path.map("." + _).mkString + "\t\t" + prettyTruncate(
       r,
-      e => s"Failure ${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "\t\t" + Console.RED)}"
+      e => s"${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "\t\t" + Console.RED)}"
     )
   }
 
   def format(results: Tree[Result]): String = {
     results.map(r =>
-      r.name + "\t\t" + prettyTruncate(r, e => s"Failure ${e.getClass.getName}", r => (" " * r.name.length))
+      r.name + "\t\t" + prettyTruncate(r, e => s"${e.getClass.getName}", r => " " * r.name.length)
     ).reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n    "))
   }
 }

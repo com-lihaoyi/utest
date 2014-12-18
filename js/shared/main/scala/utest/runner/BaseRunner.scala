@@ -28,20 +28,46 @@ abstract class BaseRunner(val args: Array[String],
                    name: String,
                    eventHandler: EventHandler) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
-
+    val selectorString = selector.mkString(".")
     utest.runSuite(
       suite,
       selector.toArray,
       args,
       s => if(s.toBoolean) incSuccess() else  incFailure(),
       msg => {
+        eventHandler.handle(new Event {
+          def fullyQualifiedName() = selectorString
+          def throwable() = new OptionalThrowable()
+          def status() = Status.Success
+          def selector() = new TestSelector(selectorString)
+          def fingerprint() = new SubclassFingerprint {
+            def superclassName = "utest.framework.TestSuite"
+            def isModule = true
+            def requireNoArgConstructor = true
+          }
+          def duration() = 0
+        })
         loggers.foreach(_.info(progressString + name + "" + msg))
       },
-      (msg, trace) => {
-        trace.setStackTrace(trace.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree"))
-        loggers.foreach(_.trace(trace))
+      (msg, thrown) => {
+        eventHandler.handle(new Event {
+          def fullyQualifiedName() = selectorString
+          def throwable() = new OptionalThrowable(thrown)
+          def status() = Status.Failure
+          def selector() = new TestSelector(selectorString)
+          def fingerprint() = new SubclassFingerprint {
+            def superclassName = "utest.framework.TestSuite"
+            def isModule = true
+            def requireNoArgConstructor = true
+          }
+          def duration() = 0
+        })
+        thrown.setStackTrace(thrown.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree"))
         addFailure(progressString + name + "" + msg)
-        addTrace(trace.getStackTrace.map(_.toString).mkString("\n"))
+        addTrace(
+          if (thrown.isInstanceOf[utest.SkippedOuterFailure]) ""
+          else thrown.getStackTrace.map(_.toString).mkString("\n")
+        )
       },
       s => addTotal(s.toInt)
     ).map(addResult)(ExecutionContext.RunNow)

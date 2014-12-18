@@ -18,6 +18,7 @@ object AssertsTests extends TestSuite{
         "success!"
       }
       'failure{
+        assert(1 == 2)
         val (e, logged, cause) = try {
           val x = 1
           val y = "2"

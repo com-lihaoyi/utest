@@ -125,8 +125,7 @@ package object utest {
         log(str)
         val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)(args)
         s.value match{
-          case Failure(e) =>
-            logFailure(str, e)
+          case Failure(e) => logFailure(str, e)
           case _ => ()
         }
       },
