@@ -1,4 +1,4 @@
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.0-M1")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.0-RC1")
 
 /* uTest uses itself to test itself. At the library level, this is not a
  * problem. But the runner must be available to the build project. So we

@@ -57,11 +57,13 @@ package object utest {
    * Extension methods to allow you to create tests via the "omg"-{ ... }
    * syntax.
    */
+
   implicit class TestableString(s: String){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def -(x: => Any) = ???
   }
 
@@ -70,11 +72,13 @@ package object utest {
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def apply(x: => Any) = ???
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def -(x: => Any) = ???
   }
 

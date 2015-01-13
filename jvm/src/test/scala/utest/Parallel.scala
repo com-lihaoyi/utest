@@ -17,40 +17,40 @@ object Parallel extends TestSuite{
 
   val tests = TestSuite{
 
-    "parallelizingSpeedsThingsUp"-{
-      def calc(n: Int, seed: Int) = {
-        for(j <- 0 until 300000000){
-          var x = 0
-          var i = 0
-          while(i < n){
-            i += 1
-            x = (x + 12312412) % seed
-          }
-        }
-      }
-
-      val tests = TestSuite{
-        "test1"-calc(1000000000, Random.nextInt())
-        "test2"-calc(1000000000, Random.nextInt())
-        "test3"-calc(1000000000, Random.nextInt())
-        "test4"-calc(1000000000, Random.nextInt())
-      }
-
-      def timedTrial(implicit ec: concurrent.ExecutionContext) = {
-        val start = Deadline.now
-        tests.run()
-        val end = Deadline.now
-        end - start
-      }
-
-      val parallelTime = timedTrial(concurrent.ExecutionContext.Implicits.global)
-
-      val serialTime = timedTrial(utest.ExecutionContext.RunNow)
-      val speedup = serialTime * 1.0 / parallelTime
-      // Most people running this should be on at least a dual-core machine
-      assert(speedup > 1.5)
-      "Speedup: " + speedup
-    }
+//    "parallelizingSpeedsThingsUp"-{
+//      def calc(n: Int, seed: Int) = {
+//        for(j <- 0 until 300000000){
+//          var x = 0
+//          var i = 0
+//          while(i < n){
+//            i += 1
+//            x = (x + 12312412) % seed
+//          }
+//        }
+//      }
+//
+//      val tests = TestSuite{
+//        "test1"-calc(1000000000, Random.nextInt())
+//        "test2"-calc(1000000000, Random.nextInt())
+//        "test3"-calc(1000000000, Random.nextInt())
+//        "test4"-calc(1000000000, Random.nextInt())
+//      }
+//
+//      def timedTrial(implicit ec: concurrent.ExecutionContext) = {
+//        val start = Deadline.now
+//        tests.run()
+//        val end = Deadline.now
+//        end - start
+//      }
+//
+//      val parallelTime = timedTrial(concurrent.ExecutionContext.Implicits.global)
+//
+//      val serialTime = timedTrial(utest.ExecutionContext.RunNow)
+//      val speedup = serialTime * 1.0 / parallelTime
+//      // Most people running this should be on at least a dual-core machine
+//      assert(speedup > 1.5)
+//      "Speedup: " + speedup
+//    }
 
     "eventually"-{
       "failure"-{
