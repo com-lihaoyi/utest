@@ -63,13 +63,16 @@ class TestTreeSeq(tests: Tree[Test]) {
       def matchError(t: Any): Option[SkippedOuterFailure] = t match {
         case Success(_) => None
         case Failure(e: SkippedOuterFailure) => Some(e)
-        case Failure(e) => Some(SkippedOuterFailure(strPath, e))
+        case Failure(e) =>
+          Some(SkippedOuterFailure(strPath, e))
         case x => None
       }
 
       val thisError = tryResult.flatMap {
         case Success(f: Future[_]) =>
-          f.map(matchError).recover { case ex: Throwable => Some(SkippedOuterFailure(strPath, ex)) }
+          f.map(matchError).recover { case ex: Throwable => 
+            Some(SkippedOuterFailure(strPath, ex)) 
+          }
         case t =>
           Future.successful(matchError(t))
       }

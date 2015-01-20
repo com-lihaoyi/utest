@@ -18,6 +18,10 @@ object Build extends sbt.Build{
           "org.scalamacros" %% s"quasiquotes" % "2.0.0"
         )
       ),
+      unmanagedSourceDirectories in Compile += {
+        val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
+        baseDirectory.value / "shared" / "main" / v
+      },
       name := "utest"
     ) ++ sharedSettings
   )
@@ -42,7 +46,7 @@ object Build extends sbt.Build{
                              .settings(sharedSettings:_*)
                              .settings(
 
-    addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.0-M1"),
+    addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.0-RC1"),
     libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     name := "utest-js-plugin",
     sbtPlugin := true

@@ -57,11 +57,13 @@ package object utest {
    * Extension methods to allow you to create tests via the "omg"-{ ... }
    * syntax.
    */
+
   implicit class TestableString(s: String){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def -(x: => Any) = ???
   }
 
@@ -70,11 +72,13 @@ package object utest {
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def apply(x: => Any) = ???
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def -(x: => Any) = ???
   }
 
@@ -99,9 +103,9 @@ package object utest {
     def -(x: => Any) = ???
   }
   def runSuite(suite: TestSuite,
-               path: Array[String],
+               path: Seq[String],
                args: Array[String],
-               addCount: String => Unit,
+               addCount: Boolean => Unit,
                log: String => Unit,
                logFailure: (String, Throwable) => Unit,
                addTotal: String => Unit): Future[String] = {
@@ -116,17 +120,14 @@ package object utest {
         ExecutionContext.RunNow
       }
 
-    val formatAll = utest.util.ArgParse.find("--formatAll", _.toBoolean, false, true)(args)
     val formatter = DefaultFormatter(args)
     val results = tests.runAsync(
       (subpath, s) => {
-        addCount(s.value.isSuccess.toString)
+        addCount(s.value.isSuccess)
         val str = formatter.formatSingle(path ++ subpath, s)
         log(str)
-        val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)(args)
         s.value match{
-          case Failure(e) =>
-            logFailure(str, e)
+          case Failure(e) => logFailure(str, e)
           case _ => ()
         }
       },

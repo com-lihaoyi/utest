@@ -42,20 +42,26 @@ final class MasterRunner(args: Array[String],
 
     val body = results.get.mkString("\n")
 
-    if (failure.get() != 0 && args.contains("--throw")) throw new Exception("Tests Failed")
-    else if (total.get == 1) " " // can't be empty because then SBT will fill it with trash
-    else {
-      Seq(
-        header,
-        body,
-        "Failures:",
-        failures.get().zip(traces.get()).map(x => x._1 + "\n" + x._2).mkString("\n").replace("\n", "\n"+Console.RED),
-        s"Tests: $total",
-        s"Passed: $success",
-        s"Failed: $failure"
-      ).mkString("\n")
-    }
-
+    val failureMsg = if (failures.get() == Nil) ""
+    else Seq(
+      Console.RED + "Failures:",
+      failures.get()
+              .zip(traces.get())
+              // We pre-pending to a list, so need to reverse to make the order correct
+              .reverse
+              // ignore those with an empty trace, e.g. utest.SkippedOuterFailures,
+              // since those are generally just spam (we already can see the outer failure)
+              .collect{case (f, t) if t != "" => f + ("\n" + t).replace("\n", "\n"+Console.RED)}
+              .mkString("\n")
+    ).mkString("\n")
+    Seq(
+      header,
+      body,
+      failureMsg,
+      s"Tests: $total",
+      s"Passed: $success",
+      s"Failed: $failure"
+    ).mkString("\n")
   }
 
   def receiveMessage(msg: String): Option[String] = {

@@ -1,6 +1,6 @@
 package utest.runner
 
-import sbt.testing.{Logger, EventHandler, TaskDef}
+import sbt.testing._
 import sbt.testing
 import scala.concurrent.{Future, Await}
 import concurrent.duration._
@@ -26,9 +26,11 @@ class Task(val taskDef: TaskDef,
 
     implicit val ec = ExecutionContext.RunNow
 
-    val logged = executeInternal(eventHandler, loggers).recover {
-      case t => loggers.foreach(_.trace(t))
-    }.onComplete(_ => continuation(Array()))
+    val logged = executeInternal(eventHandler, loggers).recover { case t =>
+      loggers.foreach(_.trace(t))
+    }.onComplete{_ =>
+      continuation(Array())
+    }
   }
 
   private def executeInternal(eventHandler: EventHandler, loggers: Array[Logger]) = {

@@ -1,14 +1,9 @@
 package utest
 
-object SkippedOuterFailure{
-  def errorMsg(errorPath: Seq[String]) = {
-    "Test skipped due to outer failure in " + errorPath.mkString(".")
-  }
-}
 
 case class SkippedOuterFailure(errorPath: Seq[String],
                                outerError: Throwable)
-                               extends Exception(SkippedOuterFailure.errorMsg(errorPath), outerError)
+                               extends Exception(errorPath.mkString("."), outerError)
 
 /**
  * Indicates that there was no test to run at the path you provided

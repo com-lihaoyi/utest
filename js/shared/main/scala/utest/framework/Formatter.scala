@@ -55,7 +55,7 @@ class DefaultFormatter(color: Boolean = true,
   def formatSingle(path: Seq[String], r: Result): String = {
     path.map("." + _).mkString + "\t\t" + prettyTruncate(
       r,
-      e => s"Failure ${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "\t\t" + Console.RED)}"
+      e => s"${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "\t\t" + Console.RED)}"
     )
   }
 
