@@ -52,6 +52,8 @@ object Asserts {
             c.Expr[CompileError](q"""utest.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
           case ParseException(pos, msg) =>
             c.Expr[CompileError](q"""utest.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
+          case e: Exception =>
+            println("SOMETHING WENT WRONG LOLS " + e); ???
         }
       case e =>
         c.abort(
