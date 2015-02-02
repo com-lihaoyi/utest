@@ -1,4 +1,4 @@
-µTest 0.2.4
+µTest 0.3.0
 ===========
 
 uTest (pronounced micro-test) is a lightweight testing library for Scala. Its key features are:
@@ -35,7 +35,7 @@ Getting Started
 ===============
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.4"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.3.0"
 ```
 
 Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
@@ -309,7 +309,7 @@ compileError("(}")
 
 `compileError` is a macro that can be used to assert that a fragment of code (given as a literal String) fails to compile. 
 
-- If the code compiles successfully, `compileError` will fail the compilation run with am message.
+- If the code compiles successfully, `compileError` will fail the compilation run with a message.
 - If the code fails to compile, `compileError` will return an instance of `CompileError`, one of `CompileError.Type(pos: String, msgs: String*)` or `CompileError.Parse(pos: String, msgs: String*)` to represent typechecker errors or parser errors
  
 In general, `compileError` works similarly to `intercept`, except it does its checks (that a snippet of code fails) and errors (if it doesn't fail) at compile-time rather than run-time. If the code fails as expected, the failure message is propagated to runtime in the form of a `CompileError` object. You can then do whatever additional checks you want on the failure message, such as verifying that the failure message contains some string you expect to be there.
@@ -483,7 +483,7 @@ Running tests with SBT
 To run tests using SBT, add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.2.4"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.3.0"
 
 testFrameworks += new TestFramework("utest.runner.JvmFramework")
 ```
@@ -598,7 +598,7 @@ Other flags you can pass to the test suite are:
 - `--truncate=N`: cut off the printing of test results at `N` lines per result
 - `--trace=true` or `--trace=false`: whether or not to print stack traces when things blow up, defaults to false.
 - `--parallel=true` or `--parallel=false`: whether tests within a `TestSuite` should be run in parallel, defaults to `false`. Tests in different suites are always run task-parallel by SBT
-- `--throw`: cause the tests to throw an exception if they fail. This is off by default as it causes a bunch of annoying stack traces, but could be useful for telling CI frameworks that tests failed.
+
 
 ScalaJS
 =======
@@ -617,54 +617,17 @@ ScalaJS and SBT
 To get SBT to run your uTest suites under ScalaJS, add the following to your `build.sbt`:
 
 ```scala
-utest.jsrunner.Plugin.utestJsSettings
-```
-
-And the following to your `project/build.sbt`
-
-```scala
-addSbtPlugin("com.lihaoyi" % "utest-js-plugin" % "0.2.4")
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.3.0"
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `JsEnv`, instead of on the JVM. By default this is Rhino, but it can be configured to use NodeJS or PhantomJS if you have them installed. Test selection, coloring, etc. should all work unchanged.
 
-uTest 0.2.4 is compatible with ScalaJS 0.5.4, while uTest 0.2.2 is compatible with ScalaJS 0.5.3.
+uTest 0.3.0 is compatible with ScalaJS 0.6.x
 
-JsCrossBuild
-------------
+Cross Building
+--------------
 
-Apart from the bare-minimum needed to get you up and running using uTest with ScalaJS, the `utest-js-plugin` contains a `JsCrossBuild` class that codifies the common pattern of having `js/`, `jvm/` and `shared/` folders containing your code. This is used in your `project/Build.scala` file as follows:
-
-```scala
-import utest.jsrunner._
-object Build extends sbt.Build{
-  lazy val cross = new JsCrossBuild(
-    ... shared settings ...
-  )
-
-  lazy val root = cross.root
-  lazy val js = cross.js
-  lazy val jvm = cross.jvm
-}
-```
-
-This creates two projects, `js` and `jvm`, together with their respective folders `js/` and `jvm/` and makes them both use any code placed in `js/shared/` and `jvm/shared/` respectively. Note that `cross.root`, `cross.js`, `cross.jvm` are all normal SBT projects, and can be modified via normal `.settings` calls and other modifiers. It also cross-versions your project against the latest Scala 2.10.x and 2.11.x releases. 
-
-Typically `js/shared/` and `jvm/shared/` are symlinked so the code exists only in one place. This symlinked split-shared-layout should interact much better with IDEs than the old shared-folder layout. If you have an old projectl ayout with the shared files in `shared/`, running
-
-```bash
-ln -s ../shared js/shared; ln -s ../shared jvm/shared
-```
-
-In the terminal from the project root should be sufficient to set up symlinks.
-
-To cross-cross test your project against {2.11.x, 2.10.x} X {JVM, JS} using JsCrossBuild, simply use:
-
-```scala
-+test
-```
-
-Which will run the tests in all 4 combinations.
+uTest's own support for cross building projects (via `JsCrossBuild`) has been removed in 0.3.0. Instead, use Scala.js' own support for cross-building via `crossProject`
 
 Why uTest
 =========
@@ -698,14 +661,22 @@ To run all the test on the entire matrix of Scala versions (2.10.4 and 2.11.0) a
 
     sbt +test
 
-You can also use more targeted commands e.g. `js/test` which would only re-test the Javascript backend under scala 2.10.4.
+You can also use more targeted commands e.g. `utestJS/test` which would only re-test the Javascript backend under scala 2.10.4.
 
 To publish use
 
-    sbt +publishSigned jsPlugin/publishSigned
+    sbt +publishSigned
 
 Changelog
 =========
+
+0.3.0
+-----
+
+- Published for Scala.js 0.6.0
+- Removed `JsCrossBuild` now that Scala.js supports cross-building via `crossProject`
+- `compileTimeOnly` has been re-introduced, so invalid use of test DSL should fail with nice errors
+- Removed `--throw` flag in favor of "native" SBT error reporting
 
 0.2.4
 -----

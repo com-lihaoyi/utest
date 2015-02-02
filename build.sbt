@@ -19,7 +19,7 @@ lazy val utest = crossProject
     },
     name := "utest",
     organization := "com.lihaoyi",
-    version := "0.2.5",
+    version := "0.3.0",
     scalaVersion := "2.10.4",
     // Sonatype2
     publishArtifact in Test := false,
@@ -52,6 +52,7 @@ lazy val utest = crossProject
     testFrameworks += new TestFramework("utest.runner.Framework")
   )
   .jvmSettings(
+    fork in Test := true,
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
