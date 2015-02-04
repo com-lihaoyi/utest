@@ -485,7 +485,7 @@ To run tests using SBT, add the following to your `build.sbt` file:
 ```scala
 libraryDependencies += "com.lihaoyi" %% "utest" % "0.3.0"
 
-testFrameworks += new TestFramework("utest.runner.JvmFramework")
+testFrameworks += new TestFramework("utest.runner.Framework")
 ```
 
 After that, you can use
