@@ -607,7 +607,6 @@ uTest is completely compatible with ScalaJS: the above sections on defining a te
 
 - ScalaJS does not support parallelism, and as such only single-threaded `ExecutionContexts` like `utest.ExecutionContext.runNow` or `scala.scalajs.concurrent.JSExecutionContext.runNow` work. When run via SBT, `--parallel` has no effect.
 - [eventually](#eventually) and [continually](#continually) are not supported, as they rely on a blocking retry-loop whereas you can't block in ScalaJS
-- Running tests using SBT requires additional [magic incantations](#scalajs-and-sbt) in your `project/plugins.sbt` and `project/build.sbt` file.
 
 Apart from these differences, there should be no problem compiling uTest TestSuites via ScalaJS and running them using Rhino or in the browser.
 
@@ -617,7 +616,9 @@ ScalaJS and SBT
 To get SBT to run your uTest suites under ScalaJS, add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.3.0"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.3.0"
+
+testFrameworks += new TestFramework("utest.runner.Framework")
 ```
 
 Note that your project must already be a ScalaJS project. With these snippets set up, all of the commands described in [Running tests with SBT](#running-tests-with-sbt) should behave identically, except that your test suites will be compiled to Javascript and run in ScalaJS's `JsEnv`, instead of on the JVM. By default this is Rhino, but it can be configured to use NodeJS or PhantomJS if you have them installed. Test selection, coloring, etc. should all work unchanged.
