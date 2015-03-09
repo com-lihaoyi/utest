@@ -671,6 +671,11 @@ To publish use
 Changelog
 =========
 
+0.3.1
+-----
+
+- Published for Scala.js 0.6.1
+
 0.3.0
 -----
 
