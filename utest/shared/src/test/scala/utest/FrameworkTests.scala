@@ -9,9 +9,9 @@ import scala.util.Failure
 
 
 object FrameworkTests extends TestSuite{
-  implicit val ec = utest.ExecutionContext.RunNow
+  implicit val ec = utest.framework.ExecutionContext.RunNow
   def tests = TestSuite{
-    def testHelloWorld(test: util.Tree[Test]) = {
+    def testHelloWorld(test: framework.Tree[Test]) = {
       val results = test.run()
       assert(test.length == 4)
       assert(test.leaves.length == 3)

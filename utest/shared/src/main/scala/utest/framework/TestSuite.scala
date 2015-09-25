@@ -1,6 +1,6 @@
 package utest
 package framework
-
+import acyclic.file
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
 
@@ -15,14 +15,14 @@ abstract class TestSuite{
   /**
    * The tests within this `object`.
    */
-  def tests: util.Tree[Test]
+  def tests: framework.Tree[Test]
 }
 
 object TestSuite{
   /**
    * Macro to demarcate a `Tree[Test]`.
    */
-  def apply(expr: Unit): util.Tree[Test] = macro TestSuite.applyImpl
+  def apply(expr: Unit): framework.Tree[Test] = macro TestSuite.applyImpl
 
   /**
    * Raise an exception if a test is nested badly within a `TestSuite{ ... }`
@@ -32,7 +32,7 @@ object TestSuite{
     throw new IllegalArgumentException(s"Test nested badly: $testName")
   }
 
-  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[util.Tree[Test]] = {
+  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[framework.Tree[Test]] = {
     import c.universe._
 
     def matcher(i: Int): PartialFunction[Tree, (Tree, Tree, Int)] = {
@@ -110,14 +110,14 @@ object TestSuite{
 
     found match{
       case Some(tree) =>
-        c.Expr[util.Tree[Test]](q"""
+        c.Expr[framework.Tree[Test]](q"""
           throw new java.lang.IllegalArgumentException("Test [" + $tree + "] nested badly. Tests must be nested directly underneath their parents and can not be placed within blocks.")
         """)
 
       case None =>
         // jump through some hoops to avoid using scala.Predef implicits,
         // to make @paulp happy
-        c.Expr[util.Tree[Test]](
+        c.Expr[framework.Tree[Test]](
           q"""$suite(this.getClass.getName.replace("$$", ""), $testTree)"""
         )
     }

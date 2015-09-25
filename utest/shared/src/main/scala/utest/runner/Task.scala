@@ -1,11 +1,11 @@
 package utest.runner
-
+import acyclic.file
 import sbt.testing._
 import sbt.testing
 import scala.concurrent.{Future, Await}
 import concurrent.duration._
 
-import utest.ExecutionContext
+import utest.framework.ExecutionContext
 
 class Task(val taskDef: TaskDef,
            args: Array[String],

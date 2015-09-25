@@ -17,6 +17,9 @@ lazy val utest = crossProject
       val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
       baseDirectory.value/".."/"shared"/"src"/"main"/v
     },
+    libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.3" % "provided",
+    autoCompilerPlugins := true,
+    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.3"),
     name := "utest",
     organization := "com.lihaoyi",
     version := "0.3.1",

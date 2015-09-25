@@ -1,7 +1,7 @@
 package utest
 package asserts
 import scala.reflect.macros.Context
-
+import acyclic.file
 /**
  * Macro implementation to take a block of code and trace through it,
  * converting it into an [[AssertEntry]] and inserting debug loggers.
@@ -26,7 +26,7 @@ object Tracer{
             // since those are the ones people probably care about
             q"""{
             val $tempName = $tree
-            $loggerName(utest.LoggedValue(
+            $loggerName(utest.framework.LoggedValue(
               ${tree.toString()},
               ${show(tree.tpe.widen)},
               $tempName

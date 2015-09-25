@@ -1,8 +1,8 @@
 package utest
-import utest.framework.Result
-import utest.util.Tree
+package framework
+import acyclic.file
 import scala.util.{Failure, Success}
-import java.io.{PrintWriter, StringWriter}
+
 
 /**
  * Represents something that can format a single test result or a [[Tree]] of 
@@ -21,9 +21,9 @@ abstract class Formatter{
 }
 object DefaultFormatter{
   def apply(implicit args: Array[String]) = {
-    val color = utest.util.ArgParse.find("--color", _.toBoolean, true, true)
-    val truncate = utest.util.ArgParse.find("--truncate", _.toInt, 500, 500)
-    val trace = utest.util.ArgParse.find("--trace", _.toBoolean, true, true)
+    val color = utest.framework.ArgParse.find("--color", _.toBoolean, true, true)
+    val truncate = utest.framework.ArgParse.find("--truncate", _.toInt, 500, 500)
+    val trace = utest.framework.ArgParse.find("--trace", _.toBoolean, true, true)
 
     new DefaultFormatter(color, truncate, trace)
   }

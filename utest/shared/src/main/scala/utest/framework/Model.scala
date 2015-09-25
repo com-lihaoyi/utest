@@ -1,17 +1,18 @@
-package utest.framework
+package utest
+package framework
 
-import java.util.concurrent.{ExecutionException, TimeUnit}
+import acyclic.file
 
-import scala.util.{Random, Success, Failure, Try}
+
+import scala.util.{Success, Failure, Try}
 import scala.concurrent.duration.Deadline
 
 
 import scala.language.experimental.macros
-import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.{Await, Future}
 import concurrent.duration._
-import utest.util.Tree
+
 import utest.PlatformShims
-import utest.{NoSuchTestException, SkippedOuterFailure}
 
 object Test{
   /**
@@ -54,7 +55,7 @@ class TestTreeSeq(tests: Tree[Test]) {
                path: Seq[Int],
                strPath: Seq[String] = Nil,
                outerError: Future[Option[SkippedOuterFailure]] = Future.successful(Option.empty[SkippedOuterFailure]))
-              (implicit ec: ExecutionContext): Future[Tree[Result]] = {
+              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
 
     Future{
       val start = Deadline.now
@@ -127,7 +128,7 @@ class TestTreeSeq(tests: Tree[Test]) {
   def runAsync(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
           strPath: Seq[String] = Nil,
           testPath: Seq[String] = Nil)
-         (implicit ec: ExecutionContext): Future[Tree[Result]] = {
+         (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
 
     val (indices, current) = resolve(testPath)
     current.runFuture(onComplete, indices, strPath)
@@ -136,7 +137,7 @@ class TestTreeSeq(tests: Tree[Test]) {
   def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
           strPath: Seq[String] = Nil,
           testPath: Seq[String] = Nil)
-         (implicit ec: ExecutionContext): Tree[Result] = {
+         (implicit ec: concurrent.ExecutionContext): Tree[Result] = {
 
     PlatformShims.await(runAsync(onComplete, strPath, testPath))
   }

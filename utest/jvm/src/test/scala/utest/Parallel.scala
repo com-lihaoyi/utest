@@ -56,18 +56,18 @@ object Parallel extends TestSuite{
       "failure"-{
         val x = Seq(12)
         val y = 1
-        val error = intercept[AssertionError]{
+        val error = intercept[framework.AssertionError]{
           eventually(
             x == Nil,
             y == 1
           )
         }
-        val expected = Seq(utest.LoggedValue("x", "Seq[Int]", Seq(12)))
+        val expected = Seq(utest.framework.LoggedValue("x", "Seq[Int]", Seq(12)))
         assert(error.captured == expected)
         error.captured
       }
       "success"-{
-        import ExecutionContext.RunNow
+        import framework.ExecutionContext.RunNow
 
         val i = Counter()
 
@@ -81,7 +81,7 @@ object Parallel extends TestSuite{
         import concurrent.duration._
         implicit val retryInterval = RetryInterval(300.millis)
 
-        import ExecutionContext.RunNow
+        import framework.ExecutionContext.RunNow
 
         val i = Counter()
 
@@ -96,7 +96,7 @@ object Parallel extends TestSuite{
         import concurrent.duration._
         implicit val retryMax = RetryMax(300.millis)
 
-        import ExecutionContext.RunNow
+        import framework.ExecutionContext.RunNow
 
         val i = Counter()
 
@@ -110,22 +110,22 @@ object Parallel extends TestSuite{
 
     "continually"-{
       "failure"-{
-        import ExecutionContext.RunNow
+        import framework.ExecutionContext.RunNow
 
         val i = Counter()
-        val error = intercept[AssertionError]{
+        val error = intercept[framework.AssertionError]{
           continually(
             i() < 4
           )
         }
 
-        val expected = utest.LoggedValue("i", "utest.Parallel.Counter", Counter())
+        val expected = utest.framework.LoggedValue("i", "utest.Parallel.Counter", Counter())
 
         assert(error.captured.contains(expected))
         expected
       }
       "success"-{
-        import ExecutionContext.RunNow
+        import framework.ExecutionContext.RunNow
         val x = Seq(12)
         val y = 1
 

@@ -26,10 +26,10 @@ object AssertsTests extends TestSuite{
 
           Predef.assert(false)
           ???
-        } catch { case e @ AssertionError(_, logged, cause) =>
+        } catch { case e @ framework.AssertionError(_, logged, cause) =>
           (e, logged, cause)
         }
-        val expected = Seq(LoggedValue("x", "Int", 1), LoggedValue("y", "String", "2"))
+        val expected = Seq(framework.LoggedValue("x", "Int", 1), framework.LoggedValue("y", "String", "2"))
         * - Predef.assert(
           cause == null,
           "cause should be null for boolean failure"
@@ -56,7 +56,7 @@ object AssertsTests extends TestSuite{
         try {
           assert(x / y == 10)
           Predef.assert(false)
-        } catch {case e @ AssertionError(src, logged, cause) =>
+        } catch {case e @ framework.AssertionError(src, logged, cause) =>
           Predef.assert(cause.isInstanceOf[ArithmeticException])
           Predef.assert(cause.getMessage == "/ by zero")
           e.getMessage
@@ -69,7 +69,7 @@ object AssertsTests extends TestSuite{
           val b = 31337
           val c = 98
           assert(a + b == c.toString)
-        } catch { case e: AssertionError =>
+        } catch { case e: framework.AssertionError =>
           e.getMessage.contains("i am cow")
           e.getMessage.contains("31337")
           e.getMessage.contains("98")
@@ -93,12 +93,12 @@ object AssertsTests extends TestSuite{
             (x: Any) match { case _: String => y + 1 }
           }
           Predef.assert(false) // error wasn't thrown???
-        } catch { case e: AssertionError =>
+        } catch { case e: framework.AssertionError =>
           Predef.assert(e.msg.contains("(x: Any) match { case _: String => y + 1 }"))
           // This is subtle: only `x` should be logged as an interesting value, for
           // `y` was not evaluated at all and could not have played a part in the
           // throwing of the exception
-          Predef.assert(e.captured == Seq(LoggedValue("x", "Int", 1)))
+          Predef.assert(e.captured == Seq(framework.LoggedValue("x", "Int", 1)))
           Predef.assert(e.cause.isInstanceOf[MatchError])
           e.msg
         }
@@ -110,9 +110,9 @@ object AssertsTests extends TestSuite{
           intercept[NullPointerException]{
             123 + x + y
           }
-        }catch {case e: AssertionError =>
+        }catch {case e: framework.AssertionError =>
           Predef.assert(e.msg.contains("123 + x + y"))
-          Predef.assert(e.captured == Seq(LoggedValue("x", "Int", 1), LoggedValue("y", "Double", 2.0)))
+          Predef.assert(e.captured == Seq(framework.LoggedValue("x", "Int", 1), framework.LoggedValue("y", "Double", 2.0)))
           e.msg
         }
       }
@@ -130,10 +130,10 @@ object AssertsTests extends TestSuite{
           val iAmCow = Seq("2.0")
           assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}
           Predef.assert(false)
-        } catch{ case e: utest.AssertionError =>
+        } catch{ case e: utest.framework.AssertionError =>
 
           Predef.assert(e.captured == Seq(
-            LoggedValue("x", "Int", 1), LoggedValue("iAmCow", "Seq[String]", Seq("2.0")))
+            framework.LoggedValue("x", "Int", 1), framework.LoggedValue("iAmCow", "Seq[String]", Seq("2.0")))
           )
           Predef.assert(e.msg.contains("assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}"))
 
@@ -147,8 +147,8 @@ object AssertsTests extends TestSuite{
           val b = 2
           assertMatch(Seq(a / 0, 3, b)){case Seq(1, 2) =>}
           Predef.assert(false)
-        } catch{ case e: utest.AssertionError =>
-          Predef.assert(e.captured == Seq(LoggedValue("a", "Long", 1)))
+        } catch{ case e: utest.framework.AssertionError =>
+          Predef.assert(e.captured == Seq(framework.LoggedValue("a", "Long", 1)))
           Predef.assert(e.cause.isInstanceOf[ArithmeticException])
           Predef.assert(e.msg.contains("assertMatch(Seq(a / 0, 3, b)){case Seq(1, 2) =>}"))
           e.getMessage

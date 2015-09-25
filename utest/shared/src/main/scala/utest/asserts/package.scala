@@ -1,5 +1,7 @@
 package utest
 
+import utest.framework.{AssertionError, LoggedValue}
+
 import scala.util.{Failure, Success, Try}
 import scala.collection.mutable.ArrayBuffer
 

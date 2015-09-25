@@ -1,6 +1,7 @@
 package utest
 package asserts
-
+import acyclic.file
+import utest.framework.CompileError
 import scala.reflect.macros.{ParseException, TypecheckException, Context}
 import scala.util.{Failure, Success, Try, Random}
 import scala.reflect.ClassTag
@@ -9,7 +10,6 @@ import scala.reflect.internal.util.OffsetPosition
 import scala.reflect.macros.{TypecheckException, Context}
 
 import scala.language.experimental.macros
-
 
 /**
  * Macro implementation that provides rich error
@@ -49,9 +49,9 @@ object Asserts {
           c.abort(c.enclosingPosition, "compileError check failed to have a compilation error")
         } catch{
           case TypecheckException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
+            c.Expr[CompileError](q"""utest.framework.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
           case ParseException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
+            c.Expr[CompileError](q"""utest.framework.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
           case e: Exception =>
             println("SOMETHING WENT WRONG LOLS " + e); ???
         }

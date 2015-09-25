@@ -1,5 +1,6 @@
 package utest
-
+package framework
+import acyclic.file
 
 case class SkippedOuterFailure(errorPath: Seq[String],
                                outerError: Throwable)

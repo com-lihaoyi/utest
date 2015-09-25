@@ -1,5 +1,5 @@
 package utest.runner
-
+import acyclic.file
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
 import scala.annotation.tailrec

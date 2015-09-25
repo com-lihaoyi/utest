@@ -1,7 +1,7 @@
 
 import utest.asserts._
 import utest.framework.{Test, TestTreeSeq}
-import utest.util.Tree
+import utest.framework.Tree
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -19,10 +19,10 @@ package object utest {
 
   /**
    * Asserts that the given expression fails to compile, and returns a
-   * [[CompileError]] containing the message of the failure. If the expression
+   * [[framework.CompileError]] containing the message of the failure. If the expression
    * compile successfully, this macro itself will raise a compilation error.
    */
-  def compileError(expr: String): CompileError = macro Asserts.compileError
+  def compileError(expr: String): framework.CompileError = macro Asserts.compileError
   /**
    * Checks that one or more expressions are true; otherwises raises an
    * exception with some debugging info
@@ -114,13 +114,13 @@ package object utest {
     addTotal(found.length.toString)
 
     implicit val ec =
-      if (utest.util.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
+      if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
         scala.concurrent.ExecutionContext.global
       }else{
-        ExecutionContext.RunNow
+        framework.ExecutionContext.RunNow
       }
 
-    val formatter = DefaultFormatter(args)
+    val formatter = framework.DefaultFormatter(args)
     val results = tests.runAsync(
       (subpath, s) => {
         addCount(s.value.isSuccess)

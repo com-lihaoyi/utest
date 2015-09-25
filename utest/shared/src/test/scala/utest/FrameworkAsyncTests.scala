@@ -3,7 +3,7 @@ package utest
 import scala.concurrent.Future
 import concurrent.duration._
 object FrameworkAsyncTests extends TestSuite{
-  implicit val ec = utest.ExecutionContext.RunNow
+  implicit val ec = utest.framework.ExecutionContext.RunNow
 
   def tests = TestSuite{
     'hello{

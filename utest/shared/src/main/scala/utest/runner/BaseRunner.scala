@@ -1,9 +1,10 @@
 package utest.runner
+import acyclic.file
 import sbt.testing._
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.annotation.tailrec
 
-import utest.ExecutionContext
+import utest.framework.ExecutionContext
 import utest.framework.TestSuite
 
 import scala.concurrent.Await
@@ -62,7 +63,7 @@ abstract class BaseRunner(val args: Array[String],
         )
         addFailure(progressString + name + "" + msg)
         addTrace(
-          if (thrown.isInstanceOf[utest.SkippedOuterFailure]) ""
+          if (thrown.isInstanceOf[utest.framework.SkippedOuterFailure]) ""
           else thrown.getStackTrace.map(_.toString).mkString("\n")
         )
       },
