@@ -38,7 +38,7 @@ Getting Started
 libraryDependencies += "com.lihaoyi" %% "utest" % "0.3.1"
 ```
 
-Add the following to your `built.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
+Add the following to your `build.sbt` and you can immediately begin defining and running tests programmatically. [Continue reading](#defining-and-running-a-test-suite) to see how to define and run your test suites, or jump to [Running tests with SBT](#running-tests-with-sbt) to find out how to mark and run your test suites from the SBT console.
 
 Defining and Running a Test Suite
 =================================
@@ -103,7 +103,7 @@ println(results.leaves.count(_.value.isSuccess)) // 1
 
 Again, by default the `results` iterator includes the results of every node in the test tree, and you can use `.leaves` to only get the leaf nodes. Nesting is a convenient way of organizing related tests, and with the added bonus that you can place shared initialization code or helpers (e.g. the `val x`, `val y`, `val z` above) at the correct place within the tree where it is only visible to the tests that use it.
 
-Despite it being shared lexically, these helpers are re-created for each test that is run, so if you if they contain mutable state (e.g. mutable collections, or `var`s) you do not need to worry about the mutations from multiple tests interfering with each other. For more detail on this and other things related to test execution, see [below](#execution-model).
+Despite being shared lexically, these helpers are re-created for each test that is run, so if they contain mutable state (e.g. mutable collections, or `var`s) you do not need to worry about the mutations from multiple tests interfering with each other. For more detail on this and other things related to test execution, see [below](#execution-model).
 
 uTest also allows you to use strings to define test keys, if you wish to make your test names longer and more descriptive:
 
@@ -644,7 +644,7 @@ If you don't believe that uTest is much smaller than the alternatives, let the j
 
 uTest tries to provide most of what you want as a developer, while leaving out all the unnecessary functionality that ScalaTest and Specs2 provide:
 
-- Fluent english-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must`](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) These add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
+- Fluent English-like code: matchers like [`shouldBe` or `should not be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness) or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html) don't really add anything, and it doesn't really matter whether you name each test block using [`should`, `when`, `can`, `must`](http://doc.scalatest.org/2.0/#org.scalatest.Spec), [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) These add nothing and clutter up the API and code base. You certainly don't need [8 different sets of them](http://www.scalatest.org/user_guide/selecting_a_style).
 - Legacy code, like ScalaTests [time package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now obsolete with the introduction of [scala.concurrent.duration](http://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.package).
 - Such a a rich command-line interface: with a simple API, any user who wants to do heavy customization of the test running can simply do it in code, and writing a small amount of Scala with a trivial command-line runner will likely be easier than wrestling with mountains of command-line configuration flags to try to make the runner do what you want.
 
