@@ -169,6 +169,8 @@ println(new DefaultFormatter().format(test.run()))
 
 You may have noticed that each `Result` contains a `Try[Any]` rather than an `Option[Throwable]`. This value is the last value in the test block, and is generally useful to pass data "out of" tests. For example, the `DefaultFormatter` displays it together with `Success` message, making it a nice sanity-check to let you confirm (visually) that the tests indeed did what they were supposed to.
 
+By default, uTest now only reports test results. To enable (past behavior of) logging test progress as they run, you can pass the `--progress` flag.
+
 Asynchronous Tests
 ------------------
 
@@ -592,13 +594,13 @@ Which shows you the exception that gets raised:
 [info] Failed: 1
 ```
 
-Other flags you can pass to the test suite are:
+Other flags you can pass to the test suite (when invoked by `test-only`) are:
 
 - `--color=true` or `--color=false`: toggle console color output, defaults to `true`
 - `--truncate=N`: cut off the printing of test results at `N` lines per result
 - `--trace=true` or `--trace=false`: whether or not to print stack traces when things blow up, defaults to false.
 - `--parallel=true` or `--parallel=false`: whether tests within a `TestSuite` should be run in parallel, defaults to `false`. Tests in different suites are always run task-parallel by SBT
-
+- `--progress=true`: enable past behavior of logging progress messages as each test is run, defaults to `false` and the `=true` suffix can be omitted. 
 
 ScalaJS
 =======

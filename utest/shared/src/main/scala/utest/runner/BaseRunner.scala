@@ -16,6 +16,8 @@ abstract class BaseRunner(val args: Array[String],
                           testClassLoader: ClassLoader)
                           extends sbt.testing.Runner{
 
+  val progress = utest.util.ArgParse.find("--progress",  _.toBoolean, false, true)(args)
+
   /**
    * Actually performs the running of a particular test
    *
@@ -50,7 +52,8 @@ abstract class BaseRunner(val args: Array[String],
       addCount = b => if(b) incSuccess() else  incFailure(),
       log = msg => {
         handleEvent(new OptionalThrowable(), Status.Success)
-        loggers.foreach(_.info(progressString + name + "" + msg))
+        if (progress)
+          loggers.foreach(_.info(progressString + name + "" + msg))
       },
       logFailure = (msg, thrown) => {
         handleEvent(new OptionalThrowable(thrown), Status.Failure)
