@@ -1,6 +1,6 @@
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-crossScalaVersions := Seq("2.10.4", "2.11.4")
+crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M3")
 
 def macroDependencies(version: String) =
   ("org.scala-lang" % "scala-reflect" % version) +:
@@ -13,14 +13,17 @@ def macroDependencies(version: String) =
 lazy val utest = crossProject
   .settings(
     libraryDependencies ++= macroDependencies(scalaVersion.value),
-    unmanagedSourceDirectories in Compile += {
-      val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
-      baseDirectory.value/".."/"shared"/"src"/"main"/v
-    },
+
     name := "utest",
     organization := "com.lihaoyi",
     version := "0.3.1",
     scalaVersion := "2.10.4",
+
+    scalacOptions ++= Seq(scalaVersion.value match {
+      case x if x.startsWith("2.12.") => "-target:jvm-1.8"
+      case x => "-target:jvm-1.6"
+    }),
+
     // Sonatype2
     publishArtifact in Test := false,
     publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
@@ -57,7 +60,12 @@ lazy val utest = crossProject
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
-      "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test"
+      scalaVersion.value match {
+        case x if x.startsWith("2.10.") =>
+          "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test" //scala 2.10 support
+        case _ =>
+          "com.typesafe.akka" %% "akka-actor" % "2.4.2" % "test" //scala 2.11,2.12 support
+      }
     ),
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
