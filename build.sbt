@@ -10,6 +10,11 @@ def macroDependencies(version: String) =
    else
      Seq())
 
+def akkaVersionFrom(scalaVersion: String): String = scalaVersion match {
+  case x if x.startsWith("2.10.") => "2.3.2" //scala 2.10 support
+  case _ => "2.4.2" //scala 2.11,2.12 support
+}
+
 lazy val utest = crossProject
   .settings(
     libraryDependencies ++= macroDependencies(scalaVersion.value),
@@ -60,12 +65,7 @@ lazy val utest = crossProject
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
-      scalaVersion.value match {
-        case x if x.startsWith("2.10.") =>
-          "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test" //scala 2.10 support
-        case _ =>
-          "com.typesafe.akka" %% "akka-actor" % "2.4.2" % "test" //scala 2.11,2.12 support
-      }
+      "com.typesafe.akka" %% "akka-actor" % akkaVersionFrom(scalaVersion.value) % "test"
     ),
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
