@@ -26,12 +26,13 @@ abstract class BaseRunner(val args: Array[String],
     * @param loggers SBT loggers which are interested in the logspam generated
     * @param name The name of the test class/object
     */
-  def runUTestTask(selector: Seq[String],
-                   loggers: Seq[Logger],
-                   name: String,
-                   eventHandler: EventHandler) = {
+  def runSuite(selector: Seq[String],
+               loggers: Seq[Logger],
+               name: String,
+               eventHandler: EventHandler) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
     val selectorString = selector.mkString(".")
+
     def handleEvent(op: OptionalThrowable, st: Status) = {
       eventHandler.handle(new Event {
         def fullyQualifiedName() = selectorString
@@ -94,7 +95,7 @@ abstract class BaseRunner(val args: Array[String],
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {
     val path = args.lift(0).filter(_(0) != '-').getOrElse("")
-    new Task(taskDef, args, path, runUTestTask)
+    new Task(taskDef, args, path, runSuite)
   }
   // Scala.js test interface specific methods
   def deserializeTask(task: String, deserializer: String => TaskDef): sbt.testing.Task =
