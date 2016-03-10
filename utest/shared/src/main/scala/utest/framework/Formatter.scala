@@ -29,14 +29,14 @@ trait Formatter {
     if (formatColor) colorStr + truncUnit + Console.RESET else truncUnit
   }
 
-  def formatSingle(path: Seq[String], r: Result): String = {
+  def formatSingle(path: Seq[String], r: Result): Option[String] = Some{
     path.map("." + _).mkString + "\t\t" + prettyTruncate(
       r,
       e => s"${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "\t\t" + Console.RED)}"
     )
   }
 
-  def format(results: Tree[Result]): String = {
+  def format(results: Tree[Result]): Option[String] = Some{
     def errorFormatter(ex: Throwable): String =
       s"Failure('$ex'${Option(ex.getCause).fold("")(cause => s" caused by '$cause'")})"
 

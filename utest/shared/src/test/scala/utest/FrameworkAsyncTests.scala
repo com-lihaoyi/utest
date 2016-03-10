@@ -11,7 +11,7 @@ object FrameworkAsyncTests extends TestSuite{
     }
 
     'asyncFailures {
-      val tests = TestSuite {
+      val tests = this {
         "testSuccessAsync" - {
           val p = concurrent.Promise[Int]
           Scheduler.scheduleOnce(2 seconds)(p.success(123))

@@ -1,15 +1,9 @@
 package utest.runner
 import acyclic.file
 import sbt.testing._
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
-import scala.annotation.tailrec
-
-import utest.framework.ExecutionContext
 import utest.TestSuite
 
-import scala.concurrent.Await
-import scala.util.{Failure, Success}
-import concurrent.duration._
+import scala.util.Failure
 
 import org.scalajs.testinterface.TestUtils
 abstract class BaseRunner(val args: Array[String],
@@ -56,42 +50,10 @@ abstract class BaseRunner(val args: Array[String],
     val title = s"Starting Suite " + name
     val dashes = "-" * ((80 - title.length) / 2)
     loggers.foreach(_.info(dashes + title + dashes))
-    runSuite(
-      suite,
-      selector,
-      args,
-      addCount = b => if(b) incSuccess() else  incFailure(),
-      log = msg => {
-        handleEvent(new OptionalThrowable(), Status.Success)
-        loggers.foreach(_.info(name + "" + msg))
-      },
-      logFailure = (msg, thrown) => {
-        handleEvent(new OptionalThrowable(thrown), Status.Failure)
-        // Trim the stack trace so all the utest internals don't get shown,
-        // since the user probably doesn't care about those anyway
-        thrown.setStackTrace(
-          thrown.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
-        )
-        addFailure(name + "" + msg)
-        addTrace(
-          if (thrown.isInstanceOf[utest.framework.SkippedOuterFailure]) ""
-          else thrown.getStackTrace.map(_.toString).mkString("\n")
-        )
-      },
-      s => addTotal(s.toInt)
-    ).map(addResult)(ExecutionContext.RunNow)
-  }
 
-  def runSuite(suite: TestSuite,
-               path: Seq[String],
-               args: Array[String],
-               addCount: Boolean => Unit,
-               log: String => Unit,
-               logFailure: (String, Throwable) => Unit,
-               addTotal: String => Unit): concurrent.Future[String] = {
-    import suite.tests
-    val (indices, found) = tests.resolve(path)
-    addTotal(found.length.toString)
+    val (indices, found) = suite.tests.resolve(selector)
+
+    addTotal(found.length)
 
     implicit val ec =
       if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
@@ -100,21 +62,35 @@ abstract class BaseRunner(val args: Array[String],
         utest.framework.ExecutionContext.RunNow
       }
 
-    val results = tests.runAsync(
+    val results = suite.tests.runAsync(
       (subpath, s) => {
-        addCount(s.value.isSuccess)
-        val str = suite.formatSingle(path ++ subpath, s)
-        log(str)
+        if(s.value.isSuccess) incSuccess() else  incFailure()
+
+        val str = suite.formatSingle(selector ++ subpath, s)
+        handleEvent(new OptionalThrowable(), Status.Success)
+        str.foreach{msg => loggers.foreach(_.info(name + "" + msg))}
         s.value match{
-          case Failure(e) => logFailure(str, e)
+          case Failure(e) =>
+            handleEvent(new OptionalThrowable(e), Status.Failure)
+            // Trim the stack trace so all the utest internals don't get shown,
+            // since the user probably doesn't care about those anyway
+            e.setStackTrace(
+              e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
+            )
+            addFailure(name + "" + str)
+            addTrace(
+              if (e.isInstanceOf[utest.framework.SkippedOuterFailure]) ""
+              else e.getStackTrace.map(_.toString).mkString("\n")
+            )
           case _ => ()
         }
       },
-      testPath = path
+      testPath = selector
     )(ec)
 
-    results.map(suite.format)
+    results.map(suite.format).map(_.foreach(addResult))
   }
+
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {
     val path = args.lift(0).filter(_(0) != '-').getOrElse("")

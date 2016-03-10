@@ -22,7 +22,7 @@ object FrameworkTests extends TestSuite{
       results.leaves.map(_.value).toList
     }
     'helloWorld{
-      val test = TestSuite{
+      val test = this{
         "test1"-{
           throw new Exception("test1")
         }
@@ -37,7 +37,7 @@ object FrameworkTests extends TestSuite{
       testHelloWorld(test)
     }
     'helloWorldSymbol{
-      val test = TestSuite{
+      val test = this{
         'test1{
           throw new Exception("test1")
         }
@@ -52,7 +52,7 @@ object FrameworkTests extends TestSuite{
       testHelloWorld(test)
     }
     'helloWorldSymbol2{
-      val test = TestSuite{
+      val test = this{
         'test1-{
           throw new Exception("test1")
         }
@@ -68,7 +68,7 @@ object FrameworkTests extends TestSuite{
 
     'failures{
       'noSuchTest{
-        val test = TestSuite{
+        val test = this{
           'test1{
             1
           }
@@ -82,7 +82,7 @@ object FrameworkTests extends TestSuite{
         }
       }
       'weirdTestName{
-        val test = TestSuite{
+        val test = this{
           "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
             1
           }
@@ -94,7 +94,7 @@ object FrameworkTests extends TestSuite{
         // Ideally should not compile, but until I
         // figure that out, a runtime error works great
         try{
-          val test = TestSuite{
+          val test = this{
             "outer"-{
               if (true){
                 "inners"-{
@@ -113,7 +113,7 @@ object FrameworkTests extends TestSuite{
 
     'extractingResults{
      'basic{
-        val test = TestSuite{
+        val test = this{
           'test1{
             "i am cow"
           }
@@ -136,7 +136,7 @@ object FrameworkTests extends TestSuite{
         results.map(_.value.get)
       }
       'onlyLastThingReturns{
-        val tests = TestSuite {
+        val tests = this {
           12 + 2
           'omg{
           }
@@ -149,7 +149,7 @@ object FrameworkTests extends TestSuite{
     'nesting{
       'importStatementsWork{
         // issue #7, just needs to compile
-        val tests = TestSuite {
+        val tests = this {
           import math._
           'omg{
           }
@@ -158,7 +158,7 @@ object FrameworkTests extends TestSuite{
         assert(res == Success(()))
       }
       'lexicalScopingWorks{
-        val test = TestSuite{
+        val test = this{
           val x = 1
           'outer{
             val y = x + 1
@@ -184,7 +184,7 @@ object FrameworkTests extends TestSuite{
       'runForking{
         // Make sure that when you deal with mutable variables in the enclosing
         // scopes, multiple test runs don't affect each other.
-        val test = TestSuite{
+        val test = this{
           var x = 0
           'A{
             x += 1
@@ -215,7 +215,7 @@ object FrameworkTests extends TestSuite{
     }
 
     'testSelection{
-      val tests = TestSuite{
+      val tests = this{
         'A{
           'C{1}
         }
@@ -243,7 +243,7 @@ object FrameworkTests extends TestSuite{
 
       var timesRun = 0
 
-      val tests = TestSuite{
+      val tests = this{
         timesRun += 1
         "A"-{
           assert(false)
