@@ -8,7 +8,6 @@ import acyclic.file
  * specific methods.
  */
 case class Tree[+T](value: T, children: Seq[Tree[T]]){
-
   /**
    * The number of nodes in this tree.
    */

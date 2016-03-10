@@ -3,14 +3,10 @@ package framework
 
 import acyclic.file
 
-
 import scala.util.{Success, Failure, Try}
 import scala.concurrent.duration.Deadline
-
-
 import scala.language.experimental.macros
-import scala.concurrent.{Await, Future}
-import concurrent.duration._
+import scala.concurrent.Future
 
 import utest.PlatformShims
 
@@ -80,7 +76,7 @@ class TestTreeSeq(tests: Tree[Test]) {
 
       def runChildren(tail: Seq[Tree[Test]], results: List[Tree[Result]], index: Int): Future[List[Tree[Result]]] = {
         tail.headOption.fold(Future(results)) { head =>
-          head.runFuture(onComplete, path :+ index, strPath :+ head.value.name, thisError).flatMap { result =>
+          new TestTreeSeq(head).runFuture(onComplete, path :+ index, strPath :+ head.value.name, thisError).flatMap { result =>
             runChildren(tail.tail, results :+ result, index+1)
           }
         }
@@ -131,7 +127,7 @@ class TestTreeSeq(tests: Tree[Test]) {
          (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
 
     val (indices, current) = resolve(testPath)
-    current.runFuture(onComplete, indices, strPath)
+    new TestTreeSeq(current).runFuture(onComplete, indices, strPath)
   }
 
   def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),

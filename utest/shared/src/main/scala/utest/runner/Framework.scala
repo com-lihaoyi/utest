@@ -24,6 +24,6 @@ final class Framework extends sbt.testing.Framework{
                   remoteArgs: Array[String],
                   testClassLoader: ClassLoader,
                   send: String => Unit) = {
-    new SlaveRunner(args, remoteArgs, testClassLoader, send)
+    new ScalaJsSlaveRunner(args, remoteArgs, testClassLoader, send)
   }
 }

@@ -9,20 +9,21 @@ lazy val utest = crossProject
     ) ++ (
       if (scalaVersion.value startsWith "2.11.") Nil
       else Seq(
+        "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
         compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full),
         "org.scalamacros" %% s"quasiquotes" % "2.0.0"
       )
-      ),
+    ),
     unmanagedSourceDirectories in Compile += {
       val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
       baseDirectory.value/".."/"shared"/"src"/"main"/v
     },
-    libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.3" % "provided",
+    libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.4" % "provided",
     autoCompilerPlugins := true,
-    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.3"),
+    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
     name := "utest",
     organization := "com.lihaoyi",
-    version := "0.3.1",
+    version := "0.3.2-SNAPSHOT",
     scalaVersion := "2.10.4",
     // Sonatype2
     publishArtifact in Test := false,

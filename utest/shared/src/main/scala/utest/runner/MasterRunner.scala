@@ -2,6 +2,8 @@ package utest.runner
 import acyclic.file
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
+import sbt.testing.TaskDef
+
 import scala.annotation.tailrec
 
 final class MasterRunner(args: Array[String],
@@ -15,6 +17,7 @@ final class MasterRunner(args: Array[String],
   val failure = new AtomicInteger(0)
   val failures = new AtomicReference[List[String]](Nil)
   val traces = new AtomicReference[List[String]](Nil)
+
   @tailrec def addResult(r: String): Unit = {
     val old = results.get()
     if (!results.compareAndSet(old, r :: old)) addResult(r)

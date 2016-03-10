@@ -2,11 +2,9 @@
 import utest.asserts._
 import utest.framework.{Test, TestTreeSeq}
 import utest.framework.Tree
-
-import scala.concurrent.Future
+import acyclic.file
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
-import scala.util.Failure
 
 /**
  * Created by haoyi on 1/24/14.
@@ -63,7 +61,7 @@ package object utest {
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
+    @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def -(x: => Any) = ???
   }
 
@@ -72,13 +70,13 @@ package object utest {
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
+    @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def apply(x: => Any) = ???
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    @ScalaVersionStubs.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
+    @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
     def -(x: => Any) = ???
   }
 
@@ -102,39 +100,6 @@ package object utest {
      */
     def -(x: => Any) = ???
   }
-  def runSuite(suite: TestSuite,
-               path: Seq[String],
-               args: Array[String],
-               addCount: Boolean => Unit,
-               log: String => Unit,
-               logFailure: (String, Throwable) => Unit,
-               addTotal: String => Unit): Future[String] = {
-    import suite.tests
-    val (indices, found) = tests.resolve(path)
-    addTotal(found.length.toString)
 
-    implicit val ec =
-      if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
-        scala.concurrent.ExecutionContext.global
-      }else{
-        framework.ExecutionContext.RunNow
-      }
-
-    val formatter = framework.DefaultFormatter(args)
-    val results = tests.runAsync(
-      (subpath, s) => {
-        addCount(s.value.isSuccess)
-        val str = formatter.formatSingle(path ++ subpath, s)
-        log(str)
-        s.value match{
-          case Failure(e) => logFailure(str, e)
-          case _ => ()
-        }
-      },
-      testPath = path
-    )(ec)
-
-    results.map(formatter.format)
-  }
 }
 
