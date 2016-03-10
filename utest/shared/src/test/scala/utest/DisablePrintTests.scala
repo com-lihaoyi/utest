@@ -2,10 +2,9 @@ package utest
 
 import utest.framework.{Result, Tree}
 
-object ConfigurePrintTests extends TestSuite{
-  override def formatSingle(path: Seq[String], res: utest.framework.Result) = None
+object DisablePrintTests extends TestSuite{
   override def format(results: Tree[Result]) = None
-
+  override def formatColor = false
   def tests = this{
     'hello{
       123
