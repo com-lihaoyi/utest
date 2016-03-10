@@ -1,6 +1,8 @@
 package utest
-package framework
+
 import acyclic.file
+import utest.asserts.DummyTypeclass
+import utest.framework.Formatter
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
 
@@ -11,19 +13,26 @@ import scala.scalajs.js.annotation.JSExportDescendentObjects
  * for test-discovery by SBT.
  */
 @JSExportDescendentObjects
-abstract class TestSuite extends TestSuiteMacro{
+abstract class TestSuite
+  extends TestSuiteMacro
+  with utest.asserts.Asserts[DummyTypeclass]
+  with Formatter{
+
+  def utestTruncateLength = 5000
+  override def formatTruncate = utestTruncateLength
+  def assertPrettyPrint[T: DummyTypeclass](t: T) = t.toString.take(utestTruncateLength)
+
   /**
    * The tests within this `object`.
    */
-  def tests: framework.Tree[Test]
+  def tests: framework.Tree[framework.Test]
 }
+
 trait TestSuiteMacro{
-
-
   /**
     * Macro to demarcate a `Tree[Test]`.
     */
-  def apply(expr: Unit): framework.Tree[Test] = macro TestSuite.applyImpl
+  def apply(expr: Unit): framework.Tree[framework.Test] = macro TestSuite.applyImpl
 }
 object TestSuite extends TestSuiteMacro{
   /**
@@ -34,7 +43,7 @@ object TestSuite extends TestSuiteMacro{
     throw new IllegalArgumentException(s"Test nested badly: $testName")
   }
 
-  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[framework.Tree[Test]] = {
+  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[framework.Tree[framework.Test]] = {
     import c.universe._
 
     def matcher(i: Int): PartialFunction[Tree, (Tree, Tree, Int)] = {
@@ -112,14 +121,14 @@ object TestSuite extends TestSuiteMacro{
 
     found match{
       case Some(tree) =>
-        c.Expr[framework.Tree[Test]](q"""
+        c.Expr[framework.Tree[framework.Test]](q"""
           throw new java.lang.IllegalArgumentException("Test [" + $tree + "] nested badly. Tests must be nested directly underneath their parents and can not be placed within blocks.")
         """)
 
       case None =>
         // jump through some hoops to avoid using scala.Predef implicits,
         // to make @paulp happy
-        c.Expr[framework.Tree[Test]](
+        c.Expr[framework.Tree[framework.Test]](
           q"""$suite(this.getClass.getName.replace("$$", ""), $testTree)"""
         )
     }

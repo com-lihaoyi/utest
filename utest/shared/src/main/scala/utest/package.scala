@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 /**
  * Created by haoyi on 1/24/14.
  */
-package object utest extends _root_.utest.asserts.Asserts{
+package object utest {
   implicit val retryInterval = new RetryInterval(100.millis)
   implicit val retryMax = new RetryMax(1.second)
   import scala.language.experimental.macros
@@ -49,9 +49,7 @@ package object utest extends _root_.utest.asserts.Asserts{
    */
   implicit def toTestSeq(t: Tree[Test]) = new TestTreeSeq(t)
 
-  val TestSuite = framework.TestSuite
-  type TestSuite  = framework.TestSuite
-  
+
   /**
    * Placeholder object used to declare test cases which you don't want to 
    * bother naming. These test cases are named with sequential numbers 

@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.annotation.tailrec
 
 import utest.framework.ExecutionContext
-import utest.framework.TestSuite
+import utest.TestSuite
 
 import scala.concurrent.Await
 import scala.util.{Failure, Success}
@@ -45,7 +45,7 @@ abstract class BaseRunner(val args: Array[String],
         def status() = st
         def selector() = new TestSelector(selectorString)
         def fingerprint() = new SubclassFingerprint {
-          def superclassName = "utest.framework.TestSuite"
+          def superclassName = "utest.TestSuite"
           def isModule = true
           def requireNoArgConstructor = true
         }
@@ -100,11 +100,10 @@ abstract class BaseRunner(val args: Array[String],
         utest.framework.ExecutionContext.RunNow
       }
 
-    val formatter = utest.framework.DefaultFormatter(args)
     val results = tests.runAsync(
       (subpath, s) => {
         addCount(s.value.isSuccess)
-        val str = formatter.formatSingle(path ++ subpath, s)
+        val str = suite.formatSingle(path ++ subpath, s)
         log(str)
         s.value match{
           case Failure(e) => logFailure(str, e)
@@ -114,7 +113,7 @@ abstract class BaseRunner(val args: Array[String],
       testPath = path
     )(ec)
 
-    results.map(formatter.format)
+    results.map(suite.format)
   }
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {

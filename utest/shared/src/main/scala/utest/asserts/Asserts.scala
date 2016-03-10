@@ -16,7 +16,6 @@ import scala.language.experimental.macros
  * message for boolean expression assertion.
  */
 object Asserts {
-
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
     def calcPosMsg(pos: scala.reflect.api.Position) = {
@@ -27,8 +26,8 @@ object Asserts {
       expr.tree
          .pos
          .lineContent
-         .drop(expr.tree.pos.column)
-         .take(2)
+         .slice(expr.tree.pos.column, expr.tree.pos.column + 2)
+
 
     val quoteOffset = if (stringStart == "\"\"") 2 else 0
 
@@ -120,9 +119,13 @@ object Asserts {
     else die(null)
   }
 }
+object DummyTypeclass {
+  implicit def DummyImplicit[T] = new DummyTypeclass[T]
+}
+class DummyTypeclass[+T]
 
-trait Asserts{
-
+trait Asserts[V[_]]{
+  def assertPrettyPrint[T: V](t: T): String
   /**
     * Asserts that the given expression fails to compile, and returns a
     * [[framework.CompileError]] containing the message of the failure. If the expression

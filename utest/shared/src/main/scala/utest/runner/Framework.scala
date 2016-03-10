@@ -8,7 +8,7 @@ final class Framework extends sbt.testing.Framework{
 
   def fingerprints(): Array[sbt.testing.Fingerprint] = Array(
     new SubclassFingerprint {
-      def superclassName = "utest.framework.TestSuite"
+      def superclassName = "utest.TestSuite"
       def isModule = true
       def requireNoArgConstructor = true
     }
