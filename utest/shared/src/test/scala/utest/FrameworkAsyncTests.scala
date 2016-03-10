@@ -5,7 +5,7 @@ import concurrent.duration._
 object FrameworkAsyncTests extends TestSuite{
   implicit val ec = utest.framework.ExecutionContext.RunNow
 
-  def tests = TestSuite{
+  def tests = this{
     'hello{
       Future(10)
     }

@@ -31,7 +31,7 @@ object Parallel {
                     (implicit interval: RetryInterval, max: RetryMax): Unit = {
     val start = Deadline.now
     @tailrec def rec(): Unit = {
-      val result = funcs.map(_.run())
+      val result = funcs.map(runAssertionEntry)
 
       val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src) => (logged, src) }
       die match{
@@ -60,7 +60,7 @@ object Parallel {
                      (implicit interval: RetryInterval, max: RetryMax): Unit = {
     val start = Deadline.now
     @tailrec def rec(): Unit = {
-      val result = funcs.map(_.run())
+      val result = funcs.map(runAssertionEntry)
       val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src) => (logged, src) }
       die match{
         case Some((logged, src)) =>

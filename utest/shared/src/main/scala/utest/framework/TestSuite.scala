@@ -11,19 +11,21 @@ import scala.scalajs.js.annotation.JSExportDescendentObjects
  * for test-discovery by SBT.
  */
 @JSExportDescendentObjects
-abstract class TestSuite{
+abstract class TestSuite extends TestSuiteMacro{
   /**
    * The tests within this `object`.
    */
   def tests: framework.Tree[Test]
 }
+trait TestSuiteMacro{
 
-object TestSuite{
+
   /**
-   * Macro to demarcate a `Tree[Test]`.
-   */
+    * Macro to demarcate a `Tree[Test]`.
+    */
   def apply(expr: Unit): framework.Tree[Test] = macro TestSuite.applyImpl
-
+}
+object TestSuite extends TestSuiteMacro{
   /**
    * Raise an exception if a test is nested badly within a `TestSuite{ ... }`
    * block.

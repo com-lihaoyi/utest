@@ -8,7 +8,7 @@ package utest
 * asserts, we can't assume they work.
 */
 object AssertsTests extends TestSuite{
-  def tests = TestSuite{
+  def tests = this{
     'assert{
       'success{
         def f(x: Boolean) = x
