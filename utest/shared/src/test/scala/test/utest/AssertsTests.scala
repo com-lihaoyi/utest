@@ -1,5 +1,5 @@
-package utest
-
+package test.utest
+import utest._
 /**
 * Test suite for all the assertions that uTest comes bundled with.
 *
@@ -7,7 +7,7 @@ package utest
 * since it is the thing that is meant to be *testing* all the fancy uTest
 * asserts, we can't assume they work.
 */
-object AssertsTests extends TestSuite{
+object AssertsTests extends utest.TestSuite{
   def tests = this{
     'assert{
       'success{
@@ -26,10 +26,10 @@ object AssertsTests extends TestSuite{
 
           Predef.assert(false)
           ???
-        } catch { case e @ framework.AssertionError(_, logged, cause) =>
+        } catch { case e @ utest.framework.AssertionError(_, logged, cause) =>
           (e, logged, cause)
         }
-        val expected = Seq(framework.LoggedValue("x", "Int", 1), framework.LoggedValue("y", "String", "2"))
+        val expected = Seq(utest.framework.LoggedValue("x", "Int", 1), framework.LoggedValue("y", "String", "2"))
         * - Predef.assert(
           cause == null,
           "cause should be null for boolean failure"

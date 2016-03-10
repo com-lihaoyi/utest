@@ -1,8 +1,7 @@
-package utest
+package test.utest
+import utest._
 
-import utest.framework.{Result, Tree}
-
-object DisablePrint2Tests extends TestSuite{
+object DisablePrint2Tests extends utest.TestSuite{
   override def formatSingle(path: Seq[String], res: utest.framework.Result) = None
   override def formatColor = false
   def tests = this{

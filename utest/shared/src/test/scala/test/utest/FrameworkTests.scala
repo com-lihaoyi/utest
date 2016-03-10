@@ -1,5 +1,5 @@
-package utest
-
+package test.utest
+import utest._
 import scala.util.{Failure, Success}
 
 import utest.framework._
@@ -8,10 +8,10 @@ import scala.util.Success
 import scala.util.Failure
 
 
-object FrameworkTests extends TestSuite{
+object FrameworkTests extends utest.TestSuite{
   implicit val ec = utest.framework.ExecutionContext.RunNow
   def tests = this{
-    def testHelloWorld(test: framework.Tree[Test]) = {
+    def testHelloWorld(test: utest.framework.Tree[Test]) = {
       val results = test.run()
       assert(test.length == 4)
       assert(test.leaves.length == 3)
@@ -93,21 +93,23 @@ object FrameworkTests extends TestSuite{
       'testNestedBadly{
         // Ideally should not compile, but until I
         // figure that out, a runtime error works great
-        try{
-          val test = this{
-            "outer"-{
-              if (true){
-                "inners"-{
-
-                }
-              }
-            }
-          }
-        }catch{case e: IllegalArgumentException =>
-          assert(e.getMessage.contains("inners"))
-          assert(e.getMessage.contains("nested badly"))
-          e.getMessage
-        }
+        //
+        // This does not compile
+//        try{
+//          val test = this{
+//            "outer"-{
+//              if (true){
+//                "inners"-{
+//
+//                }
+//              }
+//            }
+//          }
+//        }catch{case e: IllegalArgumentException =>
+//          assert(e.getMessage.contains("inners"))
+//          assert(e.getMessage.contains("nested badly"))
+//          e.getMessage
+//        }
       }
     }
 
@@ -269,6 +271,11 @@ object FrameworkTests extends TestSuite{
         Result("C", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _)
       )=>}
       "timeRun: " + timesRun
+    }
+    'testPath{
+      'foo {
+        assert(implicitly[utest.framework.TestPath] == TestPath(Seq("testPath", "foo")))
+      }
     }
   }
 }

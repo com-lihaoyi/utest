@@ -1,5 +1,4 @@
-package utest
-package framework
+package utest.framework
 
 import acyclic.file
 
@@ -10,6 +9,13 @@ import scala.concurrent.Future
 
 import utest.PlatformShims
 
+case class TestPath(value: Seq[String])
+object TestPath{
+  @reflect.internal.annotations.compileTimeOnly(
+    "TestPath is only available within a uTest suite, and not outside."
+  )
+  implicit val synthetic: TestPath = ???
+}
 object Test{
   /**
    * Creates a test from a set of children, a name a a [[TestThunKTree]].
@@ -75,10 +81,11 @@ class TestTreeSeq(tests: Tree[Test]) {
       }
 
       def runChildren(tail: Seq[Tree[Test]], results: List[Tree[Result]], index: Int): Future[List[Tree[Result]]] = {
-        tail.headOption.fold(Future(results)) { head =>
-          new TestTreeSeq(head).runFuture(onComplete, path :+ index, strPath :+ head.value.name, thisError).flatMap { result =>
-            runChildren(tail.tail, results :+ result, index+1)
-          }
+        tail.headOption match{
+          case None => Future(results)
+          case Some(head) =>
+            val future = new TestTreeSeq(head).runFuture(onComplete, path :+ index, strPath :+ head.value.name, thisError)
+            future.flatMap { result => runChildren(tail.tail, results :+ result, index+1) }
         }
       }
 
@@ -90,15 +97,11 @@ class TestTreeSeq(tests: Tree[Test]) {
         case Success(value) => Future.successful(Success(value))
         case Failure(ex) => Future.successful(Failure(ex))
       }.flatMap(res =>
-          futureResults.map { results => {
-            val end = Deadline.now
-            val result = Result(tests.value.name, res, end.time.toMillis - start.time.toMillis)
-            onComplete(strPath, result)
-            new Tree(
-              result,
-              results
-            )
-          }
+        futureResults.map { results =>
+          val end = Deadline.now
+          val result = Result(tests.value.name, res, end.time.toMillis - start.time.toMillis)
+          onComplete(strPath, result)
+          new Tree(result, results)
         }
       )
     }.flatMap(x => x)
@@ -108,7 +111,7 @@ class TestTreeSeq(tests: Tree[Test]) {
     val indices = collection.mutable.Buffer.empty[Int]
     var current = tests
     var strings = testPath.toList
-    while(!strings.isEmpty){
+    while(strings.nonEmpty){
       val head :: tail = strings
       strings = tail
       val index = current.children.indexWhere(_.value.name == head)
@@ -137,10 +140,6 @@ class TestTreeSeq(tests: Tree[Test]) {
 
     PlatformShims.await(runAsync(onComplete, strPath, testPath))
   }
-}
-
-object TestThunkTree{
-  def create(inner: => (Any, Seq[TestThunkTree])) = new TestThunkTree(inner)
 }
 
 /**

@@ -78,7 +78,7 @@ abstract class BaseRunner(val args: Array[String],
             e.setStackTrace(
               e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
             )
-            addFailure(name + "" + str)
+            addFailure(name + "" + str.getOrElse(""))
             addTrace(
               if (e.isInstanceOf[utest.framework.SkippedOuterFailure]) ""
               else e.getStackTrace.map(_.toString).mkString("\n")
