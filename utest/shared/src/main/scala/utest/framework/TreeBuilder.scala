@@ -18,28 +18,12 @@ object TreeBuilder {
 
   def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[framework.Tree[framework.Test]] = {
     import c.universe._
-//    println("==END==")
-//    println(showCode(expr.tree))
-    def render(t: Tree) = {
-      t match{
-        case q"scala.Symbol.apply(${Literal(Constant(foo))})" => foo.toString
-        case Literal(Constant(foo)) => foo.toString
-      }
-    }
+
     def matcher(i: Int): PartialFunction[Tree, (String, Tree, Int)] = {
-      // Special case for *
-      case q"""utest.this.`package`.*.-($body)""" => (i.toString, body, i + 1)
-      case q"""utest.`package`.*.-($body)""" => (i.toString, body, i + 1)
-
-      // Strings using -
-      case q"""utest.this.`package`.TestableString($value).-($body)""" => (render(value), body, i)
-      case q"""utest.`package`.TestableString($value).-($body)""" => (render(value), body, i)
-
-      // Symbols using - or apply
-      case q"""utest.this.`package`.TestableSymbol($value).apply($body)""" => (render(value), body, i)
-      case q"""utest.`package`.TestableSymbol($value).apply($body)""" => (render(value), body, i)
-      case q"""utest.this.`package`.TestableSymbol($value).-($body)""" => (render(value), body, i)
-      case q"""utest.`package`.TestableSymbol($value).-($body)""" => (render(value), body, i)
+      case q"""utest.this.`package`.TestableSymbol($value).apply($body)""" => ("foo", body, i)
+      case q"""utest.`package`.TestableSymbol($value).apply($body)""" => ("foo", body, i)
+      case q"""utest.this.`package`.TestableSymbol($value).-($body)""" => ("foo", body, i)
+      case q"""utest.`package`.TestableSymbol($value).-($body)""" => ("foo", body, i)
     }
 
     def recurse(t: Tree, path: Seq[String]): (Tree, Tree) = {
@@ -48,27 +32,7 @@ object TreeBuilder {
         case t => Block(Nil, t)
       }
 
-      val (nested, normal0) = b.children.partition(matcher(0).isDefinedAt)
-
-      val transformer = new Transformer{
-        override def transform(t: Tree) = {
-          t match{
-            case q"framework.this.TestPath.synthetic" =>
-              c.typeCheck(q"utest.framework.TestPath(Seq(..$path))")
-            case _ => super.transform(t)
-          }
-        }
-      }
-      val normal = normal0.map(transformer.transform(_))
-
-      val end =
-        if (normal.isEmpty
-          || normal.last.isInstanceOf[MemberDefApi]
-          || nested.contains(b.children.last)) {
-          Seq(q"()")
-        }else{
-          Seq()
-        }
+      val (nested, normal) = b.children.partition(matcher(0).isDefinedAt)
 
       val (_, thingies) = nested.foldLeft(0 -> Seq[(String, Tree, Tree)]()) { case ((index, trees), nextTree) =>
         val (name, tree2, newIndex) = matcher(index)(nextTree)
@@ -90,7 +54,7 @@ object TreeBuilder {
       val testTree = c.typeCheck(q"""
         new utest.framework.TestThunkTree(({
           ..$normal
-          ..$end
+
         }, Seq(..$testTrees)))
       """)
 
