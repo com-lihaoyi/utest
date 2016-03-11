@@ -1,8 +1,9 @@
 package utest.runner
 import acyclic.file
 import sbt.testing.SubclassFingerprint
-import sbt.testing.EventHandler;
-final class Framework extends sbt.testing.Framework{
+import sbt.testing.EventHandler
+
+class Framework extends sbt.testing.Framework{
 
   def name(): String = "utest"
 

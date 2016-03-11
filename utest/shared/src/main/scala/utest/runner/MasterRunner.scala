@@ -76,8 +76,8 @@ final class MasterRunner(args: Array[String],
       case 't' => addTotal(msg.tail.toInt)
       case 'c' => addTrace(msg.tail)
       case 'i' => msg(1) match {
-        case 's' => incSuccess
-        case 'f' => incFailure
+        case 's' => incSuccess()
+        case 'f' => incFailure()
         case _ => badMessage
       }
       case _ => badMessage
