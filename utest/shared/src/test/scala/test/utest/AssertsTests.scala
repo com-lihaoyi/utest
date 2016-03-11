@@ -85,7 +85,7 @@ object AssertsTests extends utest.TestSuite{
             1 == 2,
             die
           )
-        } catch {case e =>
+        } catch {case e: Throwable =>
           val framework.MultipleErrors(
             framework.AssertionError(_, Nil, null),
             framework.AssertionError(_, Nil, iae: IllegalArgumentException)

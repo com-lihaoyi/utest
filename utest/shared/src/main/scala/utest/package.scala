@@ -25,7 +25,7 @@ package object utest {
      * meaning outside that block
      */
     @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
-    def -(x: => Any) = ???
+    def -(x: => Any) = ()
   }
 
   @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
@@ -34,14 +34,14 @@ package object utest {
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
-    def apply(x: => Any) = ???
+    @reflect.internal.annotations.compileTimeOnly("Symbol#apply method should only be used directly inside a TestSuite{} macro")
+    def apply(x: => Any) = ()
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
-    def -(x: => Any) = ???
+    @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a TestSuite{} macro")
+    def -(x: => Any) = ()
   }
 
   /**
@@ -60,7 +60,7 @@ package object utest {
     /**
      * Declares a numbered test-case
      */
-    def -(x: => Any) = ???
+    def -(x: => Any) = ()
   }
 
 }

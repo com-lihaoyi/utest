@@ -22,6 +22,9 @@ lazy val utest = crossProject
     autoCompilerPlugins := true,
     addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
     testFrameworks += new TestFramework("test.utest.CustomFramework"),
+    scalacOptions := Seq(
+      "-Ywarn-dead-code"
+    ),
     name := "utest",
     organization := "com.lihaoyi",
     version := "0.3.2-SNAPSHOT",
