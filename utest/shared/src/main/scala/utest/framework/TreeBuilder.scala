@@ -18,7 +18,8 @@ object TreeBuilder {
 
   def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[framework.Tree[framework.Test]] = {
     import c.universe._
-
+//    println("==END==")
+//    println(showCode(expr.tree))
     def render(t: Tree) = {
       t match{
         case q"scala.Symbol.apply(${Literal(Constant(foo))})" => foo.toString
@@ -59,27 +60,25 @@ object TreeBuilder {
         }
       }
       val normal = normal0.map(transformer.transform(_))
-      val retValueName = c.fresh(newTermName("$ret"))
 
-      val normal2 =
+      val end =
         if (normal.isEmpty
           || normal.last.isInstanceOf[MemberDefApi]
           || nested.contains(b.children.last)) {
-          normal :+ q"val $retValueName = ()"
+          Seq(q"()")
         }else{
-          val (bulk :+ last) = normal
-          bulk :+ q"val $retValueName = $last"
+          Seq()
         }
 
-      val thingies = nested.foldLeft(0 -> Seq[(String, Tree, Tree)]()) { case ((index, trees), nextTree) =>
+      val (_, thingies) = nested.foldLeft(0 -> Seq[(String, Tree, Tree)]()) { case ((index, trees), nextTree) =>
         val (name, tree2, newIndex) = matcher(index)(nextTree)
         (newIndex, trees :+(name, q"$name", tree2))
       }
 
-      val (names, nameTrees, bodies) = thingies._2.unzip3
+      val (names, nameTrees, bodies) = thingies.unzip3
 
       val (testTrees, suites) =
-        thingies._2
+        thingies
           .map{case (name, tree, body) => recurse(body, path :+ name)}
           .unzip
 
@@ -89,10 +88,10 @@ object TreeBuilder {
 
 
       val testTree = c.typeCheck(q"""
-        new utest.framework.TestThunkTree({
-          ..$normal2
-          ($retValueName, Seq(..$testTrees))
-        })
+        new utest.framework.TestThunkTree(({
+          ..$normal
+          ..$end
+        }, Seq(..$testTrees)))
       """)
 
       val suite = q"utest.framework.Test.create(..$suiteFrags)"
@@ -103,7 +102,8 @@ object TreeBuilder {
     val (testTree, suite) = recurse(expr.tree, Vector())
 
     val res = q"""$suite(this.getClass.getName.replace("$$", ""), $testTree)"""
-
+//    println("==END==")
+//    println(showCode(res))
     // jump through some hoops to avoid using scala.Predef implicits,
     // to make @paulp happy
     c.Expr[framework.Tree[framework.Test]](
