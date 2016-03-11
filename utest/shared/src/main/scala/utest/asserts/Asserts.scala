@@ -207,5 +207,6 @@ trait Asserts[V[_]]{
     */
   def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
 
+
 }
 

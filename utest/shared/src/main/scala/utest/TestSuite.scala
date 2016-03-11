@@ -18,6 +18,8 @@ abstract class TestSuite
   with utest.asserts.Asserts[DummyTypeclass]
   with Formatter{
 
+  def utestWrap(runBody: => concurrent.Future[Any]): concurrent.Future[Any] = runBody
+
   def utestTruncateLength = 5000
   override def formatTruncate = utestTruncateLength
   def assertPrettyPrint[T: DummyTypeclass](t: T) = t.toString.take(utestTruncateLength)

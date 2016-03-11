@@ -1,5 +1,7 @@
 package utest.framework
 
+import java.util.concurrent.ExecutionException
+
 import acyclic.file
 
 import scala.util.{Success, Failure, Try}
@@ -56,56 +58,76 @@ class TestTreeSeq(tests: Tree[Test]) {
   def runFuture(onComplete: (Seq[String], Result) => Unit,
                path: Seq[Int],
                strPath: Seq[String] = Nil,
+               wrap: (=> Future[Any]) => Future[Any] ,
                outerError: Future[Option[SkippedOuterFailure]] = Future.successful(Option.empty[SkippedOuterFailure]))
-              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
+              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = Future {
+    val start = Deadline.now
+    val tryResult = outerError.map {
+      case None => tests.value.TestThunkTree.run(path.toList)
+      case Some(f) => throw f
+    }
+    /**
+      * For some reason Scala futures boxes `Error`s into `ExecutionException`s,
+      * so un-box them to show the user since he probably doesn't care about
+      * this boxing
+      */
+    def unbox(res: Throwable) = res match{
+      case e: java.util.concurrent.ExecutionException
+        if e.getMessage == "Boxed Error" =>
+        e.getCause
+      case r => r
+    }
 
-    Future{
-      val start = Deadline.now
-      val tryResult = outerError.map(_.fold(Try(tests.value.TestThunkTree.run(path.toList)))(Failure(_)))
-
-      def matchError(t: Any): Option[SkippedOuterFailure] = t match {
-        case Success(_) => None
-        case Failure(e: SkippedOuterFailure) => Some(e)
-        case Failure(e) =>
-          Some(SkippedOuterFailure(strPath, e))
-        case x => None
-      }
-
-      val thisError = tryResult.flatMap {
-        case Success(f: Future[_]) =>
-          f.map(matchError).recover { case ex: Throwable => 
-            Some(SkippedOuterFailure(strPath, ex)) 
-          }
-        case t =>
-          Future.successful(matchError(t))
-      }
-
-      def runChildren(tail: Seq[Tree[Test]], results: List[Tree[Result]], index: Int): Future[List[Tree[Result]]] = {
-        tail.headOption match{
-          case None => Future(results)
-          case Some(head) =>
-            val future = new TestTreeSeq(head).runFuture(onComplete, path :+ index, strPath :+ head.value.name, thisError)
-            future.flatMap { result => runChildren(tail.tail, results :+ result, index+1) }
+    val thisError = tryResult.flatMap {
+      case f: Future[_] =>
+        f.map(_ => None).recover { case ex: Throwable =>
+          Some(SkippedOuterFailure(strPath, unbox(ex)))
         }
+      case t => Future.successful(None)
+    }.recover{
+      case e: SkippedOuterFailure => Some(e)
+      case e => Some(SkippedOuterFailure(strPath, unbox(e)))
+    }
+
+    def runChildren(tail: Seq[Tree[Test]], results: List[Tree[Result]], index: Int): Future[List[Tree[Result]]] = {
+      tail.headOption match{
+        case None => Future(results)
+        case Some(head) =>
+          val future = new TestTreeSeq(head).runFuture(
+            onComplete,
+            path :+ index,
+            strPath :+ head.value.name,
+            wrap,
+            thisError
+          )
+          future.flatMap { result => runChildren(tail.tail, results :+ result, index+1) }
       }
+    }
 
-      val futureResults = runChildren(tests.children, List(), 0)
+    val futureResults = runChildren(tests.children, List(), 0)
 
-      tryResult.flatMap{
-        // Special-case tests which return a future, in order to wait for them to finish
-        case Success(f: Future[_]) => f.map(Success(_)).recover { case ex: Throwable => Failure(ex) }
-        case Success(value) => Future.successful(Success(value))
-        case Failure(ex) => Future.successful(Failure(ex))
-      }.flatMap(res =>
-        futureResults.map { results =>
-          val end = Deadline.now
-          val result = Result(tests.value.name, res, end.time.toMillis - start.time.toMillis)
-          onComplete(strPath, result)
-          new Tree(result, results)
+    tryResult.flatMap{
+      // Special-case tests which return a future, in order to wait for them to finish
+      case f: Future[_] => f.map(Success(_)).recover { case ex: Throwable => Failure(ex) }
+      case value => Future.successful(Success(value))
+    }.recover{
+      case e => Failure(e)
+    }.flatMap(res =>
+      futureResults.map { results =>
+        val res1 = res match{
+          case Failure(e: java.util.concurrent.ExecutionException)
+            if e.getMessage == "Boxed Error" =>
+            Failure(e.getCause)
+          case r => r
         }
-      )
-    }.flatMap(x => x)
-  }
+        val end = Deadline.now
+        val result = Result(tests.value.name, res1, end.time.toMillis - start.time.toMillis)
+        onComplete(strPath, result)
+        new Tree(result, results)
+      }
+    )
+  }.flatMap(x => x)
+
 
   def resolve(testPath: Seq[String]) = {
     val indices = collection.mutable.Buffer.empty[Int]
@@ -125,20 +147,22 @@ class TestTreeSeq(tests: Tree[Test]) {
   }
 
   def runAsync(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
-          strPath: Seq[String] = Nil,
-          testPath: Seq[String] = Nil)
-         (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
+               strPath: Seq[String] = Nil,
+               testPath: Seq[String] = Nil,
+               wrap: (=> Future[Any]) => Future[Any] = x => x)
+              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
 
     val (indices, current) = resolve(testPath)
-    new TestTreeSeq(current).runFuture(onComplete, indices, strPath)
+    new TestTreeSeq(current).runFuture(onComplete, indices, strPath, wrap)
   }
 
   def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
           strPath: Seq[String] = Nil,
-          testPath: Seq[String] = Nil)
+          testPath: Seq[String] = Nil,
+          wrap: (=> Future[Any]) => Future[Any] = x => x)
          (implicit ec: concurrent.ExecutionContext): Tree[Result] = {
 
-    PlatformShims.await(runAsync(onComplete, strPath, testPath))
+    PlatformShims.await(runAsync(onComplete, strPath, testPath, wrap))
   }
 }
 

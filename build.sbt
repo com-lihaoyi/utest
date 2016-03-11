@@ -21,6 +21,7 @@ lazy val utest = crossProject
     libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.4" % "provided",
     autoCompilerPlugins := true,
     addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
     name := "utest",
     organization := "com.lihaoyi",
     version := "0.3.2-SNAPSHOT",
@@ -53,11 +54,10 @@ lazy val utest = crossProject
     libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion,
     scalaJSStage in Test := FastOptStage,
     scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant)),
-    testFrameworks += new TestFramework("utest.runner.Framework")
+    scalaJSUseRhino in Global := false
   )
   .jvmSettings(
-    fork in Test := true,
-    testFrameworks += new TestFramework("utest.runner.Framework"),
+//    fork in Test := true,
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
