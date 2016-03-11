@@ -61,13 +61,13 @@ object TreeBuilder {
       }
       val normal = normal0.map(transformer.transform(_))
 
-      val end =
+      val (normal2, last) =
         if (normal.isEmpty
           || normal.last.isInstanceOf[MemberDefApi]
           || nested.contains(b.children.last)) {
-          Seq(q"()")
+          (normal, c.typeCheck(q"()"))
         }else{
-          Seq()
+          (normal.init, normal.last)
         }
 
       val (_, thingies) = nested.foldLeft(0 -> Seq[(String, Tree, Tree)]()) { case ((index, trees), nextTree) =>
@@ -86,12 +86,11 @@ object TreeBuilder {
         case (name, suite) => q"$name -> $suite"
       }
 
-
       val testTree = c.typeCheck(q"""
-        new utest.framework.TestThunkTree(({
-          ..$normal
-          ..$end
-        }, Seq(..$testTrees)))
+        new utest.framework.TestThunkTree({
+          ..$normal2
+          ($last, Seq(..$testTrees))
+        })
       """)
 
       val suite = q"utest.framework.Test.create(..$suiteFrags)"
