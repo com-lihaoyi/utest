@@ -93,7 +93,14 @@ object AssertsTests extends utest.TestSuite{
         }
       }
     }
-
+    'arrowAssert{
+      1 ==> 1
+      try{
+        1 ==> 2
+      }catch{case e: java.lang.AssertionError =>
+        e
+      }
+    }
     'intercept{
       'success{
         val e = intercept[MatchError]{

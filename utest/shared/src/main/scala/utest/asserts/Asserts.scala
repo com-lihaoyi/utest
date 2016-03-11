@@ -52,7 +52,7 @@ object Asserts {
               .map(_.annotations)
               .toSeq
               .flatten
-              .filter(_.tpe == compileTimeOnlyType)
+              .filter(_.tpe =:= compileTimeOnlyType)
               .map(t -> _)
           }.flatten
 
@@ -161,6 +161,14 @@ class DummyTypeclass[+T]
 
 trait Asserts[V[_]]{
   def assertPrettyPrint[T: V](t: T): String
+
+  /**
+    * Provides a nice syntax for asserting things are equal, that is pretty
+    * enough to embed in documentation and examples
+    */
+  implicit class ArrowAssert[T](lhs: T){
+    def ==>[V](rhs: V) = Predef.assert(lhs == rhs, s"==> assertion failed: $lhs != $rhs")
+  }
   /**
     * Asserts that the given expression fails to compile, and returns a
     * [[framework.CompileError]] containing the message of the failure. If the expression

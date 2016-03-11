@@ -24,7 +24,7 @@ lazy val utest = crossProject
     name := "utest",
     organization := "com.lihaoyi",
     version := "0.3.2-SNAPSHOT",
-    scalaVersion := "2.10.4",
+    scalaVersion := "2.11.4",
     // Sonatype2
     publishArtifact in Test := false,
     publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
