@@ -43,16 +43,45 @@ object Asserts {
               x.pos.point + expr.tree.pos.point + quoteOffset
             ).asInstanceOf[c.universe.Position]
           }
-          c.typeCheck(tree)
 
-          c.abort(c.enclosingPosition, "compileError check failed to have a compilation error")
+          val tree2 = c.typeCheck(tree)
+          val compileTimeOnlyType = typeOf[scala.reflect.internal.annotations.compileTimeOnly]
+
+          val compileTimeOnlyTree = tree2.collect{ case t =>
+            Option(t.symbol)
+              .map(_.annotations)
+              .toSeq
+              .flatten
+              .filter(_.tpe == compileTimeOnlyType)
+              .map(t -> _)
+          }.flatten
+
+
+         compileTimeOnlyTree.headOption match{
+            case Some((tree, annot)) =>
+              val msg = annot.scalaArgs.head match{
+                case Literal(Constant(s: String)) => s
+                case t => t.toString
+              }
+              println("Foo1234\t" + tree.pos + "\t" + tree)
+              c.Expr[CompileError](
+                q"""utest.framework.CompileError.CompileTimeOnly(${calcPosMsg(tree.pos)}, $msg)"""
+              )
+            case None =>
+              c.abort(
+                c.enclosingPosition,
+                "compileError check failed to have a compilation error"
+              )
+          }
+
         } catch{
           case TypecheckException(pos, msg) =>
             c.Expr[CompileError](q"""utest.framework.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
           case ParseException(pos, msg) =>
             c.Expr[CompileError](q"""utest.framework.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
           case e: Exception =>
-            println("SOMETHING WENT WRONG LOLS " + e); ???
+            println("SOMETHING WENT WRONG LOLS " + e)
+            throw e
         }
       case e =>
         c.abort(

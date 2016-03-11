@@ -8,6 +8,8 @@ import utest._
 * asserts, we can't assume they work.
 */
 object AssertsTests extends utest.TestSuite{
+
+
   def tests = this{
     'assert{
       'success{
@@ -258,8 +260,33 @@ object AssertsTests extends utest.TestSuite{
           """,
           "You can only have literal strings in compileError"
         )
+
+      }
+      'compileTimeOnly{
+        // Make sure that when the body contains a `@compileTimeOnly`, it
+        // gets counted as a valid compile error and `compileError` passes
+        compileError("compileTimeOnlyVal").check(
+          """
+        compileError("compileTimeOnlyVal").check(
+                      ^
+          """,
+          "compileTimeOnlyVal should be a compile error if used!"
+        )
+
+        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
+          """
+        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
+                                                                       ^
+          """,
+          "compileTimeOnlyVal should be a compile error if used!"
+        )
       }
     }
   }
+
+  @scala.reflect.internal.annotations.compileTimeOnly(
+    "compileTimeOnlyVal should be a compile error if used!"
+  )
+  def compileTimeOnlyVal = 1
 }
 

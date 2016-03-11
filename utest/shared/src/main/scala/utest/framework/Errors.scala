@@ -89,4 +89,8 @@ object CompileError{
    * A [[CompileError]] representing a failure to parse.
    */
   case class Parse(pos: String, msg: String) extends CompileError
+  /**
+    * A [[CompileError]] representing a `compileTimeOnly` node within a tree
+    */
+  case class CompileTimeOnly(pos: String, msg: String) extends CompileError
 }
