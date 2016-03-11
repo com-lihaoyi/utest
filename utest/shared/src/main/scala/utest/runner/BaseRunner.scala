@@ -86,7 +86,8 @@ abstract class BaseRunner(val args: Array[String],
           case _ => ()
         }
       },
-      testPath = selector
+      testPath = selector,
+      wrap = suite.utestWrap(_)(ec)
     )(ec)
 
     results.map(suite.format).map(_.foreach(addResult))

@@ -2,7 +2,7 @@ package utest
 package asserts
 import acyclic.file
 import utest.framework.{MultipleErrors, CompileError}
-import scala.annotation.StaticAnnotation
+import scala.annotation.{tailrec, StaticAnnotation}
 import scala.reflect.macros.{ParseException, TypecheckException, Context}
 import scala.util.{Failure, Success, Try, Random}
 import scala.reflect.ClassTag
@@ -207,6 +207,12 @@ trait Asserts[V[_]]{
     */
   def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
 
-
+  @tailrec final def retry[T](n: Int)(body: => T): T = {
+    try body
+    catch{case e: Throwable =>
+      if (n > 0) retry(n-1)(body)
+      else throw e
+    }
+  }
 }
 

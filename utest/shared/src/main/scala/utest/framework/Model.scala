@@ -62,9 +62,16 @@ class TestTreeSeq(tests: Tree[Test]) {
                outerError: Future[Option[SkippedOuterFailure]] = Future.successful(Option.empty[SkippedOuterFailure]))
               (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = Future {
     val start = Deadline.now
-    val tryResult = outerError.map {
-      case None => tests.value.TestThunkTree.run(path.toList)
-      case Some(f) => throw f
+    // Special-case tests which return a future, in order to wait for them to finish
+    val futurized = wrap{
+      val tryResult = outerError.map {
+        case None => tests.value.TestThunkTree.run(path.toList)
+        case Some(f) => throw f
+      }
+      tryResult flatMap{
+        case f: Future[_] => f
+        case f => Future.successful(f)
+      }
     }
     /**
       * For some reason Scala futures boxes `Error`s into `ExecutionException`s,
@@ -78,12 +85,8 @@ class TestTreeSeq(tests: Tree[Test]) {
       case r => r
     }
 
-    val thisError = tryResult.flatMap {
-      case f: Future[_] =>
-        f.map(_ => None).recover { case ex: Throwable =>
-          Some(SkippedOuterFailure(strPath, unbox(ex)))
-        }
-      case t => Future.successful(None)
+    val thisError = futurized.map{
+      case t => None
     }.recover{
       case e: SkippedOuterFailure => Some(e)
       case e => Some(SkippedOuterFailure(strPath, unbox(e)))
@@ -106,10 +109,8 @@ class TestTreeSeq(tests: Tree[Test]) {
 
     val futureResults = runChildren(tests.children, List(), 0)
 
-    tryResult.flatMap{
-      // Special-case tests which return a future, in order to wait for them to finish
-      case f: Future[_] => f.map(Success(_)).recover { case ex: Throwable => Failure(ex) }
-      case value => Future.successful(Success(value))
+    futurized.map{
+      case value => Success(value)
     }.recover{
       case e => Failure(e)
     }.flatMap(res =>
