@@ -88,12 +88,12 @@ object TreeBuilder {
       }
 
 
-      val testTree = q"""
+      val testTree = c.typeCheck(q"""
         new utest.framework.TestThunkTree({
           ..$normal2
           ($retValueName, Seq(..$testTrees))
         })
-      """
+      """)
 
       val suite = q"utest.framework.Test.create(..$suiteFrags)"
 
@@ -101,10 +101,13 @@ object TreeBuilder {
     }
 
     val (testTree, suite) = recurse(expr.tree, Vector())
+
+    val res = q"""$suite(this.getClass.getName.replace("$$", ""), $testTree)"""
+
     // jump through some hoops to avoid using scala.Predef implicits,
     // to make @paulp happy
     c.Expr[framework.Tree[framework.Test]](
-      q"""$suite(this.getClass.getName.replace("$$", ""), $testTree)"""
+      res
     )
   }
 }

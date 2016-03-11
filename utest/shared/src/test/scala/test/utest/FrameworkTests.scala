@@ -147,7 +147,7 @@ object FrameworkTests extends utest.TestSuite{
         assert(res == Success(()))
       }
     }
-    
+
     'nesting{
       'importStatementsWork{
         // issue #7, just needs to compile
