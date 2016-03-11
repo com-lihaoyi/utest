@@ -92,6 +92,16 @@ object AssertsTests extends utest.TestSuite{
           ) = e
         }
       }
+      'show{
+        try assert((math.max(1 + 1, 2): @Show) == 3) catch{
+          case framework.AssertionError(
+            _,
+            Seq(lv @ framework.LoggedValue(_, "Int", 2)),
+            null
+          ) =>
+            lv
+        }
+      }
     }
     'arrowAssert{
       1 ==> 1

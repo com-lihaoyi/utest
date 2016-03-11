@@ -13,7 +13,7 @@ package object utest {
   implicit val retryMax = new RetryMax(1.second)
   import scala.language.experimental.macros
 
-
+  type Show = asserts.Show
   /**
    * Extension methods to allow you to create tests via the "omg"-{ ... }
    * syntax.
