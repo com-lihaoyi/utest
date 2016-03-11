@@ -8,8 +8,11 @@ import acyclic.file
 final class ScalaJsSlaveRunner(args: Array[String],
                                remoteArgs: Array[String],
                                testClassLoader: ClassLoader,
-                               send: String => Unit)
+                               send: String => Unit,
+                               setup: () => Unit,
+                               teardown: () => Unit)
                         extends BaseRunner(args, remoteArgs, testClassLoader){
+  setup()
   def addResult(r: String): Unit = send(s"r$r")
   def addFailure(r: String): Unit = send(s"f$r")
   def addTrace(trace: String): Unit = send(s"c$trace")
@@ -19,6 +22,9 @@ final class ScalaJsSlaveRunner(args: Array[String],
 
   // These only exist because Scala.js is weird and asks us to define them
   // even though we never end up using them, so stub them out
-  def done() = ""
+  def done() = {
+    teardown()
+    ""
+  }
   def receiveMessage(msg: String) = None
 }

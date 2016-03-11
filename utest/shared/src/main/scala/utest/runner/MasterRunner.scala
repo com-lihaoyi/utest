@@ -8,9 +8,11 @@ import scala.annotation.tailrec
 
 final class MasterRunner(args: Array[String],
                          remoteArgs: Array[String],
-                         testClassLoader: ClassLoader)
+                         testClassLoader: ClassLoader,
+                         setup: () => Unit,
+                         teardown: () => Unit)
                          extends BaseRunner(args, remoteArgs, testClassLoader){
-
+  setup()
   val results = new AtomicReference[List[String]](Nil)
   val total = new AtomicInteger(0)
   val success = new AtomicInteger(0)
@@ -41,6 +43,7 @@ final class MasterRunner(args: Array[String],
   def totalCount: Int = total.get
 
   def done(): String = {
+    teardown()
     val header = "-----------------------------------Results-----------------------------------"
 
     val body = results.get.mkString("\n")

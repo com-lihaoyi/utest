@@ -21,7 +21,7 @@ lazy val utest = crossProject
     libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.4" % "provided",
     autoCompilerPlugins := true,
     addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
-    testFrameworks += new TestFramework("utest.runner.Framework"),
+    testFrameworks += new TestFramework("test.utest.CustomFramework"),
     name := "utest",
     organization := "com.lihaoyi",
     version := "0.3.2-SNAPSHOT",
