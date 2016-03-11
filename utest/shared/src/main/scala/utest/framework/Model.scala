@@ -15,11 +15,11 @@ object Test{
    * Generally called by the [[TestSuite.apply]] macro and doesn't need to
    * be called manually.
    */
-  def create(tests: (String, (String, TestThunkTree) => Tree[Test])*)
-            (name: String, testTree: TestThunkTree): Tree[Test] = {
+  def create(tests: (TestThunkTree => Tree[Test])*)
+            (testTree: TestThunkTree): Tree[Test] = {
     new Tree(
-      new Test(name, testTree),
-      tests.map{ case (k, v) => v(k, testTree) }
+      new Test(testTree),
+      tests.map{ case v => v(testTree) }
     )
   }
 }
@@ -29,7 +29,7 @@ object Test{
  * a pretty simple data structure, as much of the information related to it
  * comes contextually when traversing the [[utest.framework.TestTreeSeq]] to reach it.
  */
-case class Test(name: String, TestThunkTree: TestThunkTree)
+case class Test(TestThunkTree: TestThunkTree)
 
 /**
  * A tree of nested lexical scopes that accompanies the tree of tests. This
