@@ -77,6 +77,21 @@ object AssertsTests extends utest.TestSuite{
           e.getMessage.contains("98")
         }
       }
+      'multiple{
+        // Make sure multiple failures in a single assert are aggregated
+        def die = throw new IllegalArgumentException("foo")
+        try {
+          assert(
+            1 == 2,
+            die
+          )
+        } catch {case e =>
+          val framework.MultipleErrors(
+            framework.AssertionError(_, Nil, null),
+            framework.AssertionError(_, Nil, iae: IllegalArgumentException)
+          ) = e
+        }
+      }
     }
 
     'intercept{

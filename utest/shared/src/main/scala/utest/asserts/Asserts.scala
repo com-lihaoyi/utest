@@ -1,7 +1,7 @@
 package utest
 package asserts
 import acyclic.file
-import utest.framework.CompileError
+import utest.framework.{MultipleErrors, CompileError}
 import scala.reflect.macros.{ParseException, TypecheckException, Context}
 import scala.util.{Failure, Success, Try, Random}
 import scala.reflect.ClassTag
@@ -63,7 +63,6 @@ object Asserts {
                 case Literal(Constant(s: String)) => s
                 case t => t.toString
               }
-              println("Foo1234\t" + tree.pos + "\t" + tree)
               c.Expr[CompileError](
                 q"""utest.framework.CompileError.CompileTimeOnly(${calcPosMsg(tree.pos)}, $msg)"""
               )
@@ -96,10 +95,17 @@ object Asserts {
     Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
   }
 
+
   def assertImpl(funcs: AssertEntry[Boolean]*) = {
-    for (entry <- funcs){
+    val tries = for (entry <- funcs) yield Try{
       val (value, die) = getAssertionEntry(entry)
       if (!value) die(null)
+    }
+    val failures = tries.collect{case util.Failure(thrown) => thrown}
+    failures match{
+      case Seq() => () // nothing failed, do nothing
+      case Seq(failure) => throw failure
+      case multipleFailures => throw new MultipleErrors(multipleFailures:_*)
     }
   }
 
