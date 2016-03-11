@@ -1,26 +1,31 @@
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-crossScalaVersions := Seq("2.10.4", "2.11.4")
+crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M3")
+
+def macroDependencies(version: String) =
+  ("org.scala-lang" % "scala-reflect" % version) +:
+  (if (version startsWith "2.10.")
+     Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full),
+         "org.scalamacros" %% s"quasiquotes" % "2.0.0")
+   else
+     Seq())
+
+def akkaVersionFrom(scalaVersion: String): String = scalaVersion match {
+  case x if x.startsWith("2.10.") => "2.3.2" //scala 2.10 support
+  case _ => "2.4.2" //scala 2.11,2.12 support
+}
 
 lazy val utest = crossProject
   .settings(
-    libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value
-    ) ++ (
-      if (scalaVersion.value startsWith "2.11.") Nil
-      else Seq(
-        "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-        compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full),
-        "org.scalamacros" %% s"quasiquotes" % "2.0.0"
-      )
-    ),
+    libraryDependencies ++= macroDependencies(scalaVersion.value),
+
     unmanagedSourceDirectories in Compile += {
       val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
       baseDirectory.value/".."/"shared"/"src"/"main"/v
     },
-    libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.4" % "provided",
-    autoCompilerPlugins := true,
-    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
+//    libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.4" % "provided",
+//    autoCompilerPlugins := true,
+//    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
     testFrameworks += new TestFramework("test.utest.CustomFramework"),
     scalacOptions := Seq(
       "-Ywarn-dead-code"
@@ -29,6 +34,10 @@ lazy val utest = crossProject
     organization := "com.lihaoyi",
     version := "0.3.2-SNAPSHOT",
     scalaVersion := "2.11.4",
+    scalacOptions ++= Seq(scalaVersion.value match {
+      case x if x.startsWith("2.12.") => "-target:jvm-1.8"
+      case x => "-target:jvm-1.6"
+    }),
     // Sonatype2
     publishArtifact in Test := false,
     publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
@@ -64,7 +73,7 @@ lazy val utest = crossProject
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
-      "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "test"
+      "com.typesafe.akka" %% "akka-actor" % akkaVersionFrom(scalaVersion.value) % "test"
     ),
     resolvers += Resolver.sonatypeRepo("snapshots")
   )

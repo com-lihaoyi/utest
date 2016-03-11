@@ -42,14 +42,10 @@ object Tracer{
           case i: Typed =>
             i.tpe match {
               case t: AnnotatedType
-                if t.annotations.exists(_.tpe =:= typeOf[utest.asserts.Show]) =>
+                // Don't worry about multiple chained annotations for now...
+                if t.annotations.map(_.tpe) == Seq(typeOf[utest.asserts.Show]) =>
 
-                val newTpe =
-                  if (t.annotations.length == 1) t.underlying
-                  else AnnotatedType(
-                    t.annotations.filterNot(_.tpe =:= typeOf[utest.asserts.Show]),
-                    t.underlying
-                  )
+                val newTpe = t.underlying
 
                 wrapWithLoggedValue(c)(tree, loggerName, newTpe.widen)
               case _ => super.transform(tree)

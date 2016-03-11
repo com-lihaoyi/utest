@@ -2,7 +2,6 @@
 import utest.asserts._
 import utest.framework.{Test, TestTreeSeq}
 import utest.framework.Tree
-import acyclic.file
 import scala.concurrent.duration._
 
 /**
@@ -63,5 +62,11 @@ package object utest {
     def -(x: => Any) = ()
   }
 
+  /**
+    * Just here to bootstrap utest until I get acyclic published for 2.12.0
+    */
+  private[utest] object acyclic{
+    val file = ()
+  }
 }
 
