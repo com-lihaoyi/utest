@@ -862,6 +862,7 @@ Changelog
 -----
 
 - Generalize `==>` asserts to work on `Array`s
+- Shiny new [CI build](https://travis-ci.org/lihaoyi/utest) and [Gitter Chat](https://gitter.im/lihaoyi/utest?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 0.4.2
 -----
