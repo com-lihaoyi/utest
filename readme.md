@@ -87,7 +87,7 @@ sbt myproject/test
 
 Which should produce this output:
 
-```scala
+```javascript
 [info] -----------------------Starting Suite test.utest.examples.HelloTests-----------------------
 [info] test.utest.examples.HelloTests.test1
 [info]      		java.lang.Exception: test1
@@ -162,7 +162,7 @@ object NestedTests extends TestSuite{
 
 Which when run prints:
 
-```scala
+```javascript
 [info] -----------------Starting Suite test.utest.examples.NestedTests-----------------
 [info] test.utest.examples.NestedTests.outer.inner.innerest		Success
 [info] (1,2,3)
