@@ -38,7 +38,7 @@ object SuiteManualRetryTests extends utest.TestSuite{
   }
 }
 
-object LocallRetryTests extends utest.TestSuite{
+object LocalRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
   def tests = this{
     'hello - retry(3){
