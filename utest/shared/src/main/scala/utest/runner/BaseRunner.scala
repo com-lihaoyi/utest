@@ -1,6 +1,6 @@
 package utest
 package runner
-import acyclic.file
+//import acyclic.file
 import sbt.testing._
 import utest.TestSuite
 
@@ -81,7 +81,7 @@ abstract class BaseRunner(val args: Array[String],
             )
             addFailure(name + "" + str.getOrElse(""))
             addTrace(
-              if (e.isInstanceOf[utest.framework.SkippedOuterFailure]) ""
+              if (e.isInstanceOf[SkippedOuterFailure]) ""
               else e.getStackTrace.map(_.toString).mkString("\n")
             )
           case _ => ()

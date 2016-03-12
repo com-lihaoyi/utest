@@ -1,6 +1,5 @@
 package utest
 
-import utest.framework.{AssertionError, LoggedValue}
 
 import scala.annotation.meta._
 import scala.util.{Failure, Success, Try}
@@ -15,16 +14,16 @@ package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
   val utestTruncateLength = 5000
   def assertPrettyPrint[T: DummyTypeclass](t: T) = t.toString.take(utestTruncateLength)
 
-  type AssertEntry[T] = (String, (LoggedValue => Unit) => T)
+  type AssertEntry[T] = (String, (TestValue => Unit) => T)
 
   /**
    * Shorthand to quickly throw a utest.AssertionError, together with all the
    * macro-debugging goodness
    */
-  def assertError(msgPrefix: String, logged: Seq[LoggedValue], cause: Throwable = null) = {
+  def assertError(msgPrefix: String, logged: Seq[TestValue], cause: Throwable = null) = {
     throw AssertionError(
       msgPrefix + Option(cause).fold("")(e => s"\ncaused by: $e") + logged.map{
-        case LoggedValue(name, tpe, thing) => s"\n$name: $tpe = $thing"
+        case TestValue(name, tpe, thing) => s"\n$name: $tpe = $thing"
       }.mkString,
       logged,
       cause
@@ -48,7 +47,7 @@ package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
     */
   def runAssertionEntry[T](t: AssertEntry[T]) = {
     val (src, func) = t
-    val logged = ArrayBuffer.empty[LoggedValue]
+    val logged = ArrayBuffer.empty[TestValue]
     val res = Try(func(logged.append(_)))
     (res, logged, src)
   }

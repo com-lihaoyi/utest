@@ -1,6 +1,6 @@
 package utest
 package runner
-import acyclic.file
+//import acyclic.file
 
 /**
   * Stub runner for Scala.js only which runs tasks but forwards the results to

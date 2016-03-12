@@ -1,6 +1,6 @@
 package utest
 package runner
-import acyclic.file
+//import acyclic.file
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
 import sbt.testing.TaskDef

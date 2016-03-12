@@ -1,6 +1,6 @@
 package utest
 package runner
-import acyclic.file
+//import acyclic.file
 import sbt.testing.SubclassFingerprint
 import sbt.testing.EventHandler
 

@@ -1,6 +1,6 @@
 package utest
 package runner
-import acyclic.file
+//import acyclic.file
 import sbt.testing._
 import sbt.testing
 import scala.concurrent.{Future, Await}

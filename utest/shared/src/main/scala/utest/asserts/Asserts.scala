@@ -1,7 +1,6 @@
 package utest
 package asserts
-import acyclic.file
-import utest.framework.{MultipleErrors, CompileError}
+//import acyclic.file
 import scala.annotation.{tailrec, StaticAnnotation}
 import scala.reflect.macros.{ParseException, TypecheckException, Context}
 import scala.util.{Failure, Success, Try, Random}
@@ -65,7 +64,7 @@ object Asserts {
                 case t => t.toString
               }
               c.Expr[CompileError](
-                q"""utest.framework.CompileError.CompileTimeOnly(${calcPosMsg(tree.pos)}, $msg)"""
+                q"""utest.CompileError.CompileTimeOnly(${calcPosMsg(tree.pos)}, $msg)"""
               )
             case None =>
               c.abort(
@@ -76,9 +75,9 @@ object Asserts {
 
         } catch{
           case TypecheckException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.framework.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
+            c.Expr[CompileError](q"""utest.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
           case ParseException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.framework.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
+            c.Expr[CompileError](q"""utest.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
           case e: Exception =>
             println("SOMETHING WENT WRONG LOLS " + e)
             throw e
@@ -176,7 +175,7 @@ trait Asserts[V[_]]{
     * [[framework.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
-  def compileError(expr: String): framework.CompileError = macro Asserts.compileError
+  def compileError(expr: String): CompileError = macro Asserts.compileError
   /**
     * Checks that one or more expressions are true; otherwises raises an
     * exception with some debugging info

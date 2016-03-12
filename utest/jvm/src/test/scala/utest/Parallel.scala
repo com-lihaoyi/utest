@@ -56,13 +56,13 @@ object Parallel extends TestSuite{
       "failure"-{
         val x = Seq(12)
         val y = 1
-        val error = intercept[framework.AssertionError]{
+        val error = intercept[AssertionError]{
           eventually(
             x == Nil,
             y == 1
           )
         }
-        val expected = Seq(utest.framework.LoggedValue("x", "Seq[Int]", Seq(12)))
+        val expected = Seq(utest.TestValue("x", "Seq[Int]", Seq(12)))
         assert(error.captured == expected)
         error.captured
       }
@@ -113,13 +113,13 @@ object Parallel extends TestSuite{
         import framework.ExecutionContext.RunNow
 
         val i = Counter()
-        val error = intercept[framework.AssertionError]{
+        val error = intercept[AssertionError]{
           continually(
             i() < 4
           )
         }
 
-        val expected = utest.framework.LoggedValue("i", "utest.Parallel.Counter", Counter())
+        val expected = utest.TestValue("i", "utest.Parallel.Counter", Counter())
 
         assert(error.captured.contains(expected))
         expected

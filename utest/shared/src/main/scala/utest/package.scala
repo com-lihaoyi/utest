@@ -62,11 +62,6 @@ package object utest {
     def -(x: => Any) = ()
   }
 
-  /**
-    * Just here to bootstrap utest until I get acyclic published for 2.12.0
-    */
-  private[utest] object acyclic{
-    val file = ()
-  }
+
 }
 
