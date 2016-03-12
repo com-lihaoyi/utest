@@ -105,6 +105,7 @@ object AssertsTests extends utest.TestSuite{
     }
     'arrowAssert{
       1 ==> 1
+      Array(1, 2, 3) ==> Array(1, 2, 3)
       try{
         1 ==> 2
       }catch{case e: java.lang.AssertionError =>
