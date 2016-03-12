@@ -1,5 +1,11 @@
-µTest 0.4.3
-===========
+µTest 0.4.3 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+====================================================================================================
+
+
+[travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
+[travis-link]: https://travis-ci.org/lihaoyi/utest
+[gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
+[gitter-link]: https://gitter.im/lihaoyi/utest?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 uTest (pronounced micro-test) is a lightweight testing library for Scala. 
 Its key features are:
