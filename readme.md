@@ -581,6 +581,10 @@ This allows us to keep the tests DRY - avoiding having to repeat the name of
 the repo in the name of the test for every test we define - as well as ensuring
 that they always stay in sync.
 
+If you need additional metadata such as line-numbers or file-paths or class or
+package names, you can use the [SourceCode](https://github.com/lihaoyi/sourcecode) 
+library's implicits to pull them in for you. 
+
 Local Retries
 -------------
 
