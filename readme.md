@@ -958,6 +958,9 @@ Changelog
 - Scala `2.12.0-M3` support
 
 - Fix some warnings appearing when the `-Ydead-code` flag is used
+
+- Added [TestPath](#testpath) implicit to make the path to the current test 
+  available for usage inside the test body or helpers.
  
 0.3.1
 -----
