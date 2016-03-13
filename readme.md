@@ -31,8 +31,15 @@ Contents
   - [Eventually and Continually](#eventually-and-continually)
   - [Assert Match](#assert-match)
   - [Compile Error](#compile-error)
+- [Test Utilities](#test-utilities)
+  - [TestPath](#testpath)
+  - [Local Retries](#local-retries)
 - [Configuring uTest](#configuring-utest)
+  - [Output Formatting](#output-formatting)
+  - [Suite Retries](#suite-retries)
+  -  [Test Wrapping](#test-wrapping)
 - [Execution Model](#execution-model)
+- [SBT Command-line Interface](#sbt-command-line-interface)
 - [ScalaJS](#scalajs)
 - [Why uTest](#why-utest)
 - [Development Tips](#development-tips)
@@ -514,12 +521,70 @@ The returned `CompileError` object also has a handy `.check` method, which takes
 
 Note that the position-string needs to exactly match the line of code the compile-error occured on. This includes any whitespace on the left, as well as any unrelated code or comments sharing the same line as the `compileError` expression.  
 
+Test Utilities
+==============
+
+uTest provides a range of test utilities that aren't strictly necessary, but
+aim to make your writing of tests much more convenient and DRY.
+
+
+TestPath
+--------
+
+```scala
+package test.utest.examples
+
+import utest._
+
+object TestPathTests extends TestSuite{
+  val tests = this{
+    'testPath{
+      'foo {
+        assert(implicitly[utest.framework.TestPath].value == Seq("testPath", "foo"))
+      }
+    }
+  }
+}
+```
+
+uTest exposes the path to the current test to the body of the test via the 
+`utest.framework.TestPath` implicit. This can be used to
+
+One example is the Fastparse test suite, which uses the name of the test to
+provide the repository that it needs to clone and parse:
+
+```scala
+def checkRepo(filter: String => Boolean = _ => true)
+             (implicit testPath: utest.framework.TestPath) = {
+  val url = "https://github.com/" + testPath.value.last
+  import sys.process._
+  val name = url.split("/").last
+  if (!Files.exists(Paths.get("target", "repos", name))){
+    println("CLONING")
+    Seq("git", "clone", url, "target/repos/"+name, "--depth", "1").!
+  }
+  checkDir("target/repos/"+name, filter)
+}
+
+"lihaoyi/fastparse" - checkRepo()
+"scala-js/scala-js" - checkRepo()
+"scalaz/scalaz" - checkRepo()
+"milessabin/shapeless" - checkRepo()
+"akka/akka"- checkRepo()
+"lift/framework" - checkRepo()
+"playframework/playframework" - checkRepo()
+"PredictionIO/PredictionIO" - checkRepo()
+"apache/spark" - checkRepo()
+```
+
+This allows us to keep the tests DRY - avoiding having to repeat the name of 
+the repo in the name of the test for every test we define - as well as ensuring
+that they always stay in sync.
 
 Local Retries
 -------------
 
 ```scala
-
 object LocalRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
   def tests = this{
