@@ -931,6 +931,7 @@ Changelog
 -----
 
 - Update Scala to 2.11.8.
+- Catch Fatal exceptions like ClassCasts in Scala.JS.
 
 0.4.3
 -----

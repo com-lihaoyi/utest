@@ -45,6 +45,12 @@ object FrameworkAsyncTests extends utest.TestSuite{
             throw new Exception("Lols boom")
           }
         }
+        "testCastError" - {
+          // These are Fatal in Scala.JS. Ensure they're handled else they freeze SBT.
+          Future {
+            0.asInstanceOf[String]
+          }
+        }
       }
 
       tests.runAsync().map { results =>
@@ -56,6 +62,7 @@ object FrameworkAsyncTests extends utest.TestSuite{
         assert(results.toSeq(5).value.isSuccess) // normalSuccess
         assert(results.toSeq(6).value.isFailure) // normalFail
         assert(results.toSeq(7).value.isFailure) // testFailUnexpected
+        assert(results.toSeq(8).value.isFailure) // testCastError
         results.toSeq(1).value
       }
 
