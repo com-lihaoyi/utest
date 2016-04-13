@@ -2,10 +2,12 @@ package utest
 package runner
 //import acyclic.file
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
-
-import sbt.testing.TaskDef
-
 import scala.annotation.tailrec
+import MasterRunner._
+
+object MasterRunner {
+  val DurAndName = "^.(\\d+?)\\|(.*)$".r
+}
 
 final class MasterRunner(args: Array[String],
                          remoteArgs: Array[String],
@@ -20,6 +22,16 @@ final class MasterRunner(args: Array[String],
   val failure = new AtomicInteger(0)
   val failures = new AtomicReference[List[String]](Nil)
   val traces = new AtomicReference[List[String]](Nil)
+  val durations = new AtomicReference[Vector[(Long, String)]](Vector.empty)
+
+  override def logDuration(ms: Long, name: String): Unit = {
+    val pair = (ms, name)
+    @tailrec def go: Unit = {
+      val old = durations.get()
+      if (!durations.compareAndSet(old, old :+ pair)) go
+    }
+    go
+  }
 
   @tailrec def addResult(r: String): Unit = {
     val old = results.get()
@@ -61,14 +73,35 @@ final class MasterRunner(args: Array[String],
               .collect{case (f, t) if t != "" => f + ("\n" + t).replace("\n", "\n"+Console.RED)}
               .mkString("\n")
     ).mkString("\n")
-    Seq(
-      header,
-      body,
-      failureMsg,
-      s"Tests: $total",
-      s"Passed: $success",
-      s"Failed: $failure"
-    ).mkString("\n")
+
+    val sb = new StringBuilder
+    @inline def eol(): Unit = sb append '\n'
+    sb append header
+    eol(); sb append body
+    eol(); sb append failureMsg
+    eol(); sb append "Tests: "; sb append total
+    eol(); sb append "Passed: "; sb append success
+    eol(); sb append "Failed: "; sb append failure
+
+    for (n <- reportSlowest) {
+      val vec = durations.get()
+      if (vec.nonEmpty) {
+        val array = vec.toArray
+        scala.util.Sorting.quickSort(array)(Ordering.by((_: (Long, String))._1).reverse)
+        def slowestN = array.iterator.take(n)
+        val nWidth = (n min array.length).toString.length
+        val msWidth = "%,d".format(array.head._1).length
+        val fmt = s"\n  #%${nWidth}d: (%,${msWidth}d ms) %s"
+        eol(); sb append s"Slowest $n tests:"
+        var i = 0
+        for ((ms, name) <- slowestN) {
+          i += 1
+          sb append fmt.format(i, ms, name)
+        }
+      }
+    }
+
+    sb.toString()
   }
 
   def receiveMessage(msg: String): Option[String] = {
@@ -82,6 +115,10 @@ final class MasterRunner(args: Array[String],
       case 'i' => msg(1) match {
         case 's' => incSuccess()
         case 'f' => incFailure()
+        case _ => badMessage
+      }
+      case 'd' => msg match {
+        case DurAndName(ms, name) => logDuration(ms.toLong, name)
         case _ => badMessage
       }
       case _ => badMessage

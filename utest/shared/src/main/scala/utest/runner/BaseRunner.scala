@@ -2,11 +2,10 @@ package utest
 package runner
 //import acyclic.file
 import sbt.testing._
-import utest.TestSuite
-
-import scala.util.Failure
-
 import org.scalajs.testinterface.TestUtils
+import scala.util.Failure
+import utest.framework.ArgParse
+
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader)
@@ -17,8 +16,12 @@ abstract class BaseRunner(val args: Array[String],
   def addTotal(v: Int): Unit
   def incSuccess(): Unit
   def incFailure(): Unit
+  def logDuration(ms: Long, name: String): Unit
 
   def tasks(taskDefs: Array[TaskDef]) = taskDefs.map(makeTask)
+
+  val reportSlowest: Option[Int] =
+    ArgParse.find("--report-slowest", s => Some(s.toInt), None, Some(20))(args)
 
   /**
     * Actually performs the running of a particular test
@@ -58,7 +61,7 @@ abstract class BaseRunner(val args: Array[String],
     addTotal(found.length)
 
     implicit val ec =
-      if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
+      if (ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
         scala.concurrent.ExecutionContext.global
       }else{
         utest.framework.ExecutionContext.RunNow
@@ -68,9 +71,16 @@ abstract class BaseRunner(val args: Array[String],
       (subpath, s) => {
         if(s.value.isSuccess) incSuccess() else  incFailure()
 
-        val str = suite.formatSingle(selector ++ subpath, s)
+        val selectorAndSubpath = selector ++ subpath
+        val str = suite.formatSingle(selectorAndSubpath, s)
         handleEvent(new OptionalThrowable(), Status.Success)
         str.foreach{msg => loggers.foreach(_.info(name + "" + msg))}
+
+        if (reportSlowest.isDefined) {
+          val fullName = (selectorAndSubpath :+ s.name).mkString(".")
+          logDuration(s.milliDuration, fullName)
+        }
+
         s.value match{
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)
