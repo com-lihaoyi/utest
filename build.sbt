@@ -1,6 +1,6 @@
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M3")
+crossScalaVersions := Seq("2.10.4", "2.11.8", "2.12.0-M3")
 
 def macroDependencies(version: String) =
   ("org.scala-lang" % "scala-reflect" % version) +:
@@ -32,8 +32,8 @@ lazy val utest = crossProject
     ),
     name := "utest",
     organization := "com.lihaoyi",
-    version := "0.4.3",
-    scalaVersion := "2.11.4",
+    version := "0.4.4-SNAPSHOT",
+    scalaVersion := "2.11.8",
     scalacOptions ++= Seq(scalaVersion.value match {
       case x if x.startsWith("2.12.") => "-target:jvm-1.8"
       case x => "-target:jvm-1.6"

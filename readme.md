@@ -927,6 +927,11 @@ To publish use
 Changelog
 =========
 
+0.4.4
+-----
+
+- Update Scala to 2.11.8.
+
 0.4.3
 -----
 
