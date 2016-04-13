@@ -18,8 +18,9 @@ final class ScalaJsSlaveRunner(args: Array[String],
   def addFailure(r: String): Unit = send(s"f$r")
   def addTrace(trace: String): Unit = send(s"c$trace")
   def addTotal(v: Int) = send(s"t$v")
-  def incSuccess() = send(s"is")
-  def incFailure() = send(s"if")
+  def incSuccess() = send("is")
+  def incFailure() = send("if")
+  def logDuration(ms: Long, name: String) = send("d" + ms + "|" + name)
 
   // These only exist because Scala.js is weird and asks us to define them
   // even though we never end up using them, so stub them out

@@ -932,6 +932,7 @@ Changelog
 
 - Update Scala to 2.11.8.
 - Catch Fatal exceptions like ClassCasts in Scala.JS.
+- New arg: `--report-slowest[=<n>]` to print the slowest tests and their durations on completion.
 
 0.4.3
 -----
