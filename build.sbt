@@ -11,8 +11,8 @@ def macroDependencies(version: String) =
      Seq())
 
 def akkaVersionFrom(scalaVersion: String): String = scalaVersion match {
-  case x if x.startsWith("2.10.") => "2.3.2" //scala 2.10 support
-  case _ => "2.4.2" //scala 2.11,2.12 support
+  case x if x.startsWith("2.10.") || x.startsWith("2.11.") => "2.3.2" //scala 2.10, 2.11 support
+  case _ => "2.4.2" //scala 2.12 support
 }
 
 lazy val utest = crossProject
