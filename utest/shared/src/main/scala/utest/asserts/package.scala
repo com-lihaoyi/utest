@@ -2,7 +2,7 @@ package utest
 
 
 import scala.annotation.meta._
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 import scala.collection.mutable.ArrayBuffer
 
 /**
