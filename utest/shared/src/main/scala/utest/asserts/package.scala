@@ -48,7 +48,11 @@ package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
   def runAssertionEntry[T](t: AssertEntry[T]) = {
     val (src, func) = t
     val logged = ArrayBuffer.empty[TestValue]
-    val res = Try(func(logged.append(_)))
+    val res = try {
+      Success(func(logged.append(_))))
+    } catch {
+      case t: Throwable => Failure(t)
+    }
     (res, logged, src)
   }
 
