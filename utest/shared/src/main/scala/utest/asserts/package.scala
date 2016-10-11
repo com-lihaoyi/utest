@@ -49,7 +49,7 @@ package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
     val (src, func) = t
     val logged = ArrayBuffer.empty[TestValue]
     val res = try {
-      Success(func(logged.append(_))))
+      Success(func(logged.append(_)))
     } catch {
       case t: Throwable => Failure(t)
     }
