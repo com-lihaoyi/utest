@@ -1,4 +1,4 @@
-µTest 0.4.3 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.4.4 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 
