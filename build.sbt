@@ -1,6 +1,6 @@
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0-RC2")
+crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0")
 
 def macroDependencies(version: String) =
   ("org.scala-lang" % "scala-reflect" % version) +:
@@ -9,11 +9,6 @@ def macroDependencies(version: String) =
          "org.scalamacros" %% s"quasiquotes" % "2.1.0")
    else
      Seq())
-
-def akkaVersionFrom(scalaVersion: String): String = scalaVersion match {
-  case x if x.startsWith("2.10.") => "2.3.15" //scala 2.10 support
-  case _ => "2.4.11" //scala 2.11,2.12 support
-}
 
 lazy val utest = crossProject
   .settings(
