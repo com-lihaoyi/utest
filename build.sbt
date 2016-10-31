@@ -1,19 +1,14 @@
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-crossScalaVersions := Seq("2.10.4", "2.11.4", "2.12.0-M3")
+crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0")
 
 def macroDependencies(version: String) =
   ("org.scala-lang" % "scala-reflect" % version) +:
   (if (version startsWith "2.10.")
-     Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.0.0" cross CrossVersion.full),
-         "org.scalamacros" %% s"quasiquotes" % "2.0.0")
+     Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full),
+         "org.scalamacros" %% s"quasiquotes" % "2.1.0")
    else
      Seq())
-
-def akkaVersionFrom(scalaVersion: String): String = scalaVersion match {
-  case x if x.startsWith("2.10.") => "2.3.2" //scala 2.10 support
-  case _ => "2.4.2" //scala 2.11,2.12 support
-}
 
 lazy val utest = crossProject
   .settings(
@@ -32,8 +27,8 @@ lazy val utest = crossProject
     ),
     name := "utest",
     organization := "com.lihaoyi",
-    version := "0.4.3",
-    scalaVersion := "2.11.4",
+    version := "0.4.4",
+    scalaVersion := "2.11.8",
     scalacOptions ++= Seq(scalaVersion.value match {
       case x if x.startsWith("2.12.") => "-target:jvm-1.8"
       case x => "-target:jvm-1.6"
@@ -72,8 +67,7 @@ lazy val utest = crossProject
 //    fork in Test := true,
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
-      "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
-      "com.typesafe.akka" %% "akka-actor" % akkaVersionFrom(scalaVersion.value) % "test"
+      "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided"
     ),
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
