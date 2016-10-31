@@ -72,8 +72,7 @@ lazy val utest = crossProject
 //    fork in Test := true,
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
-      "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided",
-      "com.typesafe.akka" %% "akka-actor" % akkaVersionFrom(scalaVersion.value) % "test"
+      "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided"
     ),
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
