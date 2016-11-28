@@ -57,5 +57,3 @@ object TestSuite extends TestSuiteMacro{
     }
   }
 }
-
-
