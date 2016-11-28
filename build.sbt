@@ -1,3 +1,4 @@
+import sbtcross.{crossProject, CrossType}
 import org.scalajs.core.tools.sem.CheckedBehavior
 
 crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0")
@@ -10,7 +11,7 @@ def macroDependencies(version: String) =
    else
      Seq())
 
-lazy val utest = crossProject
+lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     libraryDependencies ++= macroDependencies(scalaVersion.value),
 
@@ -57,21 +58,32 @@ lazy val utest = crossProject
         </developer>
       </developers>
   )
+  .platformsSettings(JVMPlatform, NativePlatform)(
+    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided"
+  )
   .jsSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion,
     scalaJSStage in Test := FastOptStage,
-    scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant)),
-    scalaJSUseRhino in Global := false
+    scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant))
   )
   .jvmSettings(
-//    fork in Test := true,
-    libraryDependencies ++= Seq(
-      "org.scala-sbt" % "test-interface" % "1.0",
-      "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided"
-    ),
+    libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
     resolvers += Resolver.sonatypeRepo("snapshots")
+  )
+  .nativeSettings(
+    libraryDependencies ++= Seq("org.scala-sbt" % "test-interface" % "1.0"
+    )
   )
 
 lazy val utestJS = utest.js
 lazy val utestJVM = utest.jvm
+lazy val utestNative = utest.native
 
+
+lazy val sandbox =
+  project
+    .in(file("sandbox"))
+    .settings(scalaVersion := "2.11.8")
+    .dependsOn(utestNative % Test)
+    .enablePlugins(ScalaNativePlugin)
+    .settings(testFrameworks += new TestFramework("utest.runner.Framework"))
