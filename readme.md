@@ -927,6 +927,11 @@ To publish use
 Changelog
 =========
 
+0.4.5
+-----
+
+- Catch Fatal exceptions like ClassCasts in Scala.JS.
+
 0.4.3
 -----
 

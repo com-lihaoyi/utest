@@ -216,6 +216,15 @@ object FrameworkTests extends utest.TestSuite{
       }
     }
 
+    // These are Fatal in Scala.JS. Ensure they're handled else they freeze SBT.
+    'catchCastError{
+      val tests = this{
+        'ah {0.asInstanceOf[String]}
+     }
+      assertMatch(tests.run(testPath=Seq("ah")).toSeq)
+                 {case Seq(Result("ah", Failure(_), _))=>}
+    }
+
     'testSelection{
       val tests = this{
         'A{
