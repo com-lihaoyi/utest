@@ -1,4 +1,4 @@
-µTest 0.4.4 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.4.5 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 
@@ -54,7 +54,7 @@ you can immediately begin defining and running tests programmatically.
 
  
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.4.4" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.4.5" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -62,7 +62,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js, swap out the `libraryDependencies` with
  
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.4.4" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.4.5" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -931,6 +931,11 @@ Changelog
 -----
 
 - Catch Fatal exceptions like ClassCasts in Scala.JS.
+
+0.4.4
+-----
+
+- Scala 2.12 support
 
 0.4.3
 -----
