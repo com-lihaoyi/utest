@@ -65,8 +65,13 @@ class TestTreeSeq(tests: Tree[Test]) {
     val start = Deadline.now
     // Special-case tests which return a future, in order to wait for them to finish
     val futurized = wrap{
-      val tryResult = outerError.map {
-        case None => tests.value.TestThunkTree.run(path.toList)
+      val tryResult = outerError.flatMap {
+        case None =>
+          // try-catch manually so that fatal errors are handled (they're not by Try & Future).
+          Future(
+            try Future.successful(tests.value.TestThunkTree.run(path.toList))
+            catch {case e: Throwable => Future.failed(e)}
+          ).flatMap(identity)
         case Some(f) => throw f
       }
       tryResult flatMap{
