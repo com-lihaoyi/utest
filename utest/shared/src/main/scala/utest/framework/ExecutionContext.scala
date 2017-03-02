@@ -21,7 +21,7 @@ object ExecutionContext{
 
     def reportFailure(t: Throwable) = {
       Console.err.println("Failure in RunNow async execution: " + t)
-      Console.err.println(t.getStackTraceString)
+      Console.err.println(t.getStackTrace.mkString("\n"))
     }
   }
 }
