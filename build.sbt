@@ -1,7 +1,5 @@
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.2")
-
 def macroDependencies(version: String) =
   ("org.scala-lang" % "scala-reflect" % version) +:
   (if (version startsWith "2.10.")
@@ -12,7 +10,21 @@ def macroDependencies(version: String) =
 
 lazy val utest = crossProject
   .settings(
-    libraryDependencies ++= macroDependencies(scalaVersion.value),
+    name                  := "utest",
+    organization          := "com.lihaoyi",
+    version               := "0.4.6-SNAPSHOT",
+    scalaVersion          := "2.12.2",
+    crossScalaVersions    := Seq("2.10.6", "2.11.11", "2.12.2"),
+    scalacOptions         := Seq("-Ywarn-dead-code"),
+    scalacOptions in Test -= "-Ywarn-dead-code",
+    libraryDependencies  ++= macroDependencies(scalaVersion.value),
+    updateOptions         := updateOptions.value.withCachedResolution(true),
+    incOptions            := incOptions.value.withNameHashing(true).withLogRecompileOnMacro(false),
+    triggeredMessage      := Watched.clearWhenTriggered,
+    scalacOptions        ++= Seq(scalaVersion.value match {
+      case x if x.startsWith("2.12.") => "-target:jvm-1.8"
+      case _                          => "-target:jvm-1.6"
+    }),
 
     unmanagedSourceDirectories in Compile += {
       val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
@@ -22,17 +34,7 @@ lazy val utest = crossProject
 //    autoCompilerPlugins := true,
 //    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
     testFrameworks += new TestFramework("test.utest.CustomFramework"),
-    scalacOptions := Seq(
-      "-Ywarn-dead-code"
-    ),
-    name := "utest",
-    organization := "com.lihaoyi",
-    version := "0.4.5",
-    scalaVersion := "2.12.2",
-    scalacOptions ++= Seq(scalaVersion.value match {
-      case x if x.startsWith("2.12.") => "-target:jvm-1.8"
-      case x => "-target:jvm-1.6"
-    }),
+
     // Sonatype2
     publishArtifact in Test := false,
     publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
