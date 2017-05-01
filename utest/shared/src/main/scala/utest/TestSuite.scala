@@ -7,13 +7,13 @@ import scala.concurrent.{Future, ExecutionContext}
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
 
-import scala.scalajs.js.annotation.JSExportDescendentObjects
+import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
  * for test-discovery by SBT.
  */
-@JSExportDescendentObjects
+@EnableReflectiveInstantiation
 abstract class TestSuite
   extends TestSuiteMacro
   with utest.asserts.Asserts[DummyTypeclass]

@@ -58,10 +58,8 @@ lazy val utest = crossProject
       </developers>
   )
   .jsSettings(
-    libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion,
-    scalaJSStage in Test := FastOptStage,
-    // scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant)),
-    scalaJSUseRhino in Global := false
+    libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion
+    // scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant))
   )
   .jvmSettings(
 //    fork in Test := true,
