@@ -3,8 +3,8 @@ jdk:
   - oraclejdk8
 scala:
   - 2.10.6
-  - 2.11.8
-  - 2.12.0
+  - 2.11.11
+  - 2.12.2
 matrix:
   include:
     - scala: 2.10.6
