@@ -12,7 +12,7 @@ lazy val utest = crossProject
   .settings(
     name                  := "utest",
     organization          := "com.lihaoyi",
-    version               := "0.4.6-SNAPSHOT",
+    version               := "0.4.6",
     scalaVersion          := "2.12.2",
     crossScalaVersions    := Seq("2.10.6", "2.11.11", "2.12.2"),
     scalacOptions         := Seq("-Ywarn-dead-code"),

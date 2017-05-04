@@ -1,4 +1,4 @@
-µTest 0.4.5 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.4.6 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 
@@ -926,6 +926,13 @@ To publish use
 
 Changelog
 =========
+
+0.4.6
+-----
+
+* Upgrade Scala.JS to 0.6.16.
+* Upgrade Scala to 2.11.11 and 2.12.2.
+* Avoid using `getStackTraceString` deprecated in Scala 2.13
 
 0.4.5
 -----
