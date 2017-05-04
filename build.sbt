@@ -3,7 +3,7 @@ import org.scalajs.core.tools.sem.CheckedBehavior
 
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
-version            in ThisBuild := "0.4.6"
+version            in ThisBuild := "0.4.7-SNAPSHOT"
 scalaVersion       in ThisBuild := "2.12.2"
 crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
