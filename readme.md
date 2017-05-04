@@ -7,6 +7,8 @@
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/lihaoyi/utest?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
+[![Join the chat at https://gitter.im/lihaoyi/utest](https://badges.gitter.im/lihaoyi/utest.svg)](https://gitter.im/lihaoyi/utest?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 uTest (pronounced micro-test) is a lightweight testing library for Scala. 
 Its key features are:
 
