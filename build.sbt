@@ -1,26 +1,20 @@
+import com.typesafe.sbt.pgp.PgpKeys._
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-def macroDependencies(version: String) =
-  ("org.scala-lang" % "scala-reflect" % version) +:
-  (if (version startsWith "2.10.")
-     Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full),
-         "org.scalamacros" %% s"quasiquotes" % "2.1.0")
-   else
-     Seq())
+name               in ThisBuild := "utest"
+organization       in ThisBuild := "com.lihaoyi"
+version            in ThisBuild := "0.4.6"
+scalaVersion       in ThisBuild := "2.12.2"
+crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2")
+updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
+incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
+triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
 
 lazy val utest = crossProject
   .settings(
-    name                  := "utest",
-    organization          := "com.lihaoyi",
-    version               := "0.4.6",
-    scalaVersion          := "2.12.2",
-    crossScalaVersions    := Seq("2.10.6", "2.11.11", "2.12.2"),
     scalacOptions         := Seq("-Ywarn-dead-code"),
     scalacOptions in Test -= "-Ywarn-dead-code",
     libraryDependencies  ++= macroDependencies(scalaVersion.value),
-    updateOptions         := updateOptions.value.withCachedResolution(true),
-    incOptions            := incOptions.value.withNameHashing(true).withLogRecompileOnMacro(false),
-    triggeredMessage      := Watched.clearWhenTriggered,
     scalacOptions        ++= Seq(scalaVersion.value match {
       case x if x.startsWith("2.12.") => "-target:jvm-1.8"
       case _                          => "-target:jvm-1.6"
@@ -37,8 +31,13 @@ lazy val utest = crossProject
 
     // Sonatype2
     publishArtifact in Test := false,
-    publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
-
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (isSnapshot.value)
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
     pomExtra :=
       <url>https://github.com/lihaoyi/utest</url>
       <licenses>
@@ -72,6 +71,24 @@ lazy val utest = crossProject
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
 
+def macroDependencies(version: String) =
+  ("org.scala-lang" % "scala-reflect" % version) +:
+  (if (version startsWith "2.10.")
+     Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full),
+         "org.scalamacros" %% s"quasiquotes" % "2.1.0")
+   else
+     Seq())
+
 lazy val utestJS = utest.js
 lazy val utestJVM = utest.jvm
+
+lazy val root = project.in(file("."))
+  .aggregate(utestJS, utestJVM)
+  .settings(
+    publishTo := Some(Resolver.file("Unused transient repository", target.value / "fakepublish")),
+    publishArtifact := false,
+    publishLocal := (),
+    publishLocalSigned := (),       // doesn't work
+    publishSigned := (),            // doesn't work
+    packagedArtifacts := Map.empty) // doesn't work - https://github.com/sbt/sbt-pgp/issues/42
 
