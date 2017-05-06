@@ -26,39 +26,42 @@ trait Formatter {
 
 
     val durationStr = s"${Console.RESET + (r.milliDuration.toString + " ms").faint}"
-    val cutUnit = r.value match{
+    val cutUnit = r.value match {
       case Success(()) => durationStr
       case Success(v: Any) =>
-        val offsetStr = offset(r) + formatStartColor(true)
-        durationStr + " " + v.toString.blue
-      case Failure(e) => errorFormatter(e)
+        val offsetStr = offset(r)
+        durationStr + " \n" + offsetStr + v.toString.blue
+      case Failure(e) => "\n" + errorFormatter(e)
     }
 
     val truncUnit =
       if (cutUnit.length <= formatTruncate) cutUnit
       else cutUnit.take(formatTruncate) + "..."
 
-    if (formatColor) formatStartColor(r.value.isSuccess) + truncUnit + formatEndColor else truncUnit
+    if (formatColor) formatStartColor(success = r.value.isSuccess) + truncUnit + formatEndColor else truncUnit
   }
 
-  def formatSingle(path: Seq[String], r: Result): Option[String] = Some{
-    path.map("." + _).mkString + "    " + prettyTruncate(
-      r,
-      e => s"${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "    " + formatStartColor(false))}"
-    )
-  }
-
-  def format(results: Tree[Result]): Option[String] = Some{
-    def errorFormatter(ex: Throwable): String =
-      s"Failure('$ex'${Option(ex.getCause).fold("")(cause => s" caused by '$cause'€END€")})"
+  def format(results: Tree[Result]): Option[String] = Some {
+    def errorFormatter(ex: Throwable): String = {
+      val causation = Option(ex.getCause) match {
+        case Some(cause) =>
+          " caused by: " + cause.toString.red
+        case None =>
+           ""
+      }
+      ex.toString.bold.white.redBg + "\n" + causation
+    }
 
     val greenCircle = "\u25C9".green
     val redCircle = "\u25C9".red
     results.map(result => {
-      val icon = if (result.value.isFailure) redCircle else greenCircle
-      icon + " " + result.name.bold + "  " + prettyTruncate(result, errorFormatter, r => " " * r.name.length)
+      val failed = result.value.isFailure
+      val icon = if (failed) redCircle else greenCircle
+      val nameSegment = " " + result.name + " "
+      val ttt = if (failed) nameSegment.bold.white.redBg else nameSegment.bold
+      icon + ttt + prettyTruncate(result, errorFormatter, r => "  ")
     }
-    ).reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n    "))
+    ).reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n  "))
   }
 }
 
