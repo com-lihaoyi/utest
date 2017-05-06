@@ -25,7 +25,7 @@ trait Formatter {
                                    offset: Result => String = _ => ""): String = {
 
 
-    val durationStr = s"${Console.RESET + (r.milliDuration.toString + " ms").faint}"
+    val durationStr = Console.RESET + (r.milliDuration.toString + " ms").faint
     val cutUnit = r.value match {
       case Success(()) => durationStr
       case Success(v: Any) =>
@@ -41,6 +41,8 @@ trait Formatter {
     if (formatColor) formatStartColor(success = r.value.isSuccess) + truncUnit + formatEndColor else truncUnit
   }
 
+  private val successIcon = "\u25C9".green
+  private val failureIcon = "\u25C9".red
   def format(results: Tree[Result]): Option[String] = Some {
     def errorFormatter(ex: Throwable): String = {
       val causation = Option(ex.getCause) match {
@@ -52,16 +54,13 @@ trait Formatter {
       ex.toString.bold.white.redBg + "\n" + causation
     }
 
-    val greenCircle = "\u25C9".green
-    val redCircle = "\u25C9".red
     results.map(result => {
-      val failed = result.value.isFailure
-      val icon = if (failed) redCircle else greenCircle
+      val isFailure = result.value.isFailure
+      val icon = if (isFailure) failureIcon else successIcon
       val nameSegment = " " + result.name + " "
-      val ttt = if (failed) nameSegment.bold.white.redBg else nameSegment.bold
-      icon + ttt + prettyTruncate(result, errorFormatter, r => "  ")
+      val testNameText = if (isFailure) nameSegment.bold.white.redBg else nameSegment.bold
+      icon + testNameText + prettyTruncate(result, errorFormatter, r => "  ")
     }
     ).reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n  "))
   }
 }
-

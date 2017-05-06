@@ -69,7 +69,7 @@ abstract class BaseRunner(val args: Array[String],
         if(s.value.isSuccess) incSuccess() else  incFailure()
 
         handleEvent(new OptionalThrowable(), Status.Success)
-        s.value match{
+        s.value match {
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)
             // Trim the stack trace so all the utest internals don't get shown,

@@ -67,7 +67,7 @@ final class MasterRunner(args: Array[String],
       failureMsg,
       s"Tests: ".bold + totalCount.toString.blue,
       s"Passed: ".bold + successCount.toString.blue,
-      s"Failed: ".bold + (if (failureCount == 0) failureCount.toString.bold.green else s" $failureCount ".redBg.bold.white)
+      s"Failed: ".bold + (if (failureCount == 0) failureCount.toString.green else s" $failureCount ".redBg.bold.white)
     ).mkString("\n")
   }
 

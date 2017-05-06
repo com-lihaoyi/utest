@@ -16,15 +16,18 @@ package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
 
   type AssertEntry[T] = (String, (TestValue => Unit) => T)
 
+  def renderTestValue(testValue: TestValue) = {
+    val TestValue(name, tpe, value) = testValue
+    s"${name.magenta}: ${tpe.toString.yellow} = ${value.toString.blue}"
+  }
+
   /**
    * Shorthand to quickly throw a utest.AssertionError, together with all the
    * macro-debugging goodness
    */
   def assertError(msgPrefix: String, logged: Seq[TestValue], cause: Throwable = null) = {
     throw AssertionError(
-      msgPrefix + Option(cause).fold("")(e => s"\ncaused by: ${e.toString.red}") + logged.map{
-        case TestValue(name, tpe, thing) => s"\n${name.magenta}: ${tpe.toString.yellow} = ${thing.toString.blue}"
-      }.mkString,
+      msgPrefix + Option(cause).fold("")(e => s"\ncaused by: ${e.toString.red}") + logged.map(v => "\n" + renderTestValue(v)).mkString,
       logged,
       cause
     )
