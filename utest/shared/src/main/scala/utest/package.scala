@@ -12,6 +12,16 @@ package object utest {
   implicit val retryMax = new RetryMax(1.second)
   import scala.language.experimental.macros
 
+  implicit class ColorStrings(s: String) {
+    private def wrap(ansiColorSequence: String) = ansiColorSequence + s + Console.RESET
+    def blue = wrap(Console.BLUE)
+    def green = wrap(Console.GREEN)
+    def red = wrap(Console.RED)
+    def bold = wrap(Console.BOLD)
+    def yellow = wrap(Console.YELLOW)
+    def faint = wrap("\u001b[2m")
+  }
+
   type Show = asserts.Show
   /**
    * Extension methods to allow you to create tests via the "omg"-{ ... }

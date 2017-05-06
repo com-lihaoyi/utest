@@ -22,8 +22,8 @@ package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
    */
   def assertError(msgPrefix: String, logged: Seq[TestValue], cause: Throwable = null) = {
     throw AssertionError(
-      msgPrefix + Option(cause).fold("")(e => s"\ncaused by: $e") + logged.map{
-        case TestValue(name, tpe, thing) => s"\n$name: $tpe = $thing"
+      msgPrefix + Option(cause).fold("")(e => s"\ncaused by: ${e.toString.red}") + logged.map{
+        case TestValue(name, tpe, thing) => s"\n${name.blue}: ${tpe.toString.yellow} = ${thing.toString}"
       }.mkString,
       logged,
       cause

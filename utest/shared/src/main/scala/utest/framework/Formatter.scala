@@ -2,6 +2,7 @@ package utest
 package framework
 //import acyclic.file
 import scala.util.{Failure, Success}
+import utest.ColorStrings
 
 /**
  * Default implementation of [[Formatter]], also used by the default SBT test
@@ -24,10 +25,12 @@ trait Formatter {
                                    offset: Result => String = _ => ""): String = {
 
 
+    val durationStr = s"${Console.RESET + (r.milliDuration.toString + " ms").faint}"
     val cutUnit = r.value match{
-      case Success(()) => "Success"
-      case Success(v) =>
-        "Success " + ("\n"+v).replace("\n", "\n" + offset(r)  + formatStartColor(true))
+      case Success(()) => durationStr
+      case Success(v: Any) =>
+        val offsetStr = offset(r) + formatStartColor(true)
+        durationStr + " " + v.toString.blue
       case Failure(e) => errorFormatter(e)
     }
 
@@ -39,18 +42,22 @@ trait Formatter {
   }
 
   def formatSingle(path: Seq[String], r: Result): Option[String] = Some{
-    path.map("." + _).mkString + "\t\t" + prettyTruncate(
+    path.map("." + _).mkString + "    " + prettyTruncate(
       r,
-      e => s"${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "\t\t" + formatStartColor(false))}"
+      e => s"${("\n"+e.toString).replace("\n", "\n" + (" " * r.name.length) + "    " + formatStartColor(false))}"
     )
   }
 
   def format(results: Tree[Result]): Option[String] = Some{
     def errorFormatter(ex: Throwable): String =
-      s"Failure('$ex'${Option(ex.getCause).fold("")(cause => s" caused by '$cause'")})"
+      s"Failure('$ex'${Option(ex.getCause).fold("")(cause => s" caused by '$cause'€END€")})"
 
-    results.map(r =>
-      r.name + "\t\t" + prettyTruncate(r, errorFormatter, r => " " * r.name.length)
+    val greenCircle = "\u25C9".green
+    val redCircle = "\u25C9".red
+    results.map(result => {
+      val icon = if (result.value.isFailure) redCircle else greenCircle
+      icon + " " + result.name.bold + "  " + prettyTruncate(result, errorFormatter, r => " " * r.name.length)
+    }
     ).reduce(_ + _.map("\n" + _).mkString.replace("\n", "\n    "))
   }
 }

@@ -49,7 +49,7 @@ abstract class BaseRunner(val args: Array[String],
       })
     }
 
-    val title = s"Starting Suite " + name
+    val title = s"Starting Suite " + name.bold.red
     val dashes = "-" * ((80 - title.length) / 2)
     loggers.foreach(_.info(dashes + title + dashes))
 
