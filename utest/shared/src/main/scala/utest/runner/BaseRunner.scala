@@ -1,9 +1,10 @@
 package utest
 package runner
 //import acyclic.file
+import scala.concurrent.ExecutionContext
+
 import sbt.testing._
 import utest.TestSuite
-
 import scala.util.Failure
 
 import org.scalajs.testinterface.TestUtils
@@ -57,7 +58,7 @@ abstract class BaseRunner(val args: Array[String],
 
     addTotal(found.length)
 
-    implicit val ec =
+    implicit val ec: ExecutionContext =
       if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
         scala.concurrent.ExecutionContext.global
       }else{

@@ -51,7 +51,14 @@ trait Formatter {
         case None =>
            ""
       }
-      ex.toString.bold.white.redBg + "\n" + causation
+
+      val errStr = ex.toString
+      val assertPrefix = "utest.AssertionError:"
+      if (errStr.startsWith(assertPrefix)) {
+        assertPrefix.bold.white.redBg + errStr.stripPrefix(assertPrefix)
+      } else {
+        errStr.bold.white.redBg + "\n" + causation
+      }
     }
 
     results.map(result => {
