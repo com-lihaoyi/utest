@@ -5,7 +5,7 @@ name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
 version            in ThisBuild := "0.4.7-SNAPSHOT"
 scalaVersion       in ThisBuild := "2.12.2"
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2")
+crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M1")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
 triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
@@ -24,9 +24,6 @@ lazy val utest = crossProject
       val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
       baseDirectory.value/".."/"shared"/"src"/"main"/v
     },
-//    libraryDependencies += "com.lihaoyi" %% "acyclic" % "0.1.4" % "provided",
-//    autoCompilerPlugins := true,
-//    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.4"),
     testFrameworks += new TestFramework("test.utest.CustomFramework"),
 
     // Sonatype2
@@ -38,32 +35,22 @@ lazy val utest = crossProject
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
     },
-    pomExtra :=
-      <url>https://github.com/lihaoyi/utest</url>
-      <licenses>
-        <license>
-          <name>MIT license</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
-        </license>
-      </licenses>
-      <scm>
-        <url>git://github.com/lihaoyi/utest.git</url>
-        <connection>scm:git://github.com/lihaoyi/utest.git</connection>
-      </scm>
-      <developers>
-        <developer>
-          <id>lihaoyi</id>
-          <name>Li Haoyi</name>
-          <url>https://github.com/lihaoyi</url>
-        </developer>
-      </developers>
+    scmInfo := Some(ScmInfo(
+      browseUrl = url("https://github.com/lihaoyi/utest"),
+      connection = "scm:git:git@github.com:lihaoyi/utest.git"
+    )),
+    licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.html")),
+    developers += Developer(
+      email = "haoyi.sg@gmail.com",
+      id = "lihaoyi",
+      name = "Li Haoyi",
+      url = url("https://github.com/lihaoyi")
+    )
   )
   .jsSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion
-    // scalaJSSemantics in Test ~= (_.withAsInstanceOfs(CheckedBehavior.Compliant))
   )
   .jvmSettings(
-//    fork in Test := true,
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
       "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided"
