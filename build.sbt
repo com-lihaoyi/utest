@@ -1,14 +1,17 @@
 import com.typesafe.sbt.pgp.PgpKeys._
 import org.scalajs.core.tools.sem.CheckedBehavior
 
-name               in ThisBuild := "utest"
-organization       in ThisBuild := "com.lihaoyi"
-version            in ThisBuild := "0.4.7-SNAPSHOT"
-scalaVersion       in ThisBuild := "2.12.2"
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M1")
-updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
-incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
-triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
+name                          in ThisBuild := "utest"
+organization                  in ThisBuild := "com.lihaoyi"
+scalaVersion                  in ThisBuild := "2.12.2"
+crossScalaVersions            in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M1")
+updateOptions                 in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
+incOptions                    in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
+triggeredMessage              in ThisBuild := Watched.clearWhenTriggered
+releasePublishArtifactsAction in ThisBuild := PgpKeys.publishSigned.value
+releaseTagComment             in ThisBuild := s"v${(version in ThisBuild).value}"
+releaseVcsSign                in ThisBuild := true
+
 
 lazy val utest = crossProject
   .settings(
