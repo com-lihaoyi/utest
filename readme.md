@@ -927,6 +927,11 @@ To publish use
 Changelog
 =========
 
+0.4.7
+-----
+
+- Scala 2.13 support
+
 0.4.6
 -----
 
