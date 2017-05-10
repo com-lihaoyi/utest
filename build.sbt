@@ -1,5 +1,4 @@
 import com.typesafe.sbt.pgp.PgpKeys._
-import org.scalajs.core.tools.sem.CheckedBehavior
 
 name                          in ThisBuild := "utest"
 organization                  in ThisBuild := "com.lihaoyi"
@@ -12,15 +11,16 @@ releasePublishArtifactsAction in ThisBuild := PgpKeys.publishSigned.value
 releaseTagComment             in ThisBuild := s"v${(version in ThisBuild).value}"
 releaseVcsSign                in ThisBuild := true
 
-
 lazy val utest = crossProject
   .settings(
     scalacOptions         := Seq("-Ywarn-dead-code"),
     scalacOptions in Test -= "-Ywarn-dead-code",
     libraryDependencies  ++= macroDependencies(scalaVersion.value),
-    scalacOptions        ++= Seq(scalaVersion.value match {
-      case x if x.startsWith("2.12.") => "-target:jvm-1.8"
-      case _                          => "-target:jvm-1.6"
+    scalacOptions        ++= (scalaVersion.value match {
+      case x if x startsWith "2.13." => "-target:jvm-1.8" :: Nil
+      case x if x startsWith "2.12." => "-target:jvm-1.8" :: "-opt:l:method" :: Nil
+      case x if x startsWith "2.11." => "-target:jvm-1.6" :: Nil
+      case x if x startsWith "2.10." => "-target:jvm-1.6" :: Nil
     }),
 
     unmanagedSourceDirectories in Compile += {

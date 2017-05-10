@@ -931,6 +931,7 @@ Changelog
 -----
 
 - Scala 2.13 support
+- Compile for Scala 2.12 with method optimisations (`-opt:l:method`)
 
 0.4.6
 -----
