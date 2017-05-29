@@ -53,14 +53,12 @@ object AssertsTests extends utest.TestSuite{
         )
       }
       'failureWithException{
-        val x = 1L
-        val y = 0l
         try {
-          assert(x / y == 10)
+          assert(Iterator.empty.next() == 10)
           Predef.assert(false)
         } catch {case e @ utest.AssertionError(src, logged, cause) =>
-          Predef.assert(cause.isInstanceOf[ArithmeticException])
-          Predef.assert(cause.getMessage == "/ by zero")
+          Predef.assert(cause.isInstanceOf[NoSuchElementException])
+          Predef.assert(cause.getMessage == "next on empty iterator")
           e.getMessage
         }
       }
@@ -178,14 +176,14 @@ object AssertsTests extends utest.TestSuite{
 
       'failureWithException{
         try {
-          val a = 1L
+          val a = Iterator.empty
           val b = 2
-          assertMatch(Seq(a / 0, 3, b)){case Seq(1, 2) =>}
+          assertMatch(Seq(a.next(), 3, b)){case Seq(1, 2) =>}
           Predef.assert(false)
         } catch{ case e: utest.AssertionError =>
-          Predef.assert(e.captured == Seq(TestValue("a", "Long", 1)))
-          Predef.assert(e.cause.isInstanceOf[ArithmeticException])
-          Predef.assert(e.msg.contains("assertMatch(Seq(a / 0, 3, b)){case Seq(1, 2) =>}"))
+          Predef.assert(e.captured == Seq(TestValue("a", "Iterator[Nothing]", Iterator.empty)))
+          Predef.assert(e.cause.isInstanceOf[NoSuchElementException])
+          Predef.assert(e.msg.contains("assertMatch(Seq(a.next(), 3, b)){case Seq(1, 2) =>}"))
           e.getMessage
         }
       }

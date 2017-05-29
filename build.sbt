@@ -1,3 +1,4 @@
+import sbtcrossproject.{crossProject, CrossType}
 import com.typesafe.sbt.pgp.PgpKeys._
 
 name               in ThisBuild := "utest"
@@ -10,8 +11,9 @@ triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
 releaseTagComment  in ThisBuild := s"v${(version in ThisBuild).value}"
 releaseVcsSign     in ThisBuild := true
 
-lazy val utest = crossProject
+lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
+    name                  := "utest",
     scalacOptions         := Seq("-Ywarn-dead-code"),
     scalacOptions in Test -= "-Ywarn-dead-code",
     libraryDependencies  ++= macroDependencies(scalaVersion.value),
@@ -61,6 +63,12 @@ lazy val utest = crossProject
     ),
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
+  .nativeSettings(
+    scalaVersion := "2.11.11",
+    libraryDependencies ++= Seq(
+      "org.scala-native" %%% "test-interface" % "0.3.0"
+    )
+  )
 
 def macroDependencies(version: String) =
   ("org.scala-lang" % "scala-reflect" % version) +:
@@ -72,9 +80,10 @@ def macroDependencies(version: String) =
 
 lazy val utestJS = utest.js
 lazy val utestJVM = utest.jvm
+lazy val utestNative = utest.native
 
 lazy val root = project.in(file("."))
-  .aggregate(utestJS, utestJVM)
+  .aggregate(utestJS, utestJVM, utestNative)
   .settings(
     publishTo := Some(Resolver.file("Unused transient repository", target.value / "fakepublish")),
     publishArtifact := false,
