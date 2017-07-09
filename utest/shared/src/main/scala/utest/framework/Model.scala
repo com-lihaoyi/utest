@@ -13,21 +13,22 @@ import scala.concurrent.Future
 import utest.PlatformShims
 
 case class TestPath(value: Seq[String])
-object TestPath{
+object TestPath {
   @reflect.internal.annotations.compileTimeOnly(
     "TestPath is only available within a uTest suite, and not outside."
   )
   implicit def synthetic: TestPath = ???
 }
-object Test{
+
+object Test {
   /**
-   * Creates a test from a set of children, a name a a [[TestThunKTree]].
+   * Creates a test from a set of children, a name a a [[TestThunkTree]].
    * Generally called by the [[TestSuite.apply]] macro and doesn't need to
    * be called manually.
    */
   def create(tests: (String, (String, TestThunkTree) => Tree[Test])*)
             (name: String, testTree: TestThunkTree): Tree[Test] = {
-    new Tree(
+    Tree(
       new Test(name, testTree),
       tests.map{ case (k, v) => v(k, testTree) }
     )

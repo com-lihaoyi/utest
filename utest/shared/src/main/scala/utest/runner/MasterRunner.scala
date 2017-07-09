@@ -26,11 +26,11 @@ final class MasterRunner(args: Array[String],
     if (!results.compareAndSet(old, r :: old)) addResult(r)
   }
 
-  @tailrec final def addFailure(r: String): Unit = {
+  @tailrec def addFailure(r: String): Unit = {
     val old = failures.get()
     if (!failures.compareAndSet(old, r :: old)) addFailure(r)
   }
-  @tailrec final def addTrace(r: String): Unit = {
+  @tailrec def addTrace(r: String): Unit = {
     val old = traces.get()
     if (!traces.compareAndSet(old, r :: old)) addTrace(r)
   }
@@ -49,25 +49,25 @@ final class MasterRunner(args: Array[String],
 
     val body = results.get.mkString("\n")
 
-    val failureMsg = if (failures.get() == Nil) ""
-    else Seq(
-      Console.RED + "Failures:",
-      failures.get()
-              .zip(traces.get())
-              // We pre-pending to a list, so need to reverse to make the order correct
-              .reverse
-              // ignore those with an empty trace, e.g. utest.SkippedOuterFailures,
-              // since those are generally just spam (we already can see the outer failure)
-              .collect{case (f, t) if t != "" => f + ("\n" + t).replace("\n", "\n"+Console.RED)}
-              .mkString("\n")
-    ).mkString("\n")
+    val failureMsg = "" // if (failures.get() == Nil) ""
+//    else Seq(
+//      Console.RED + "Failures:",
+//      failures.get()
+//              .zip(traces.get())
+//              // We pre-pending to a list, so need to reverse to make the order correct
+//              .reverse
+//              // ignore those with an empty trace, e.g. utest.SkippedOuterFailures,
+//              // since those are generally just spam (we already can see the outer failure)
+//              .collect{case (f, t) if t != "" => f + ("\n" + t).replace("\n", "\n"+Console.RED)}
+//              .mkString("\n")
+//    ).mkString("\n")
     Seq(
       header,
       body,
       failureMsg,
-      s"Tests: $total",
-      s"Passed: $success",
-      s"Failed: $failure"
+      s"Tests: ".bold + totalCount.toString.blue,
+      s"Passed: ".bold + successCount.toString.blue,
+      s"Failed: ".bold + (if (failureCount == 0) failureCount.toString.green else s" $failureCount ".redBg.bold.white)
     ).mkString("\n")
   }
 

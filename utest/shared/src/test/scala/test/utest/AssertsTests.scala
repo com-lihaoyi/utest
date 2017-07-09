@@ -42,9 +42,11 @@ object AssertsTests extends utest.TestSuite{
           "Logging didn't capture the locals properly " + logged
         )
 
-        * - Predef.assert(
-          e.toString.contains("y: String = 2") && e.toString.contains("x: Int = 1"),
-          "Logging doesn't display local values properly " + e.toString
+        val errStr = e.toString
+        val yRendered = asserts.renderTestValue(TestValue("y", "String", 2))
+        val xRendered = asserts.renderTestValue(TestValue("x", "Int", 1))
+        "Logging doesn't display local values properly" - assert(
+          errStr.contains(yRendered) && e.toString.contains(xRendered)
         )
 
         * - Predef.assert(

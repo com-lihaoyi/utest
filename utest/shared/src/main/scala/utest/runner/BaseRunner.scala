@@ -1,9 +1,10 @@
 package utest
 package runner
 //import acyclic.file
+import scala.concurrent.ExecutionContext
+
 import sbt.testing._
 import utest.TestSuite
-
 import scala.util.Failure
 
 import org.scalajs.testinterface.TestUtils
@@ -49,7 +50,7 @@ abstract class BaseRunner(val args: Array[String],
       })
     }
 
-    val title = s"Starting Suite " + name
+    val title = s"Starting Suite " + name.bold.red
     val dashes = "-" * ((80 - title.length) / 2)
     loggers.foreach(_.info(dashes + title + dashes))
 
@@ -57,7 +58,7 @@ abstract class BaseRunner(val args: Array[String],
 
     addTotal(found.length)
 
-    implicit val ec =
+    implicit val ec: ExecutionContext =
       if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
         scala.concurrent.ExecutionContext.global
       }else{
@@ -68,10 +69,8 @@ abstract class BaseRunner(val args: Array[String],
       (subpath, s) => {
         if(s.value.isSuccess) incSuccess() else  incFailure()
 
-        val str = suite.formatSingle(selector ++ subpath, s)
         handleEvent(new OptionalThrowable(), Status.Success)
-        str.foreach{msg => loggers.foreach(_.info(name + "" + msg))}
-        s.value match{
+        s.value match {
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)
             // Trim the stack trace so all the utest internals don't get shown,
@@ -79,7 +78,7 @@ abstract class BaseRunner(val args: Array[String],
             e.setStackTrace(
               e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
             )
-            addFailure(name + "" + str.getOrElse(""))
+            addFailure(name)
             addTrace(
               if (e.isInstanceOf[SkippedOuterFailure]) ""
               else e.getStackTrace.map(_.toString).mkString("\n")

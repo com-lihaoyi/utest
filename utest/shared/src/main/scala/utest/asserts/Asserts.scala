@@ -105,7 +105,7 @@ object Asserts {
     failures match{
       case Seq() => () // nothing failed, do nothing
       case Seq(failure) => throw failure
-      case multipleFailures => throw new MultipleErrors(multipleFailures:_*)
+      case multipleFailures => throw MultipleErrors(multipleFailures:_*)
     }
   }
 
