@@ -1,4 +1,4 @@
-µTest 0.4.7 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.4.8 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 
@@ -15,6 +15,7 @@ Its key features are:
 - [A unique execution model](#execution-model)
 - [Integration with SBT](#getting-started)
 - [Cross compiles to ScalaJS](#scalajs)
+- [Cross compiles to Scala Native](http://scala-native.org/)
 
 Contents
 --------
