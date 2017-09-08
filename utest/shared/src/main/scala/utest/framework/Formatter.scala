@@ -13,7 +13,7 @@ trait Formatter {
   def formatColor: Boolean = true
   def formatTruncate: Int = 5000
   def formatTrace: Boolean = true
-  def formatWrapThreshold: Int = 100
+  def formatWrapThreshold: Int = 90
 
   def formatValueColor: fansi.Attrs =
     if (formatColor) fansi.Color.Blue
@@ -46,16 +46,20 @@ trait Formatter {
     truncUnit
   }
 
-  def wrapLabel(leftIndent: Int, r: Result, label: String) = {
+  def wrapLabel(leftIndentCount: Int, r: Result, label: String) = {
+    val leftIndent = "  " * leftIndentCount
     val lhs = fansi.Str.join(
-      "  " * leftIndent,
+      leftIndent,
       formatIcon(r.value.isInstanceOf[Success[_]]), " ",
       label, " ",
       formatMillisColor(r.milliDuration + "ms"), " "
     )
     val rhs = prettyTruncate(r, e => formatResultColor(false)(e.toString))
 
-    val sep = if (lhs.length + rhs.length <= formatWrapThreshold) " " else "\n"
+    val sep =
+      if (lhs.length + rhs.length <= formatWrapThreshold) " "
+      else "\n" + leftIndent + "  "
+
     lhs ++ sep ++ rhs
   }
 
