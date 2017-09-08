@@ -64,13 +64,12 @@ abstract class BaseRunner(val args: Array[String],
         utest.framework.ExecutionContext.RunNow
       }
 
-    val results = suite.tests.runAsync(
-      (subpath, s) => {
+    val results = suite.tests.runAsync((subpath, s) => {
         if(s.value.isSuccess) incSuccess() else  incFailure()
 
-        val str = suite.formatSingle(selector ++ subpath, s)
+        val str = suite.formatSingle(name.split('.') ++ selector ++ subpath, s)
         handleEvent(new OptionalThrowable(), Status.Success)
-        str.foreach{msg => loggers.foreach(_.info(name + "" + msg))}
+        str.foreach{msg => loggers.foreach(_.info(msg.split('\n').mkString))}
         s.value match{
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)
@@ -79,7 +78,7 @@ abstract class BaseRunner(val args: Array[String],
             e.setStackTrace(
               e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
             )
-            addFailure(name + "" + str.getOrElse(""))
+            addFailure(str.fold("")(_.render))
             addTrace(
               if (e.isInstanceOf[SkippedOuterFailure]) ""
               else e.getStackTrace.map(_.toString).mkString("\n")
@@ -91,7 +90,7 @@ abstract class BaseRunner(val args: Array[String],
       wrap = suite.utestWrap(_)(ec)
     )(ec)
 
-    results.map(suite.format).map(_.foreach(addResult))
+    results.map(suite.format).map(_.foreach(x => addResult(x.render)))
   }
 
 

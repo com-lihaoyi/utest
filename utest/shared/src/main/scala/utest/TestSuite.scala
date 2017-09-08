@@ -24,9 +24,12 @@ abstract class TestSuite
     runBody
   }
 
+
   def utestTruncateLength = 5000
   override def formatTruncate = utestTruncateLength
-  def assertPrettyPrint[T: DummyTypeclass](t: T) = t.toString.take(utestTruncateLength)
+  def assertPrettyPrint[T: DummyTypeclass](t: T): fansi.Str = {
+    formatValueColor(t.toString.take(utestTruncateLength))
+  }
 
   /**
    * The tests within this `object`.

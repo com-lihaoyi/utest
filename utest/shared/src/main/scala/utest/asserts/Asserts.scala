@@ -157,7 +157,7 @@ object Asserts {
 
 
 trait Asserts[V[_]]{
-  def assertPrettyPrint[T: V](t: T): String
+  def assertPrettyPrint[T: V](t: T): fansi.Str
 
   /**
     * Provides a nice syntax for asserting things are equal, that is pretty
@@ -178,7 +178,7 @@ trait Asserts[V[_]]{
 
   /**
     * Asserts that the given expression fails to compile, and returns a
-    * [[framework.CompileError]] containing the message of the failure. If the expression
+    * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
   def compileError(expr: String): CompileError = macro Asserts.compileError
