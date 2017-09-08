@@ -36,7 +36,7 @@ case class Tree[+T](value: T, children: Seq[Tree[T]]){
    * Transforms this tree into a new tree by applying the function `f` to
    * the value at every node. Does not change the shape of the tree.
    */
-  def map[V](f : T => V): Tree[V] = {
+  def map[V](f: T => V): Tree[V] = {
     Tree(f(value), children.map(_.map(f)))
   }
 

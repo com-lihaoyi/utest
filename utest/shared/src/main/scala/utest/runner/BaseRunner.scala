@@ -64,12 +64,13 @@ abstract class BaseRunner(val args: Array[String],
         utest.framework.ExecutionContext.RunNow
       }
 
-    val results = suite.tests.runAsync((subpath, s) => {
+    val results = suite.tests.runAsync(
+      (subpath, s) => {
         if(s.value.isSuccess) incSuccess() else  incFailure()
 
         val str = suite.formatSingle(name.split('.') ++ selector ++ subpath, s)
         handleEvent(new OptionalThrowable(), Status.Success)
-        str.foreach{msg => loggers.foreach(_.info(msg.split('\n').mkString))}
+        str.foreach{msg => loggers.foreach(_.info(msg.split('\n').mkString("\n")))}
         s.value match{
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)
