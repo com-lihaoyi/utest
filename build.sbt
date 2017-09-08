@@ -1,5 +1,7 @@
 import sbtcrossproject.{crossProject, CrossType}
 import com.typesafe.sbt.pgp.PgpKeys._
+import sbt.Keys.scalacOptions
+import sbt.addCompilerPlugin
 
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
@@ -51,8 +53,14 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       id = "lihaoyi",
       name = "Li Haoyi",
       url = url("https://github.com/lihaoyi")
-    )
-  )
+    ),
+    autoCompilerPlugins := true,
+
+    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.7"),
+
+    scalacOptions += "-P:acyclic:force"
+
+)
   .jsSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion
   )

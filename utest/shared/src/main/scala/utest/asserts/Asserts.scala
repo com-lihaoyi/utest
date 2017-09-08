@@ -98,7 +98,7 @@ object Asserts {
 
   def assertImpl(funcs: AssertEntry[Boolean]*) = {
     val tries = for (entry <- funcs) yield Try{
-      val (value, die) = getAssertionEntry(entry)
+      val (value, die) = Util.getAssertionEntry(entry)
       if (!value) die(null)
     }
     val failures = tries.collect{case util.Failure(thrown) => thrown}
@@ -126,11 +126,11 @@ object Asserts {
    * exception does not appear.
    */
   def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
-    val (res, logged, src) = runAssertionEntry(entry)
+    val (res, logged, src) = Util.runAssertionEntry(entry)
     res match{
       case Failure(e: T) => e
-      case Failure(e: Throwable) => assertError(src, logged, e)
-      case Success(v) => assertError(src, logged, null)
+      case Failure(e: Throwable) => Util.assertError(src, logged, e)
+      case Success(v) => Util.assertError(src, logged, null)
     }
   }
 
@@ -149,16 +149,13 @@ object Asserts {
    */
   def assertMatchImpl(entry: AssertEntry[Any])
                      (pf: PartialFunction[Any, Unit]): Unit = {
-    val (value, die) = getAssertionEntry(entry)
+    val (value, die) = Util.getAssertionEntry(entry)
     if (pf.isDefinedAt(value)) ()
     else die(null)
   }
 }
-object DummyTypeclass {
-  implicit def DummyImplicit[T] = new DummyTypeclass[T]
-}
-class DummyTypeclass[+T]
-class Show extends StaticAnnotation
+
+
 trait Asserts[V[_]]{
   def assertPrettyPrint[T: V](t: T): String
 
