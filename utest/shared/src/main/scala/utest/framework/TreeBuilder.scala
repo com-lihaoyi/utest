@@ -70,9 +70,10 @@ object TreeBuilder {
           (normal.init, normal.last)
         }
 
-      val (_, thingies) = nested.foldLeft(0 -> Seq[(String, Tree, Tree)]()) { case ((index, trees), nextTree) =>
-        val (name, tree2, newIndex) = matcher(index)(nextTree)
-        (newIndex, trees :+(name, q"$name", tree2))
+      val (_, thingies) = nested.foldLeft(0 -> Seq[(String, Tree, Tree)]()) {
+        case ((index, trees), nextTree) =>
+          val (name, tree2, newIndex) = matcher(index)(nextTree)
+          (newIndex, trees :+(name, q"$name", tree2))
       }
 
       val (names, nameTrees, bodies) = thingies.unzip3

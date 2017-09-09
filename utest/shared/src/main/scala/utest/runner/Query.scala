@@ -106,7 +106,11 @@ object Query{
     input.groupBy(_.value)
       .iterator
       .map{ case (value, trees) =>
-        Tree(value, collapse(trees.flatMap(_.children)):_*)
+        val children =
+          if (trees.exists(_.children.isEmpty)) Nil
+          else collapse(trees.flatMap(_.children))
+
+        Tree(value, children:_*)
       }
       .toArray[Tree[String]]
   }

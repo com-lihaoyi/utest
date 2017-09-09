@@ -29,7 +29,7 @@ case class TestValue(name: String, tpeName: String, value: Any)
 
 /**
  * Simplified versions of the errors thrown during compilation, for use with the
- * [[compileError]] macro. Contains only a single message and no position since
+ * [[utest.asserts.Asserts.compileError]] macro. Contains only a single message and no position since
  * things compiled using macros don't really have source positions.
  */
 trait CompileError{

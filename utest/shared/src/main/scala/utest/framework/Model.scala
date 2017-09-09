@@ -3,6 +3,10 @@ package framework
 
 import java.util.concurrent.ExecutionException
 
+import utest.runner.Query
+
+import scala.collection.mutable
+
 //import acyclic.file
 
 import scala.util.{Success, Failure, Try}
@@ -21,7 +25,7 @@ object TestPath{
 }
 object Test{
   /**
-   * Creates a test from a set of children, a name a a [[TestThunKTree]].
+   * Creates a test from a set of children, a name a a [[TestThunkTree]].
    * Generally called by the [[TestSuite.apply]] macro and doesn't need to
    * be called manually.
    */
@@ -39,137 +43,84 @@ object Test{
  * a pretty simple data structure, as much of the information related to it
  * comes contextually when traversing the [[utest.framework.TestTreeSeq]] to reach it.
  */
-case class Test(name: String, TestThunkTree: TestThunkTree)
+case class Test(name: String, thunkTree: TestThunkTree)
 
 /**
  * Extension methods on `TreeSeq[Test]`
  */
 class TestTreeSeq(tests: Tree[Test]) {
   /**
+    * For some reason Scala futures boxes `Error`s into `ExecutionException`s,
+    * so un-box them to show the user since he probably doesn't care about
+    * this boxing
+    */
+  def unbox(res: Throwable) = res match{
+    case e: java.util.concurrent.ExecutionException
+      if e.getMessage == "Boxed Error" =>
+      e.getCause
+    case r => r
+  }
+
+  /**
    * Runs this `Tree[Test]` asynchronously and returns a `Future` containing
    * the tree of the results.
    *
    * @param onComplete Called each time a single [[Test]] finishes
-   * @param path The integer path of the current test in its [[TestThunkTree]]
-   * @param strPath The path to the current test
    * @param outerError Whether or not an outer test failed, and this test can
    *                   be failed immediately without running
    * @param ec Used to
    */
   def runFuture(onComplete: (Seq[String], Result) => Unit,
-               path: Seq[Int],
-               strPath: Seq[String] = Nil,
-               wrap: (=> Future[Any]) => Future[Any] ,
-               outerError: Future[Option[SkippedOuterFailure]] = Future.successful(Option.empty[SkippedOuterFailure]))
-              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = Future {
-    val start = Deadline.now
-    // Special-case tests which return a future, in order to wait for them to finish
-    val futurized = wrap{
-      val tryResult = outerError.flatMap {
-        case None =>
-          // try-catch manually so that fatal errors are handled (they're not by Try & Future).
-          Future(
-            try Future.successful(tests.value.TestThunkTree.run(path.toList))
-            catch {case e: Throwable => Future.failed(e)}
-          ).flatMap(identity)
-        case Some(f) => throw f
-      }
-      tryResult flatMap{
-        case f: Future[_] => f
-        case f => Future.successful(f)
-      }
-    }
-    /**
-      * For some reason Scala futures boxes `Error`s into `ExecutionException`s,
-      * so un-box them to show the user since he probably doesn't care about
-      * this boxing
-      */
-    def unbox(res: Throwable) = res match{
-      case e: java.util.concurrent.ExecutionException
-        if e.getMessage == "Boxed Error" =>
-        e.getCause
-      case r => r
-    }
+                query: Query#Trees,
+                wrap: (=> Future[Any]) => Future[Any],
+                outerError: Future[Option[SkippedOuterFailure]] = Future.successful(Option.empty[SkippedOuterFailure]))
+               (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
 
-    val thisError = futurized.map{
-      case t => None
-    }.recover{
-      case e: SkippedOuterFailure => Some(e)
-      case e => Some(SkippedOuterFailure(strPath, unbox(e)))
-    }
+    def recQuery(test: Tree[Test],
+                 query: Seq[Tree[String]],
+                 revIntPath: List[Int]): Tree[Result] = {
 
-    def runChildren(tail: Seq[Tree[Test]], results: List[Tree[Result]], index: Int): Future[List[Tree[Result]]] = {
-      tail.headOption match{
-        case None => Future(results)
-        case Some(head) =>
-          val future = new TestTreeSeq(head).runFuture(
-            onComplete,
-            path :+ index,
-            strPath :+ head.value.name,
-            wrap,
-            thisError
-          )
-          future.flatMap { result => runChildren(tail.tail, results :+ result, index+1) }
-      }
-    }
-
-    val futureResults = runChildren(tests.children, List(), 0)
-
-    futurized.map{
-      case value => Success(value)
-    }.recover{
-      case e => Failure(e)
-    }.flatMap(res =>
-      futureResults.map { results =>
-        val res1 = res match{
-          case Failure(e: java.util.concurrent.ExecutionException)
-            if e.getMessage == "Boxed Error" =>
-            Failure(e.getCause)
-          case r => r
+      if (query.isEmpty) recTests(test, revIntPath)
+      else{
+        val children = for(subquery <- query) yield{
+          val index = test.children.indexWhere(_.value.name == subquery.value)
+          val subtest = test.children(index)
+          recQuery(subtest, subquery.children, index :: revIntPath)
         }
-        val end = Deadline.now
-        val result = Result(tests.value.name, res1, end.time.toMillis - start.time.toMillis)
-        onComplete(strPath, result)
-        Tree(result, results:_*)
-      }
-    )
-  }.flatMap(x => x)
+        Tree(
+          Result(test.value.name, Success(()), 0),
+          children:_*
+        )
 
-
-  def resolve(testPath: Seq[String]) = {
-    val indices = collection.mutable.Buffer.empty[Int]
-    var current = tests
-    var strings = testPath.toList
-    while(strings.nonEmpty){
-      val head :: tail = strings
-      strings = tail
-      val index = current.children.indexWhere(_.value.name == head)
-      indices.append(index)
-      if (!current.children.isDefinedAt(index)){
-        throw NoSuchTestException(testPath:_*)
       }
-      current = current.children(index)
     }
-    (indices, current)
-  }
 
-  def runAsync(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
-               strPath: Seq[String] = Nil,
-               testPath: Seq[String] = Nil,
-               wrap: (=> Future[Any]) => Future[Any] = x => x)
-              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
+    def recTests(test: Tree[Test], revIntPath: List[Int]): Tree[Result] = {
+      if (test.children.isEmpty) {
+        val start = Deadline.now
+        val res = try Success(test.value.thunkTree.run(revIntPath.reverse))
+        catch{case e: Throwable => Failure(e)}
 
-    val (indices, current) = resolve(testPath)
-    new TestTreeSeq(current).runFuture(onComplete, indices, strPath, wrap)
+        val end = Deadline.now
+        Tree(Result(test.value.name, res, (end - start).toMillis))
+      }
+      else{
+        Tree(
+          Result(test.value.name, Success(()), 0),
+          test.children.zipWithIndex.map{case (c, i) => recTests(c, i :: revIntPath)}:_*
+        )
+      }
+    }
+
+    Future(recQuery(tests, query, Nil))
   }
 
   def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
-          strPath: Seq[String] = Nil,
-          testPath: Seq[String] = Nil,
+          query: Seq[Tree[String]],
           wrap: (=> Future[Any]) => Future[Any] = x => x)
          (implicit ec: concurrent.ExecutionContext): Tree[Result] = {
 
-    PlatformShims.await(runAsync(onComplete, strPath, testPath, wrap))
+    PlatformShims.await(runFuture(onComplete, query, wrap))
   }
 }
 

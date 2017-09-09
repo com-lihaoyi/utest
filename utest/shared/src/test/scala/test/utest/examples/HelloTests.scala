@@ -7,7 +7,9 @@ object HelloTests extends TestSuite{
 //      throw new Exception("test1")
     }
     'test2{
-      1
+      'inner{
+        1
+      }
     }
     'test3{
       val a = List[Byte](1, 2)

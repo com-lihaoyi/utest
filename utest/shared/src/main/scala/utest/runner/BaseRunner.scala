@@ -6,11 +6,35 @@ import utest.TestSuite
 
 import scala.util.Failure
 import org.scalajs.testinterface.TestUtils
-import utest.framework.Tree
+import utest.framework.{Test, Tree}
+object BaseRunner{
+  def checkOverlap(query: Seq[Tree[String]], testSuitePath: Seq[String]): Boolean = {
+    def rec(current: Seq[Tree[String]], remainingSegments: List[String]): Boolean = {
+      (current, remainingSegments) match {
+        // The query refers to a *parent* node of this TestSuite, thus this tree gets run
+        case (Nil, _) => true
+        // The query refers to a *child* node of this TestSuite, also meaning this tree gets run
+        case (_, Nil) => true
+
+        case (subtrees, nextSegment :: rest) =>
+          subtrees.find(_.value == nextSegment) match{
+            // This query refers only to sibling nodes for this TestSuite, so we do not run it
+            case None => false
+            case Some(subtree) => rec(subtree.children, rest)
+          }
+      }
+    }
+    rec(query, testSuitePath.toList)
+  }
+
+}
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader)
                           extends sbt.testing.Runner{
+  val path = args.lift(0).filter(_(0) != '-')
+  val query = path.map(Query.parse(_).right.get).getOrElse(Nil)
+
   def addResult(r: String): Unit
   def addFailure(r: String): Unit
   def addTrace(trace: String): Unit
@@ -18,28 +42,26 @@ abstract class BaseRunner(val args: Array[String],
   def incSuccess(): Unit
   def incFailure(): Unit
 
-  def tasks(taskDefs: Array[TaskDef]) = taskDefs.map(makeTask)
 
-  /**
-    * Actually performs the running of a particular test
-    *
-    * @param selector The name of the test within the test class/object
-    * @param loggers SBT loggers which are interested in the logspam generated
-    * @param name The name of the test class/object
-    */
-  def runSuite(selector: Seq[String],
-               loggers: Seq[Logger],
+
+  def tasks(taskDefs: Array[TaskDef]) = {
+    for{
+      taskDef <- taskDefs
+      if BaseRunner.checkOverlap(query, taskDef.fullyQualifiedName().split('.'))
+    } yield makeTask(taskDef)
+  }
+
+  def runSuite(loggers: Seq[Logger],
                name: String,
                eventHandler: EventHandler) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
-    val selectorString = selector.mkString(".")
 
     def handleEvent(op: OptionalThrowable, st: Status) = {
       eventHandler.handle(new Event {
-        def fullyQualifiedName() = selectorString
+        def fullyQualifiedName() = path.getOrElse("")
         def throwable() = op
         def status() = st
-        def selector() = new TestSelector(selectorString)
+        def selector() = new TestSelector(path.getOrElse(""))
         def fingerprint() = new SubclassFingerprint {
           def superclassName = "utest.TestSuite"
           def isModule = true
@@ -53,22 +75,31 @@ abstract class BaseRunner(val args: Array[String],
     val dashes = "-" * ((80 - title.length) / 2)
     loggers.foreach(_.info(dashes + title + dashes))
 
-    val (indices, found) = suite.tests.resolve(selector)
 
-    addTotal(found.length)
 
-    implicit val ec =
-      if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
-        scala.concurrent.ExecutionContext.global
-      }else{
-        utest.framework.ExecutionContext.RunNow
+    val innerQuery = {
+      def rec(currentQuery: Query#Trees, segments: List[String]): Query#Trees = {
+        segments match{
+          case head :: tail =>
+            currentQuery.find(_.value == head) match{
+              case None => Nil
+              case Some(sub) => rec(sub.children, tail)
+            }
+          case Nil => Nil
+        }
+
       }
+      rec(query, name.split('.').toList)
+    }
 
-    val results = suite.tests.runAsync(
+    implicit val ec = utest.framework.ExecutionContext.RunNow
+
+
+    val results = suite.tests.runFuture(
       (subpath, s) => {
-        if(s.value.isSuccess) incSuccess() else  incFailure()
+        if(s.value.isSuccess) incSuccess() else incFailure()
 
-        val str = suite.formatSingle(name.split('.') ++ selector ++ subpath, s)
+        val str = suite.formatSingle(name.split('.') ++ subpath, s)
         handleEvent(new OptionalThrowable(), Status.Success)
         str.foreach{msg => loggers.foreach(_.info(msg.split('\n').mkString("\n")))}
         s.value match{
@@ -87,7 +118,7 @@ abstract class BaseRunner(val args: Array[String],
           case _ => ()
         }
       },
-      testPath = selector,
+      query = innerQuery,
       wrap = suite.utestWrap(_)(ec)
     )(ec)
 
@@ -96,8 +127,7 @@ abstract class BaseRunner(val args: Array[String],
 
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {
-
-    new Task(taskDef, args, runSuite)
+    new Task(taskDef, runSuite(_, taskDef.fullyQualifiedName(), _))
   }
   // Scala.js test interface specific methods
   def deserializeTask(task: String, deserializer: String => TaskDef): sbt.testing.Task =
