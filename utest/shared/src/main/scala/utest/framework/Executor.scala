@@ -23,10 +23,10 @@ trait Executor{
                wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x)
               (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
 
-    resolve(tests, query, Nil) match{
+    resolveQueryIndices(tests, query, Nil) match{
       case Left(errors) => throw new utest.NoSuchTestException(errors:_*)
       case Right(resolution) =>
-        val thunkTree = recQuery(tests, resolution, Nil, Nil)
+        val thunkTree = collectQueryTerminals(tests, resolution, Nil, Nil)
 
         val forced = thunkTree.map{case (terminal, revStringPath, thunk) => () =>
           if (!terminal) Future.successful(Result(revStringPath.head, Success(()), 0))
@@ -49,7 +49,7 @@ trait Executor{
           }
         }
 
-        recFutures(forced)
+        evaluateFutureTree(forced)
     }
 
   }
@@ -82,11 +82,11 @@ object Executor extends Executor{
   }
 
 
-  def recFutures[T](t: Tree[() => Future[T]])
-                   (implicit ec: concurrent.ExecutionContext): Future[Tree[T]] = {
+  def evaluateFutureTree[T](t: Tree[() => Future[T]])
+                           (implicit ec: concurrent.ExecutionContext): Future[Tree[T]] = {
     for{
       v <- t.value()
-      childValues <- Future.traverse(t.children.toSeq)(recFutures(_))
+      childValues <- Future.traverse(t.children.toSeq)(evaluateFutureTree(_))
     } yield Tree(v, childValues:_*)
   }
 
@@ -96,9 +96,9 @@ object Executor extends Executor{
     * integer indices into the test tree, or the list of paths which the query
     * tree tried to access but did not exist.
     */
-  def resolve(test: Tree[Test],
-              query: Seq[Tree[String]],
-              revStringPath: List[String]): Either[Seq[Seq[String]], Seq[Tree[Int]]] = {
+  def resolveQueryIndices(test: Tree[Test],
+                          query: Seq[Tree[String]],
+                          revStringPath: List[String]): Either[Seq[Seq[String]], Seq[Tree[Int]]] = {
     val strToIndex = test.children.map(_.value.name).zipWithIndex.toMap
 
     val childResults = for(q <- query) yield {
@@ -106,7 +106,7 @@ object Executor extends Executor{
       strToIndex.get(q.value) match{
         case None => Left(Seq((q.value :: revStringPath).reverse))
         case Some(index) =>
-          resolve(test.children(index), q.children, revStringPath) match{
+          resolveQueryIndices(test.children(index), q.children, revStringPath) match{
             case Right(res) => Right(Tree(index, res:_*))
             case Left(l) => Left(l)
           }
@@ -125,18 +125,18 @@ object Executor extends Executor{
   }
 
   /**
-    * Recurses into the test tree using a pre-[[resolve]]ed query tree, going
+    * Recurses into the test tree using a pre-[[resolveQueryIndices]]ed query tree, going
     * straight to the terminal nodes of the query tree before handing over to
-    * [[recTests]] to collect all the tests within those nodes.
+    * [[collectTestNodes]] to collect all the tests within those nodes.
     */
-  def recQuery(test: Tree[Test],
-               query: Seq[Tree[Int]],
-               revIntPath: List[Int],
-               revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
+  def collectQueryTerminals(test: Tree[Test],
+                            query: Seq[Tree[Int]],
+                            revIntPath: List[Int],
+                            revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
 
-    if (query.isEmpty) recTests(test, revIntPath, revStringPath)
+    if (query.isEmpty) collectTestNodes(test, revIntPath, revStringPath)
     else{
-      val children = for(subquery <- query) yield recQuery(
+      val children = for(subquery <- query) yield collectQueryTerminals(
         test.children(subquery.value),
         subquery.children,
         subquery.value :: revIntPath,
@@ -151,9 +151,9 @@ object Executor extends Executor{
     * Pick up all terminal nodes within the given test tree, so they can be
     * executed and their results recorded.
     */
-  def recTests(test: Tree[Test],
-               revIntPath: List[Int],
-               revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
+  def collectTestNodes(test: Tree[Test],
+                       revIntPath: List[Int],
+                       revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
     if (test.children.isEmpty) {
       Tree((
         true,
@@ -165,7 +165,7 @@ object Executor extends Executor{
       Tree(
         (false, test.value.name :: revStringPath, () => ()),
         test.children.zipWithIndex.map{case (c, i) =>
-          recTests(c, i :: revIntPath, c.value.name :: revStringPath)
+          collectTestNodes(c, i :: revIntPath, c.value.name :: revStringPath)
         }:_*
       )
     }
