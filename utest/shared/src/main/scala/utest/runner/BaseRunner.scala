@@ -95,7 +95,7 @@ abstract class BaseRunner(val args: Array[String],
     implicit val ec = utest.framework.ExecutionContext.RunNow
 
 
-    val results = suite.tests.runFuture(
+    val results = suite.tests.runAsync(
       (subpath, s) => {
         if(s.value.isSuccess) incSuccess() else incFailure()
 

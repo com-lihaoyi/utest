@@ -1,8 +1,8 @@
 package test.utest
 
 import utest.framework.Tree
-import utest.runner.Query
-import utest.runner.Query.parse
+import utest.Query
+import utest.Query.parse
 import utest._
 
 

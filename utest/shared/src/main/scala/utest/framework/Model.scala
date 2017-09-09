@@ -1,7 +1,7 @@
 package utest
 package framework
 
-import utest.runner.Query
+import utest.Query
 
 import scala.util.{Success, Failure, Try}
 import scala.concurrent.duration.Deadline
@@ -64,21 +64,45 @@ class TestTreeSeq(tests: Tree[Test]) {
    *                   be failed immediately without running
    * @param ec Used to
    */
-  def runFuture(onComplete: (Seq[String], Result) => Unit,
-                query: Query#Trees,
-                wrap: (=> Future[Any]) => Future[Any],
-                outerError: Future[Option[SkippedOuterFailure]] = Future.successful(Option.empty[SkippedOuterFailure]))
-               (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
+  def runAsync(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
+               query: Query#Trees = Nil,
+               wrap: (=> Future[Any]) => Future[Any] = x => x)
+              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
+    val thunkTree = recQuery(tests, resolve(tests, query), Nil)
 
-    Future(recQuery(tests, resolve(tests, query), Nil))
+    val forced = thunkTree.map{case (name, thunk) => () =>
+      val start = Deadline.now
+      val res: Future[Any] = wrap{
+        try thunk() match{
+          case x: Future[_] => x
+          case notFuture => Future.successful(notFuture)
+        } catch{
+          case e: Throwable => Future.failed(e)
+        }
+      }
+
+      def millis = (Deadline.now-start).toMillis
+      res.map(v => Result(name, Success(v), millis))
+         .recover{case e: Throwable => Result(name, Failure(e), millis)}
+    }
+
+    recFutures(forced)
+  }
+
+  def recFutures[T](t: Tree[() => Future[T]])
+                   (implicit ec: concurrent.ExecutionContext): Future[Tree[T]] = {
+    for{
+      v <- t.value()
+      childValues <- Future.traverse(t.children.toSeq)(recFutures(_))
+    } yield Tree(v, childValues:_*)
   }
 
   def run(onComplete: (Seq[String], Result) => Unit = (_, _) => (),
-          query: Seq[Tree[String]],
+          query: Seq[Tree[String]] = Nil,
           wrap: (=> Future[Any]) => Future[Any] = x => x)
          (implicit ec: concurrent.ExecutionContext): Tree[Result] = {
 
-    PlatformShims.await(runFuture(onComplete, query, wrap))
+    PlatformShims.await(runAsync(onComplete, query, wrap))
   }
 
   def resolve(test: Tree[Test], query: Seq[Tree[String]]): Seq[Tree[Int]] = {
@@ -91,7 +115,7 @@ class TestTreeSeq(tests: Tree[Test]) {
 
   def recQuery(test: Tree[Test],
                query: Seq[Tree[Int]],
-               revIntPath: List[Int]): Tree[Result] = {
+               revIntPath: List[Int]): Tree[(String, () => Any)] = {
 
     if (query.isEmpty) recTests(test, revIntPath)
     else{
@@ -101,23 +125,17 @@ class TestTreeSeq(tests: Tree[Test]) {
         subquery.value :: revIntPath
       )
 
-      Tree(Result(test.value.name, Success(()), 0), children:_*)
+      Tree((test.value.name, () => ()), children:_*)
     }
   }
 
-  def recTests(test: Tree[Test], revIntPath: List[Int]): Tree[Result] = {
+  def recTests(test: Tree[Test], revIntPath: List[Int]): Tree[(String, () => Any)] = {
     if (test.children.isEmpty) {
-      val start = Deadline.now
-      val res =
-        try Success(test.value.thunkTree.run(revIntPath.reverse))
-        catch{case e: Throwable => Failure(e)}
-
-      val end = Deadline.now
-      Tree(Result(test.value.name, res, (end - start).toMillis))
+      Tree((test.value.name, () => test.value.thunkTree.run(revIntPath.reverse)))
     }
     else{
       Tree(
-        Result(test.value.name, Success(()), 0),
+        (test.value.name, () => ()),
         test.children.zipWithIndex.map{case (c, i) => recTests(c, i :: revIntPath)}:_*
       )
     }

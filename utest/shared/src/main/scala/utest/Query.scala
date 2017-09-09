@@ -1,4 +1,4 @@
-package utest.runner
+package utest
 
 import utest.framework.Tree
 
@@ -95,6 +95,9 @@ class Query(input: String) {
 }
 
 object Query{
+  def apply(input: String) = {
+    parse(input).fold(e => throw new Exception(e), x => x)
+  }
   def parse(input: String) = new Query(input).curlies(0) match{
     case Right((v, i)) =>
       if (i == input.length) Right(v)
