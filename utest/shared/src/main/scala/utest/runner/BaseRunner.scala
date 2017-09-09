@@ -85,7 +85,7 @@ abstract class BaseRunner(val args: Array[String],
               case None => Nil
               case Some(sub) => rec(sub.children, tail)
             }
-          case Nil => Nil
+          case Nil => currentQuery
         }
 
       }
