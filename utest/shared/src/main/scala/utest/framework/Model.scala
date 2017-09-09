@@ -83,7 +83,7 @@ class TestTreeSeq(tests: Tree[Test]) {
 
       def millis = (Deadline.now-start).toMillis
       res.map(v => Result(name, Success(v), millis))
-         .recover{case e: Throwable => Result(name, Failure(e), millis)}
+         .recover{case e: Throwable => Result(name, Failure(unbox(e)), millis)}
     }
 
     recFutures(forced)
