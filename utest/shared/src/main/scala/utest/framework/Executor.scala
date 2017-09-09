@@ -90,6 +90,12 @@ object Executor extends Executor{
     } yield Tree(v, childValues:_*)
   }
 
+  /**
+    * Takes a query tree and resolves the strings against the test tree of a
+    * test suite, either returning the query trees strings converted into
+    * integer indices into the test tree, or the list of paths which the query
+    * tree tried to access but did not exist.
+    */
   def resolve(test: Tree[Test],
               query: Seq[Tree[String]],
               revStringPath: List[String]): Either[Seq[Seq[String]], Seq[Tree[Int]]] = {
@@ -118,6 +124,11 @@ object Executor extends Executor{
     else Right(right)
   }
 
+  /**
+    * Recurses into the test tree using a pre-[[resolve]]ed query tree, going
+    * straight to the terminal nodes of the query tree before handing over to
+    * [[recTests]] to collect all the tests within those nodes.
+    */
   def recQuery(test: Tree[Test],
                query: Seq[Tree[Int]],
                revIntPath: List[Int],
@@ -136,6 +147,10 @@ object Executor extends Executor{
     }
   }
 
+  /**
+    * Pick up all terminal nodes within the given test tree, so they can be
+    * executed and their results recorded.
+    */
   def recTests(test: Tree[Test],
                revIntPath: List[Int],
                revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
