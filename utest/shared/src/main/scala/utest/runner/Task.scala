@@ -3,16 +3,17 @@ package runner
 //import acyclic.file
 import sbt.testing._
 import sbt.testing
-import scala.concurrent.{Future, Await}
-import concurrent.duration._
 
-import utest.framework.ExecutionContext
+import scala.concurrent.{Await, Future}
+import concurrent.duration._
+import utest.framework.{ExecutionContext, Tree}
 
 class Task(val taskDef: TaskDef,
            args: Array[String],
-           path: String,
            runUTestTask: (Seq[String], Seq[Logger], String, EventHandler) => Future[Unit])
            extends sbt.testing.Task{
+
+  val path = args.lift(0).filter(_(0) != '-').getOrElse("")
 
   def tags(): Array[String] = Array()
 
@@ -27,7 +28,7 @@ class Task(val taskDef: TaskDef,
 
     implicit val ec = ExecutionContext.RunNow
 
-    val logged = executeInternal(eventHandler, loggers).recover { case t =>
+    executeInternal(eventHandler, loggers).recover { case t =>
       loggers.foreach(_.trace(t))
     }.onComplete{_ =>
       continuation(Array())

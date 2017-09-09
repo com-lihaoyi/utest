@@ -5,8 +5,8 @@ import sbt.testing._
 import utest.TestSuite
 
 import scala.util.Failure
-
 import org.scalajs.testinterface.TestUtils
+import utest.framework.Tree
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader)
@@ -96,8 +96,8 @@ abstract class BaseRunner(val args: Array[String],
 
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {
-    val path = args.lift(0).filter(_(0) != '-').getOrElse("")
-    new Task(taskDef, args, path, runSuite)
+
+    new Task(taskDef, args, runSuite)
   }
   // Scala.js test interface specific methods
   def deserializeTask(task: String, deserializer: String => TaskDef): sbt.testing.Task =

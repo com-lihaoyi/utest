@@ -23,6 +23,11 @@ case class Tree[+T](value: T, children: Seq[Tree[T]]){
     Iterator(this.value) ++ children.flatMap(_.iterator)
   }
 
+  def leafPaths: Iterator[List[T]] = {
+    if (children.isEmpty) Iterator(List(this.value))
+    else children.toIterator.flatMap(_.leafPaths).map(this.value :: _)
+  }
+
   def toSeq: Seq[T] = iterator.toList
   /**
    * Returns an iterator for the values at the leaves of this tree
