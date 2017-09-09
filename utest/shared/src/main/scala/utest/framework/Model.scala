@@ -27,9 +27,9 @@ object Test{
    */
   def create(tests: (String, (String, TestThunkTree) => Tree[Test])*)
             (name: String, testTree: TestThunkTree): Tree[Test] = {
-    new Tree(
+    Tree(
       new Test(name, testTree),
-      tests.map{ case (k, v) => v(k, testTree) }
+      tests.map{ case (k, v) => v(k, testTree) }:_*
     )
   }
 }
@@ -130,7 +130,7 @@ class TestTreeSeq(tests: Tree[Test]) {
         val end = Deadline.now
         val result = Result(tests.value.name, res1, end.time.toMillis - start.time.toMillis)
         onComplete(strPath, result)
-        new Tree(result, results)
+        Tree(result, results:_*)
       }
     )
   }.flatMap(x => x)

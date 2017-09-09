@@ -15,57 +15,57 @@ object QueryTests extends utest.TestSuite{
   def tests = this{
     * - check(
       parse("hello"),
-      Right(List(Tree("hello", Nil)))
+      Right(List(Tree("hello")))
     )
     * - check(
       parse("\"hello\""),
-      Right(List(Tree("hello", Nil)))
+      Right(List(Tree("hello")))
     )
     * - check(
       parse("hello.world"),
-      Right(List(Tree("hello", List(Tree("world", Nil)))))
+      Right(List(Tree("hello", Tree("world"))))
     )
     * - check(
       parse("""hello." w o r l d ".cow"""),
-      Right(List(Tree("hello", List(Tree(" w o r l d ", List(Tree("cow", Nil)))))))
+      Right(List(Tree("hello", Tree(" w o r l d ", Tree("cow")))))
     )
     * - check(
       parse("hello.world.1"),
-      Right(List(Tree("hello", List(Tree("world", List(Tree("1", Nil)))))))
+      Right(List(Tree("hello", Tree("world", Tree("1")))))
     )
     * - check(
       parse("hello,world"),
-      Right(List(Tree("hello", Nil), Tree("world", Nil)))
+      Right(List(Tree("hello"), Tree("world")))
     )
     * - check(
       parse("{hello,world}"),
-      Right(List(Tree("hello", Nil), Tree("world", Nil)))
+      Right(List(Tree("hello"), Tree("world")))
     )
 
     * - check(
       parse("{{{hello.{{{{world}}}}}}}"),
-      Right(List(Tree("hello",List(Tree("world",Nil)))))
+      Right(List(Tree("hello", Tree("world"))))
     )
     * - check(
       parse("foo.{bar,qux}"),
-      Right(List(Tree("foo",List(Tree("bar",Nil), Tree("qux",Nil)))))
+      Right(List(Tree("foo", Tree("bar"), Tree("qux"))))
     )
     * - check(
       parse("foo.{bar.baz,qux}"),
-      Right(List(Tree("foo",List(Tree("bar",List(Tree("baz", Nil))), Tree("qux",Nil)))))
+      Right(List(Tree("foo", Tree("bar", Tree("baz")), Tree("qux"))))
     )
 
     * - check(
       parse("foo.{bar.{baz},qux}"),
-      Right(List(Tree("foo",List(Tree("bar",List(Tree("baz", Nil))), Tree("qux",Nil)))))
+      Right(List(Tree("foo", Tree("bar", Tree("baz")), Tree("qux"))))
     )
     * - check(
       parse("{foo.{bar.{baz.{qux}}}}"),
-      Right(List(Tree("foo",List(Tree("bar",List(Tree("baz", List(Tree("qux",Nil)))))))))
+      Right(List(Tree("foo", Tree("bar", Tree("baz", Tree("qux"))))))
     )
     * - check(
       parse("foo.bar.baz.qux"),
-      Right(List(Tree("foo",List(Tree("bar",List(Tree("baz", List(Tree("qux",Nil)))))))))
+      Right(List(Tree("foo", Tree("bar", Tree("baz", Tree("qux"))))))
     )
 
     * - check(

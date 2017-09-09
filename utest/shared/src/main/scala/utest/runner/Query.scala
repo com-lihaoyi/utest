@@ -58,7 +58,7 @@ class Query(input: String) {
   def commas(index: Int): Parsed[Trees] = repSep(index, chain, ',')
   def treeify(s: Seq[String], end: Trees): Tree[String] = {
     s.reverseIterator.foldLeft(end)(
-      (children, value) => List(Tree(value, children))
+      (children, value) => List(Tree(value, children:_*))
     ).head
   }
   def chain(index: Int): Parsed[Tree[String]] = repSep(index, item, '.') match{
@@ -106,7 +106,7 @@ object Query{
     input.groupBy(_.value)
       .iterator
       .map{ case (value, trees) =>
-        Tree(value, collapse(trees.flatMap(_.children)))
+        Tree(value, collapse(trees.flatMap(_.children)):_*)
       }
       .toArray[Tree[String]]
   }

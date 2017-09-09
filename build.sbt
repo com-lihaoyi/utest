@@ -9,7 +9,7 @@ scalaVersion       in ThisBuild := "2.12.2"
 crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M1")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
-triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
+//triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
 releaseTagComment  in ThisBuild := s"v${(version in ThisBuild).value}"
 releaseVcsSign     in ThisBuild := true
 

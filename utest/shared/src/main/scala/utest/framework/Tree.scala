@@ -7,7 +7,7 @@ package framework
  * children. Provides all normal `Seq` functionality as well as some tree
  * specific methods.
  */
-case class Tree[+T](value: T, children: Seq[Tree[T]]){
+case class Tree[+T](value: T, children: Tree[T]*){
   /**
    * The number of nodes in this tree.
    */
@@ -42,7 +42,7 @@ case class Tree[+T](value: T, children: Seq[Tree[T]]){
    * the value at every node. Does not change the shape of the tree.
    */
   def map[V](f: T => V): Tree[V] = {
-    Tree(f(value), children.map(_.map(f)))
+    Tree(f(value), children.map(_.map(f)):_*)
   }
 
   /**
