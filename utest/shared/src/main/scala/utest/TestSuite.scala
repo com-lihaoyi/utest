@@ -25,7 +25,7 @@ abstract class TestSuite
   }
 
 
-  def utestTruncateLength = 5000
+  def utestTruncateLength = 50000
   override def formatTruncate = utestTruncateLength
   def assertPrettyPrint[T: DummyTypeclass](t: T): fansi.Str = {
     formatValueColor(t.toString.take(utestTruncateLength))

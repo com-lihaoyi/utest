@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
  * them, so you get nice error messages for free.
  */
 package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
-  val utestTruncateLength = 5000
+  val utestTruncateLength = 50000
   def assertPrettyPrint[T: DummyTypeclass](t: T) = t.toString.take(utestTruncateLength)
 
 

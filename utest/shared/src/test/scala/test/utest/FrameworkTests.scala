@@ -22,10 +22,10 @@ object FrameworkTests extends utest.TestSuite{
   }
   implicit val ec = utest.framework.ExecutionContext.RunNow
   def tests = this{
-    def testHelloWorld(test: utest.framework.Tree[Test]) = {
-      val results = utest.run(test)
-      assert(test.length == 4)
-      assert(test.leaves.length == 3)
+    def testHelloWorld(tests: utest.framework.Tree[Test]) = {
+      val results = utest.run(tests)
+      assert(tests.length == 4)
+      assert(tests.leaves.length == 3)
       assert(results.length == 4)
       assert(results.leaves.length == 3)
       assert(results.leaves.count(_.value.isFailure) == 2)
@@ -33,7 +33,7 @@ object FrameworkTests extends utest.TestSuite{
       results.leaves.map(_.value).toList
     }
     'helloWorld{
-      val test = this{
+      val tests = this{
         "test1"-{
           throw new Exception("test1")
         }
@@ -45,10 +45,10 @@ object FrameworkTests extends utest.TestSuite{
           a(10)
         }
       }
-      testHelloWorld(test)
+      testHelloWorld(tests)
     }
     'helloWorldSymbol{
-      val test = this{
+      val tests = this{
         'test1{
           throw new Exception("test1")
         }
@@ -60,10 +60,10 @@ object FrameworkTests extends utest.TestSuite{
           a(10)
         }
       }
-      testHelloWorld(test)
+      testHelloWorld(tests)
     }
     'helloWorldSymbol2{
-      val test = this{
+      val tests = this{
         'test1-{
           throw new Exception("test1")
         }
@@ -74,12 +74,12 @@ object FrameworkTests extends utest.TestSuite{
           a(10)
         }
       }
-      testHelloWorld(test)
+      testHelloWorld(tests)
     }
 
     'failures{
       'noSuchTest{
-        val test = this{
+        val tests = this{
           'test1{
             1
           }
@@ -93,7 +93,7 @@ object FrameworkTests extends utest.TestSuite{
         }
       }
       'weirdTestName{
-        val test = this{
+        val tests = this{
           "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
             1
           }
@@ -107,7 +107,7 @@ object FrameworkTests extends utest.TestSuite{
         //
         // This does not compile
 //        try{
-//          val test = this{
+//          val tests = this{
 //            "outer"-{
 //              if (true){
 //                "inners"-{
@@ -126,7 +126,7 @@ object FrameworkTests extends utest.TestSuite{
 
     'extractingResults{
      'basic{
-        val test = this{
+        val tests = this{
           'test1{
             "i am cow"
           }
@@ -171,7 +171,7 @@ object FrameworkTests extends utest.TestSuite{
         assert(res == Success(()))
       }
       'lexicalScopingWorks{
-        val test = this{
+        val tests = this{
           val x = 1
           'outer{
             val y = x + 1
@@ -197,7 +197,7 @@ object FrameworkTests extends utest.TestSuite{
       'runForking{
         // Make sure that when you deal with mutable variables in the enclosing
         // scopes, multiple test runs don't affect each other.
-        val test = this{
+        val tests = this{
           var x = 0
           'A{
             x += 1
@@ -221,7 +221,7 @@ object FrameworkTests extends utest.TestSuite{
             }
           }
         }
-        val results = utest.run(test)
+        val results = utest.run(tests)
         assert(results.leaves.count(_.value.isSuccess) == 3)
         results.map(_.value.get)
       }
