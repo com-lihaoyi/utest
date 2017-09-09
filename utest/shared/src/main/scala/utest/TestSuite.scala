@@ -19,7 +19,7 @@ abstract class TestSuite
   with utest.asserts.Asserts[DummyTypeclass]
   with Formatter{
 
-  def utestWrap(runBody: => concurrent.Future[Any])
+  def utestWrap(path: Seq[String], runBody: => concurrent.Future[Any])
                (implicit ec: ExecutionContext): concurrent.Future[Any] = {
     runBody
   }
@@ -48,7 +48,7 @@ object TestSuite extends TestSuiteMacro{
 
   trait Retries extends utest.TestSuite{
     val utestRetryCount: Int
-    override def utestWrap(body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
+    override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
       def rec(count: Int): Future[Any] = {
         body.recoverWith { case e =>
           if (count < 5) rec(count + 1)

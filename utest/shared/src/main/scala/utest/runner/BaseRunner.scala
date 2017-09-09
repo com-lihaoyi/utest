@@ -95,7 +95,8 @@ abstract class BaseRunner(val args: Array[String],
     implicit val ec = utest.framework.ExecutionContext.RunNow
 
 
-    val results = suite.tests.runAsync(
+    val results = utest.framework.Executor.runAsync(
+      suite.tests,
       (subpath, s) => {
         if(s.value.isSuccess) incSuccess() else incFailure()
 
@@ -119,7 +120,7 @@ abstract class BaseRunner(val args: Array[String],
         }
       },
       query = innerQuery,
-      wrap = suite.utestWrap(_)(ec)
+      wrap = suite.utestWrap(_, _)(ec)
     )(ec)
 
     results.map(suite.format).map(_.foreach(x => addResult(x.render)))

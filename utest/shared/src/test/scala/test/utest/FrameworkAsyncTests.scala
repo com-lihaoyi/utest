@@ -66,7 +66,7 @@ object FrameworkAsyncTests extends utest.TestSuite{
         }
       }
 
-      tests.runAsync().map { results =>
+      utest.runAsync(tests).map { results =>
         assert(results.toSeq(0).value.isSuccess) // root
         assert(results.toSeq(1).value.isSuccess) // testSuccessAsync
         assert(results.toSeq(2).value.isFailure) // testFailAsync
