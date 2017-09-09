@@ -23,30 +23,35 @@ trait Executor{
                wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x)
               (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
 
-    val thunkTree = recQuery(tests, resolve(tests, query), Nil, Nil)
+    resolve(tests, query, Nil) match{
+      case Left(errors) => throw new utest.NoSuchTestException(errors:_*)
+      case Right(resolution) =>
+        val thunkTree = recQuery(tests, resolution, Nil, Nil)
 
-    val forced = thunkTree.map{case (terminal, revStringPath, thunk) => () =>
-      if (!terminal) Future.successful(Result(revStringPath.head, Success(()), 0))
-      else {
+        val forced = thunkTree.map{case (terminal, revStringPath, thunk) => () =>
+          if (!terminal) Future.successful(Result(revStringPath.head, Success(()), 0))
+          else {
 
-        val start = Deadline.now
-        val res: Future[Any] = wrap(revStringPath.reverse,
-          try thunk() match{
-            case x: Future[_] => x
-            case notFuture => Future.successful(notFuture)
-          } catch{
-            case e: Throwable => Future.failed(e)
+            val start = Deadline.now
+            val res: Future[Any] = wrap(revStringPath.reverse,
+              try thunk() match{
+                case x: Future[_] => x
+                case notFuture => Future.successful(notFuture)
+              } catch{
+                case e: Throwable => Future.failed(e)
+              }
+            )
+
+            def millis = (Deadline.now-start).toMillis
+            res.map(v => Result(revStringPath.head, Success(v), millis))
+              .recover{case e: Throwable => Result(revStringPath.head, Failure(unbox(e)), millis)}
+              .map{r => if (terminal) onComplete(revStringPath.reverse, r); r}
           }
-        )
+        }
 
-        def millis = (Deadline.now-start).toMillis
-        res.map(v => Result(revStringPath.head, Success(v), millis))
-          .recover{case e: Throwable => Result(revStringPath.head, Failure(unbox(e)), millis)}
-          .map{r => if (terminal) onComplete(revStringPath.reverse, r); r}
-      }
+        recFutures(forced)
     }
 
-    recFutures(forced)
   }
 
   def run(tests: Tree[Test],
@@ -85,12 +90,32 @@ object Executor extends Executor{
     } yield Tree(v, childValues:_*)
   }
 
-  def resolve(test: Tree[Test], query: Seq[Tree[String]]): Seq[Tree[Int]] = {
+  def resolve(test: Tree[Test],
+              query: Seq[Tree[String]],
+              revStringPath: List[String]): Either[Seq[Seq[String]], Seq[Tree[Int]]] = {
     val strToIndex = test.children.map(_.value.name).zipWithIndex.toMap
-    for(q <- query) yield {
-      val index = strToIndex(q.value)
-      Tree(index, resolve(test.children(index), q.children):_*)
+
+    val childResults = for(q <- query) yield {
+
+      strToIndex.get(q.value) match{
+        case None => Left(Seq((q.value :: revStringPath).reverse))
+        case Some(index) =>
+          resolve(test.children(index), q.children, revStringPath) match{
+            case Right(res) => Right(Tree(index, res:_*))
+            case Left(l) => Left(l)
+          }
+      }
     }
+
+    val left = collection.mutable.Buffer.empty[Seq[String]]
+    val right = collection.mutable.Buffer.empty[Tree[Int]]
+    childResults.foreach{
+      case Left(l) => left.appendAll(l)
+      case Right(r) => right.append(r)
+    }
+
+    if (left.nonEmpty) Left(left)
+    else Right(right)
   }
 
   def recQuery(test: Tree[Test],

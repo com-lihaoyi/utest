@@ -87,8 +87,8 @@ object FrameworkTests extends utest.TestSuite{
         }
         try{
           println(utest.run(tests, query=utest.Query("does.not.exist")))
-        }catch {case e @ NoSuchTestException("does", "not", "exist") =>
-          assert(e.getMessage.contains("does.not.exist"))
+        }catch {case e @ NoSuchTestException(Seq("does")) =>
+          assert(e.getMessage.contains("[does]"))
           e.getMessage
         }
       }
@@ -283,7 +283,9 @@ object FrameworkTests extends utest.TestSuite{
       }
       // listing tests B and C works despite failure of A
       assertMatch(tests.toSeq.map(_.name)){ case Seq(_, "A", "B", "C")=>}
-      assert(utest.run(tests).iterator.count(_.value.isSuccess) == 1)
+      val successes = utest.run(tests).iterator.count(_.value.isSuccess)
+      println("successes : "+  successes )
+      assert(successes == 1)
       // When a test fails, don't both trying to run any inner tests and just
       // die fail the immediately
       assert(timesRun == 2)
