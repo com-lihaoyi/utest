@@ -13,10 +13,10 @@ import scala.util.Failure
 object FrameworkTests extends utest.TestSuite{
   override def utestWrap(path: Seq[String], runBody: => concurrent.Future[Any])
                         (implicit ec: ExecutionContext): concurrent.Future[Any] = {
-    println("RUN")
+    println("RUN " + path.mkString("."))
 
     runBody.map{x =>
-      println("END")
+      println("END " + path.mkString("."))
       x
     }
   }

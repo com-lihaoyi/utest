@@ -22,22 +22,28 @@ trait Executor{
                query: Query#Trees = Nil,
                wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x)
               (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
-    val thunkTree = recQuery(tests, resolve(tests, query), Nil)
 
-    val forced = thunkTree.map{case (name, thunk) => () =>
-      val start = Deadline.now
-      val res: Future[Any] = wrap(Nil,
-        try thunk() match{
-          case x: Future[_] => x
-          case notFuture => Future.successful(notFuture)
-        } catch{
-          case e: Throwable => Future.failed(e)
-        }
-      )
+    val thunkTree = recQuery(tests, resolve(tests, query), Nil, Nil)
 
-      def millis = (Deadline.now-start).toMillis
-      res.map(v => Result(name, Success(v), millis))
-        .recover{case e: Throwable => Result(name, Failure(unbox(e)), millis)}
+    val forced = thunkTree.map{case (terminal, revStringPath, thunk) => () =>
+      if (!terminal) Future.successful(Result(revStringPath.head, Success(()), 0))
+      else {
+
+        val start = Deadline.now
+        val res: Future[Any] = wrap(revStringPath.reverse,
+          try thunk() match{
+            case x: Future[_] => x
+            case notFuture => Future.successful(notFuture)
+          } catch{
+            case e: Throwable => Future.failed(e)
+          }
+        )
+
+        def millis = (Deadline.now-start).toMillis
+        res.map(v => Result(revStringPath.head, Success(v), millis))
+          .recover{case e: Throwable => Result(revStringPath.head, Failure(unbox(e)), millis)}
+          .map{r => if (terminal) onComplete(revStringPath.reverse, r); r}
+      }
     }
 
     recFutures(forced)
@@ -57,6 +63,7 @@ trait Executor{
   * Created by lihaoyi on 9/9/17.
   */
 object Executor extends Executor{
+
   /**
     * For some reason Scala futures boxes `Error`s into `ExecutionException`s,
     * so un-box them to show the user since he probably doesn't care about
@@ -88,28 +95,38 @@ object Executor extends Executor{
 
   def recQuery(test: Tree[Test],
                query: Seq[Tree[Int]],
-               revIntPath: List[Int]): Tree[(String, () => Any)] = {
+               revIntPath: List[Int],
+               revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
 
-    if (query.isEmpty) recTests(test, revIntPath)
+    if (query.isEmpty) recTests(test, revIntPath, revStringPath)
     else{
       val children = for(subquery <- query) yield recQuery(
         test.children(subquery.value),
         subquery.children,
-        subquery.value :: revIntPath
+        subquery.value :: revIntPath,
+        test.value.name :: revStringPath
       )
 
-      Tree((test.value.name, () => ()), children:_*)
+      Tree((false, test.value.name :: revStringPath, () => ()), children:_*)
     }
   }
 
-  def recTests(test: Tree[Test], revIntPath: List[Int]): Tree[(String, () => Any)] = {
+  def recTests(test: Tree[Test],
+               revIntPath: List[Int],
+               revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
     if (test.children.isEmpty) {
-      Tree((test.value.name, () => test.value.thunkTree.run(revIntPath.reverse)))
+      Tree((
+        true,
+        test.value.name :: revStringPath,
+        () => test.value.thunkTree.run(revIntPath.reverse)
+      ))
     }
     else{
       Tree(
-        (test.value.name, () => ()),
-        test.children.zipWithIndex.map{case (c, i) => recTests(c, i :: revIntPath)}:_*
+        (false, test.value.name :: revStringPath, () => ()),
+        test.children.zipWithIndex.map{case (c, i) =>
+          recTests(c, i :: revIntPath, c.value.name :: revStringPath)
+        }:_*
       )
     }
   }

@@ -8,6 +8,12 @@ import scala.util.Failure
 import org.scalajs.testinterface.TestUtils
 import utest.framework.{Test, Tree}
 object BaseRunner{
+  /**
+    * Checks whether the given query needs the TestSuite at testSuitePath
+    * to execute or not. It needs to execute if one of the terminal nodes in the
+    * query is one of the TestSuite's ancestors in the tree, or one-or-more of
+    * it's children, but not if the terminal nodes are unrelated.
+    */
   def checkOverlap(query: Seq[Tree[String]], testSuitePath: Seq[String]): Boolean = {
     def rec(current: Seq[Tree[String]], remainingSegments: List[String]): Boolean = {
       (current, remainingSegments) match {
@@ -26,8 +32,8 @@ object BaseRunner{
     }
     rec(query, testSuitePath.toList)
   }
-
 }
+
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader)
@@ -73,6 +79,7 @@ abstract class BaseRunner(val args: Array[String],
 
     val title = s"Starting Suite " + name
     val dashes = "-" * ((80 - title.length) / 2)
+
     loggers.foreach(_.info(dashes + title + dashes))
 
 
@@ -97,13 +104,13 @@ abstract class BaseRunner(val args: Array[String],
 
     val results = utest.framework.Executor.runAsync(
       suite.tests,
-      (subpath, s) => {
-        if(s.value.isSuccess) incSuccess() else incFailure()
+      (subpath, result) => {
+        if(result.value.isSuccess) incSuccess() else incFailure()
 
-        val str = suite.formatSingle(name.split('.') ++ subpath, s)
+        val str = suite.formatSingle(name.split('.') ++ subpath, result)
         handleEvent(new OptionalThrowable(), Status.Success)
         str.foreach{msg => loggers.foreach(_.info(msg.split('\n').mkString("\n")))}
-        s.value match{
+        result.value match{
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)
             // Trim the stack trace so all the utest internals don't get shown,
