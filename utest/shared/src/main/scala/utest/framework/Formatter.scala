@@ -22,10 +22,11 @@ trait Formatter {
   def toggledColor(t: fansi.Attrs) = if(formatColor) t else fansi.Attrs.Empty
   def testValueColor = toggledColor(fansi.Color.Blue)
   def exceptionClassColor = toggledColor(fansi.Underlined.On ++ fansi.Color.LightRed)
-  def exceptionMsgColor = toggledColor(fansi.Color.Red)
+  def exceptionMsgColor = toggledColor(fansi.Color.LightRed)
   def exceptionPrefixColor = toggledColor(fansi.Color.Red)
-  def exceptionMethodColor = toggledColor(fansi.Color.Yellow)
-  def exceptionLineNumberColor = toggledColor(fansi.Color.Green)
+  def exceptionMethodColor = toggledColor(fansi.Color.LightRed)
+  def exceptionPunctuationColor = toggledColor(fansi.Color.Red)
+  def exceptionLineNumberColor = toggledColor(fansi.Color.LightRed)
 
   def formatResultColor(success: Boolean) = toggledColor(
     if (success) fansi.Color.Green
@@ -73,11 +74,15 @@ trait Formatter {
             "\n", frameIndent,
             joinLineStr(
               lineWrapInput(
+
                 fansi.Str.join(
                   exceptionPrefixColor(e.getClassName + "."),
-                  exceptionMethodColor(e.getMethodName), "(",
-                  exceptionLineNumberColor(shortenedFilename), ":",
-                  exceptionLineNumberColor(e.getLineNumber.toString), ")"
+                  exceptionMethodColor(e.getMethodName),
+                  exceptionPunctuationColor("("),
+                  exceptionLineNumberColor(shortenedFilename),
+                  exceptionPunctuationColor(":"),
+                  exceptionLineNumberColor(e.getLineNumber.toString),
+                  exceptionPunctuationColor(")")
                 ),
                 frameIndent
               ),
@@ -161,27 +166,29 @@ trait Formatter {
   }
 
   def format(topLevelName: String, results: HTree[String, Result]): Option[fansi.Str] = Some{
-    val linearized = mutable.Buffer.empty[fansi.Str]
 
     val relabelled = results match{
       case HTree.Node(v, c@_*) => HTree.Node(topLevelName, c:_*)
       case HTree.Leaf(r) => HTree.Leaf(r.copy(name = topLevelName))
     }
-    rec(0, relabelled){
-      case (depth, Left(name)) => linearized.append("  " * depth + "- " + name)
-      case (depth, Right(r)) => linearized.append(wrapLabel(depth, r, r.name))
+    val (rendered, totalTime) = rec(0, relabelled){
+      case (depth, Left((name, millis))) =>
+        fansi.Str("  " * depth + "- " + name + " ") ++ formatMillisColor(millis + "ms")
+      case (depth, Right(r)) => wrapLabel(depth, r, r.name)
     }
 
-    linearized.mkString("\n")
+    rendered.mkString("\n")
   }
 
   private[this] def rec(depth: Int, r: HTree[String, Result])
-                       (f: (Int, Either[String, Result]) => Unit): Unit = {
+                       (f: (Int, Either[(String, Long), Result]) => fansi.Str): (Seq[fansi.Str], Long) = {
     r match{
-      case HTree.Leaf(l) => f(depth, Right(l))
+      case HTree.Leaf(l) => (Seq(f(depth, Right(l))), l.milliDuration)
       case HTree.Node(v, c@_*) =>
-        f(depth, Left(v))
-        c.foreach(rec(depth+1, _)(f))
+        val (subStrs, subTimes) = c.map(rec(depth+1, _)(f)).unzip
+        val cumulativeTime = subTimes.sum
+        val thisStr = f(depth, Left(v, cumulativeTime))
+        (thisStr +: subStrs.flatten, cumulativeTime)
     }
   }
 }

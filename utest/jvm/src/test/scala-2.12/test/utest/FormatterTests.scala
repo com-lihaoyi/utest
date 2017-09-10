@@ -61,7 +61,7 @@ object FormatterTests extends utest.TestSuite {
             |    scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
             |    scala.collection.immutable.List.apply(List.scala:86)
             |    test.utest.FormatterTests$.$anonfun$tests$11(FormatterTests.scala:26)
-            |- MyTestSuite
+            |- MyTestSuite 0ms
             |  X test1 0ms
             |    java.lang.Exception: wrapper
             |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:19)
@@ -131,7 +131,7 @@ object FormatterTests extends utest.TestSuite {
             |    la:86)
             |    test.utest.FormatterTests$.$anonfun$tests$11(F
             |    ormatterTests.scala:26)
-            |- MyTestSuite
+            |- MyTestSuite 0ms
             |  X test1 0ms
             |    java.lang.Exception: wrapper
             |      test.utest.FormatterTests$.liftedTree1$1(For
