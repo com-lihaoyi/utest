@@ -44,7 +44,9 @@ abstract class BaseRunner(val args: Array[String],
                           extends sbt.testing.Runner{
 
   lazy val path = args.headOption.filter(_(0) != '-')
-  lazy val query = path.map(Query.parse(_).right.get).getOrElse(Nil)
+  lazy val query = path
+    .map(Query(_))
+    .getOrElse(Nil)
 
   def addResult(r: String): Unit
   def addFailure(r: String): Unit

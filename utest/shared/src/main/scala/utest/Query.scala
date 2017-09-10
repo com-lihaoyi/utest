@@ -96,7 +96,7 @@ class Query(input: String) {
 
 object Query{
   def apply(input: String) = {
-    parse(input).fold(e => throw new Exception(e), x => x)
+    parse(input).fold(e => throw new QueryParseError(input, e), x => x)
   }
   def parse(input: String) = new Query(input).curlies(0) match{
     case Right((v, i)) =>
@@ -118,3 +118,5 @@ object Query{
       .toArray[Tree[String]]
   }
 }
+case class QueryParseError(input: String, msg: String)
+  extends Exception("[" + input + "] " + msg)
