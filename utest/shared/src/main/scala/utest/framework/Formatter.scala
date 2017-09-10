@@ -35,9 +35,6 @@ trait Formatter {
     if (formatColor) fansi.Color.DarkGray
     else fansi.Attrs.Empty
 
-  def indentMultilineStr(input: fansi.Str, leftIndent: String): fansi.Str = {
-    fansi.Str.join(input.split('\n').flatMap(Seq[fansi.Str]("\n", leftIndent, _)).drop(2):_*)
-  }
   private[this] def prettyTruncate(r: Result, leftIndent: String): fansi.Str = {
       val rendered: fansi.Str = r.value match{
       case Success(()) => ""
@@ -50,14 +47,19 @@ trait Formatter {
       val plainText = rendered.plainText
       var index = 0
       while(index < plainText.length && output.length < formatTruncateHeight){
-        val nextNewline = plainText.indexOf('\n', index + 1) match{
-          case -1 => plainText.length
-          case n => n
+        val nextWholeLine = index + formatWrapThreshold
+        val (nextIndex, skipOne) = plainText.indexOf('\n', index + 1) match{
+          case -1 =>
+            if (nextWholeLine < plainText.length) (nextWholeLine, false)
+            else (plainText.length, false)
+          case n =>
+            if (nextWholeLine < n) (nextWholeLine, false)
+            else (n, true)
         }
 
-        val nextIndex = math.min(index + formatWrapThreshold, nextNewline)
         output.append(rendered.substring(index, nextIndex))
-        index = nextIndex
+        if (skipOne) index = nextIndex + 1
+        else index = nextIndex
       }
       if (index < plainText.length){
         output.append("...")
