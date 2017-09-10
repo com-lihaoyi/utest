@@ -2,6 +2,10 @@ package utest
 package framework
 //import acyclic.file
 
+/**
+  * An immutable tree where the middle-nodes and leaf-nodes each contain
+  * different sorts of data, marked by the type params [[N]] and [[L]]
+  */
 sealed trait HTree[+N, +L]{
   def mapLeaves[T](f: L => T): HTree[N, T]
   def leaves: Iterator[L]

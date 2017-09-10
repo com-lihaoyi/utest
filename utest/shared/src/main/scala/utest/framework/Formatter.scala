@@ -4,6 +4,7 @@ package framework
 import scala.collection.mutable
 import scala.util.{Failure, Success}
 
+object Formatter extends Formatter
 /**
  * Default implementation of [[Formatter]], also used by the default SBT test
  * framework. Allows some degree of customization of the formatted test results.
@@ -11,14 +12,19 @@ import scala.util.{Failure, Success}
 trait Formatter {
 
   def formatColor: Boolean = true
-  def formatTruncate: Int = 5000
+  def formatTruncate: Int = 200
   def formatTrace: Boolean = true
   def formatWrapThreshold: Int = 90
+
+  def formatValue(x: Any) = formatValueColor(x.toString)
 
   def formatValueColor: fansi.Attrs =
     if (formatColor) fansi.Color.Blue
     else fansi.Attrs.Empty
 
+  def formatException(x: Throwable) = {
+    formatResultColor(false)(x.toString)
+  }
   def formatResultColor(success: Boolean): fansi.Attrs =
     if (!formatColor) fansi.Attrs.Empty
     else if (success) fansi.Color.Green
@@ -28,15 +34,16 @@ trait Formatter {
     if (formatColor) fansi.Color.DarkGray
     else fansi.Attrs.Empty
 
-  private[this] def prettyTruncate(r: Result,
-                                   errorFormatter: Throwable => fansi.Str,
-                                   offset: Result => String = _ => ""): fansi.Str = {
+  def indentMultilineStr(input: fansi.Str, leftIndent: String): fansi.Str = {
+    fansi.Str.join(input.split('\n').flatMap(Seq[fansi.Str]("\n", leftIndent, _)).drop(2):_*)
+  }
+  private[this] def prettyTruncate(r: Result, leftIndent: String): fansi.Str = {
 
 
     val cutUnit: fansi.Str = r.value match{
       case Success(()) => ""
-      case Success(v) => formatValueColor(v.toString.replace("\n", "\n" + offset(r)))
-      case Failure(e) => errorFormatter(e)
+      case Success(v) => indentMultilineStr(formatValue(v), leftIndent)
+      case Failure(e) => indentMultilineStr(formatException(e), leftIndent)
     }
 
     val truncUnit =
@@ -55,7 +62,8 @@ trait Formatter {
       formatMillisColor(r.milliDuration + "ms"), " "
     )
 
-    val rhs = prettyTruncate(r, e => formatResultColor(false)(e.toString))
+    val rhs = prettyTruncate(r, leftIndent + "  ")
+
 
     val sep =
       if (lhs.length + rhs.length <= formatWrapThreshold) " "

@@ -10,11 +10,4 @@ import scala.collection.mutable.ArrayBuffer
  * macros to capture the names, types and values of variables used within
  * them, so you get nice error messages for free.
  */
-package object asserts extends utest.asserts.Asserts[DummyTypeclass]{
-  val utestTruncateLength = 50000
-  def assertPrettyPrint[T: DummyTypeclass](t: T) = t.toString.take(utestTruncateLength)
-
-
-
-
-}
+package object asserts extends utest.asserts.Asserts

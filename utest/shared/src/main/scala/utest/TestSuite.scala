@@ -16,7 +16,7 @@ import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
 @EnableReflectiveInstantiation
 abstract class TestSuite
   extends TestSuiteMacro
-  with utest.asserts.Asserts[DummyTypeclass]
+  with utest.asserts.Asserts
   with Formatter{
 
   def utestWrap(path: Seq[String], runBody: => concurrent.Future[Any])
@@ -25,7 +25,7 @@ abstract class TestSuite
   }
 
 
-  def utestTruncateLength = 50000
+  def utestTruncateLength = 200
   override def formatTruncate = utestTruncateLength
   def assertPrettyPrint[T: DummyTypeclass](t: T): fansi.Str = {
     formatValueColor(t.toString.take(utestTruncateLength))

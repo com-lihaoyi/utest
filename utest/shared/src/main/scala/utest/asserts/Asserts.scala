@@ -156,14 +156,14 @@ object Asserts {
 }
 
 
-trait Asserts[V[_]]{
-  def assertPrettyPrint[T: V](t: T): fansi.Str
+trait Asserts{
+  def assertPrettyPrint(t: Any): fansi.Str = t.toString
 
   /**
     * Provides a nice syntax for asserting things are equal, that is pretty
     * enough to embed in documentation and examples
     */
-  implicit class ArrowAssert[T](lhs: T){
+  implicit class ArrowAssert(lhs: Any){
     def ==>[V](rhs: V) = {
       (lhs, rhs) match{
           // Hack to make Arrays compare sanely; at some point we may want some
