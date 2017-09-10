@@ -13,7 +13,7 @@ object Formatter extends Formatter
 trait Formatter {
 
   def formatColor: Boolean = true
-  def formatTruncateHeight: Int = 30
+  def formatTruncateHeight: Int = 15
   def formatTrace: Boolean = true
   def formatWrapWidth: Int = 100
 
@@ -125,8 +125,8 @@ trait Formatter {
 
         val wrapped = lineWrapInput(formatValue(v), leftIndent)
         val truncated =
-          if (wrapped.length <= formatWrapWidth) wrapped
-          else wrapped.take(formatWrapWidth) :+ fansi.Str("...")
+          if (wrapped.length <= formatTruncateHeight) wrapped
+          else wrapped.take(formatTruncateHeight) :+ testValueColor("...")
 
         joinLineStr(truncated, leftIndent)
 
