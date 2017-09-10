@@ -42,7 +42,7 @@ class TestThunkTree(inner: => Either[Any, IndexedSeq[TestThunkTree]]){
   def run(path: List[Int]): Any = {
     path match {
       case head :: tail =>
-        val Right(children) = inner
+        val Right(children) = StackMarker.dropOutside(inner)
         children(head).run(tail)
       case Nil =>
         val Left(res) = StackMarker.dropOutside(inner)
