@@ -1,7 +1,7 @@
 package utest
 
 //import acyclic.file
-import utest.asserts.DummyTypeclass
+
 import utest.framework.Formatter
 import scala.concurrent.{Future, ExecutionContext}
 import scala.reflect.macros.Context
