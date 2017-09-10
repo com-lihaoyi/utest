@@ -38,7 +38,7 @@ object QueryTests extends utest.TestSuite{
       Right(List(Tree("hello"), Tree("world")))
     )
     * - check(
-      parse("{hello,world}"),
+      parse("{hello,world.}"),
       Right(List(Tree("hello"), Tree("world")))
     )
 

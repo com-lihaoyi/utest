@@ -73,17 +73,17 @@ abstract class BaseRunner(val args: Array[String],
 
   def runSuite(loggers: Seq[Logger],
                name: String,
-               eventHandler: EventHandler) = {
+               eventHandler: EventHandler,
+               taskDef: TaskDef) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
 
     def handleEvent(op: OptionalThrowable, st: Status) = {
-      println("handleEvent " + st)
       eventHandler.handle(new Event {
         def fullyQualifiedName() = name
         def throwable() = op
         def status() = st
         def selector() = new TestSelector(path.getOrElse(""))
-        def fingerprint() = Fingerprint
+        def fingerprint() = taskDef.fingerprint()
         def duration() = 0
       })
     }
@@ -143,7 +143,7 @@ abstract class BaseRunner(val args: Array[String],
 
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {
-    new Task(taskDef, runSuite(_, taskDef.fullyQualifiedName(), _))
+    new Task(taskDef, runSuite(_, taskDef.fullyQualifiedName(), _, taskDef))
   }
   // Scala.js test interface specific methods
   def deserializeTask(task: String, deserializer: String => TaskDef): sbt.testing.Task =

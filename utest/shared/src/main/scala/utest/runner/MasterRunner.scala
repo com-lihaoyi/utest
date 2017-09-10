@@ -49,31 +49,37 @@ final class MasterRunner(args: Array[String],
   def done(): String = {
     teardown()
     val total = success.get() + failure.get()
+    /**
+      * Print out the results summary ourselves rather than returning it from
+      * `done`, to work around https://github.com/sbt/sbt/issues/3510
+      */
+    if (total > 0) {
+      val body = results.get.mkString("\n")
 
+      val failureMsg: fansi.Str =
+        if (failures.get() == Nil) ""
+        else fansi.Str(failureHeader) ++ fansi.Str.join(
+          failures.get().flatMap(Seq[fansi.Str]("\n", _)): _*
+        )
 
-    val body = results.get.mkString("\n")
+      val summary: fansi.Str =
+        if (total < showSummaryThreshold) ""
+        else fansi.Str.join(
+          resultsHeader, "\n",
+          body, "\n",
+          failureMsg, "\n"
+        )
 
-    val failureMsg: fansi.Str =
-      if (failures.get() == Nil) ""
-      else fansi.Str(failureHeader) ++ fansi.Str.join(
-        failures.get().flatMap(Seq[fansi.Str]("\n", _)):_*
+      println(
+        fansi.Str.join(
+          summary,
+          s"Tests: $total", "\n",
+          s"Passed: $success", "\n",
+          s"Failed: $failure"
+        ).render
       )
-
-    val summary: fansi.Str =
-      if (total < showSummaryThreshold) ""
-      else fansi.Str.join(
-        resultsHeader, "\n",
-        body, "\n",
-        failureMsg, "\n"
-      )
-
-    fansi.Str.join(
-
-      summary,
-      s"Tests: $total", "\n",
-      s"Passed: $success", "\n",
-      s"Failed: $failure"
-    ).render
+    }
+    ""
   }
 
   def receiveMessage(msg: String): Option[String] = {
