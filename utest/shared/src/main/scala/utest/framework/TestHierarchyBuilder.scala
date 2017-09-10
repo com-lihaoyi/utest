@@ -2,6 +2,7 @@ package utest.framework
 
 import utest.framework
 
+import scala.collection.mutable
 import scala.reflect.macros._
 
 /**
@@ -69,20 +70,25 @@ object TestHierarchyBuilder {
           (normal.init, normal.last)
         }
 
-      val (_, thingies) = nested.foldLeft(0 -> Seq[(String, c.Tree, c.Tree)]()) {
-        case ((index, trees), nextTree) =>
-          val (name, tree2, newIndex) = matcher(index)(nextTree)
-          (newIndex, trees :+(name, q"$name", tree2))
+      val (names, bodies) = {
+        var index = 0
+        val names = mutable.Buffer.empty[String]
+        val bodies = mutable.Buffer.empty[c.Tree]
+        for(inner <- nested){
+          val (name, tree2, newIndex) = matcher(index)(inner)
+          names.append(name)
+          bodies.append(tree2)
+          index = newIndex
+        }
+        (names, bodies)
       }
-
-      val (names, nameTrees, bodies) = thingies.unzip3
 
       val (childCallTrees, childNameTrees) =
         names.zip(bodies)
           .map{case (name, body) => recurse(body, path :+ name)}
           .unzip
 
-      val nameTree = nameTrees.zip(childNameTrees).map{
+      val nameTree = names.zip(childNameTrees).map{
         case (name, suite) => q"_root_.utest.framework.Tree($name, ..$suite)"
       }
 
