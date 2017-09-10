@@ -964,6 +964,9 @@ Changelog
 - Various user errors (non-existent test, non-existing test suite, invalid test
   query syntax) now give slightly more friendly error messages
 
+- Using uTest with `fork in Test := true` in SBT no longer gives an incorrect
+  results summmary
+
 0.4.8
 -----
 
