@@ -17,23 +17,23 @@ trait Executor{
     * @param onComplete Called each time a single [[Test]] finishes
     * @param ec Used to
     */
-  def runAsync(tests: Tree[Test],
+  def runAsync(tests: TestHierarchy,
                onComplete: (Seq[String], Result) => Unit = (_, _) => (),
                query: Query#Trees = Nil,
                wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
                ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Future[HTree[String, Result]] = {
     implicit val ec0 = ec
-    resolveQueryIndices(tests, query, Nil) match{
+    resolveQueryIndices(tests.nameTree, query, Nil) match{
       case Left(errors) => throw new utest.NoSuchTestException(errors:_*)
       case Right(resolution) =>
-        val thunkTree = collectQueryTerminals(tests, resolution, Nil, Nil)
+        val thunkTree = collectQueryTerminals(tests.nameTree, resolution, Nil, Nil)
 
-        val forced = thunkTree.mapLeaves{case (revStringPath, thunk) => () =>
+        val forced = thunkTree.mapLeaves{case (revStringPath, revIntPath) => () =>
           val head = revStringPath.headOption.getOrElse("")
 
           val start = Deadline.now
           val res: Future[Any] = wrap(revStringPath.reverse,
-            try thunk() match{
+            try tests.callTree.run(revIntPath.reverse) match{
               case x: Future[_] => x
               case notFuture => Future.successful(notFuture)
             } catch{
@@ -56,7 +56,7 @@ trait Executor{
     }
   }
 
-  def run(tests: Tree[Test],
+  def run(tests: TestHierarchy,
           onComplete: (Seq[String], Result) => Unit = (_, _) => (),
           query: Seq[Tree[String]] = Nil,
           wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
@@ -64,7 +64,7 @@ trait Executor{
 
     PlatformShims.await(runAsync(tests, onComplete, query, wrap, ec))
   }
-  def runWithAsync(tests: Tree[Test],
+  def runWithAsync(tests: TestHierarchy,
                    formatter: utest.framework.Formatter,
                    label: String,
                    query: Seq[Tree[String]] = Nil,
@@ -83,7 +83,7 @@ trait Executor{
       ec
     )
   }
-  def runWith(tests: Tree[Test],
+  def runWith(tests: TestHierarchy,
               formatter: utest.framework.Formatter,
               label: String,
               query: Seq[Tree[String]] = Nil,
@@ -130,10 +130,10 @@ object Executor extends Executor{
     * integer indices into the test tree, or the list of paths which the query
     * tree tried to access but did not exist.
     */
-  def resolveQueryIndices(test: Tree[Test],
+  def resolveQueryIndices(test: Tree[String],
                           query: Seq[Tree[String]],
                           revStringPath: List[String]): Either[Seq[Seq[String]], Seq[Tree[Int]]] = {
-    val strToIndex = test.children.map(_.value.name).zipWithIndex.toMap
+    val strToIndex = test.children.map(_.value).zipWithIndex.toMap
 
     val childResults = for(q <- query) yield {
 
@@ -163,10 +163,10 @@ object Executor extends Executor{
     * straight to the terminal nodes of the query tree before handing over to
     * [[collectTestNodes]] to collect all the tests within those nodes.
     */
-  def collectQueryTerminals(test: Tree[Test],
+  def collectQueryTerminals(test: Tree[String],
                             query: Seq[Tree[Int]],
                             revIntPath: List[Int],
-                            revStringPath: List[String]): HTree[String, (List[String], () => Any)] = {
+                            revStringPath: List[String]): HTree[String, (List[String], List[Int])] = {
 
     if (query.isEmpty) collectTestNodes(test, revIntPath, revStringPath)
     else{
@@ -176,7 +176,7 @@ object Executor extends Executor{
           testChild,
           subquery.children,
           subquery.value :: revIntPath,
-          testChild.value.name :: revStringPath
+          testChild.value :: revStringPath
         )
       }
 
@@ -188,20 +188,17 @@ object Executor extends Executor{
     * Pick up all terminal nodes within the given test tree, so they can be
     * executed and their results recorded.
     */
-  def collectTestNodes(test: Tree[Test],
+  def collectTestNodes(test: Tree[String],
                        revIntPath: List[Int],
-                       revStringPath: List[String]): HTree[String, (List[String], () => Any)] = {
+                       revStringPath: List[String]): HTree[String, (List[String], List[Int])] = {
     if (test.children.isEmpty) {
-      HTree.Leaf((
-        revStringPath,
-        () => test.value.thunkTree.run(revIntPath.reverse)
-      ))
+      HTree.Leaf((revStringPath, revIntPath))
     }
     else{
       HTree.Node(
-        test.value.name,
+        test.value,
         test.children.zipWithIndex.map{case (c, i) =>
-          collectTestNodes(c, i :: revIntPath, c.value.name :: revStringPath)
+          collectTestNodes(c, i :: revIntPath, c.value :: revStringPath)
         }:_*
       )
     }

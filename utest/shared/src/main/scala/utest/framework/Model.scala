@@ -17,21 +17,8 @@ object TestPath{
   )
   implicit def synthetic: TestPath = ???
 }
-object Test{
-  /**
-   * Creates a test from a set of children, a name a a [[TestThunkTree]].
-   * Generally called by the [[TestSuite.apply]] macro and doesn't need to
-   * be called manually.
-   */
-  def create(tests: Tree[String]*)
-            (name: String, testTree: TestThunkTree): Tree[Test] = {
-    Tree(
-      new Test(name, testTree),
-      tests.map(_.map(Test(_, testTree))):_*
-    )
-  }
-}
 
+case class TestHierarchy(nameTree: Tree[String], callTree: TestThunkTree)
 /**
  * Represents the metadata around a single test in a [[TestTreeSeq]]. This is
  * a pretty simple data structure, as much of the information related to it

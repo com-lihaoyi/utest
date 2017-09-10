@@ -16,7 +16,7 @@ object TreeBuilder {
     throw new IllegalArgumentException(s"Test nested badly: $testName")
   }
 
-  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[framework.Tree[framework.Test]] = {
+  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[TestHierarchy] = {
     import c.universe._
 //    println("==END==")
 //    println(showCode(expr.tree))
@@ -54,7 +54,7 @@ object TreeBuilder {
         override def transform(t: c.Tree) = {
           t match{
             case q"framework.this.TestPath.synthetic" =>
-              c.typeCheck(q"utest.framework.TestPath(Seq(..$path))")
+              c.typeCheck(q"_root_.utest.framework.TestPath(_root_.scala.Seq(..$path))")
             case _ => super.transform(t)
           }
         }
@@ -84,15 +84,15 @@ object TreeBuilder {
           .unzip
 
       val suiteFrags = nameTrees.zip(suites).map{
-        case (name, suite) => q"utest.framework.Tree($name, ..$suite)"
+        case (name, suite) => q"_root_.utest.framework.Tree($name, ..$suite)"
       }
 
       val testTree = c.typeCheck(q"""
-        new utest.framework.TestThunkTree({
+        new _root_.utest.framework.TestThunkTree({
           ..$normal2
           ${
-            if (testTrees.isEmpty) q"Left($last)"
-            else q"$last; Right(Seq(..$testTrees))"
+            if (testTrees.isEmpty) q"_root_.scala.Left($last)"
+            else q"$last; _root_.scala.Right(Seq(..$testTrees))"
           }
         })
       """)
@@ -104,8 +104,11 @@ object TreeBuilder {
     val (testTree, suite) = recurse(expr.tree, Vector())
 
     val res = q"""
-      utest.framework.Test.create(..$suite)(
-        this.getClass.getName.replace("$$", ""),
+      _root_.utest.framework.TestHierarchy(
+        _root_.utest.framework.Tree(
+          this.getClass.getName.replace("$$", ""),
+          ..$suite
+        ),
         $testTree
       )"""
 //    println("==END==")
@@ -113,8 +116,6 @@ object TreeBuilder {
 //    println(showCode(res))
     // jump through some hoops to avoid using scala.Predef implicits,
     // to make @paulp happy
-    c.Expr[framework.Tree[framework.Test]](
-      res
-    )
+    c.Expr[TestHierarchy](res)
   }
 }

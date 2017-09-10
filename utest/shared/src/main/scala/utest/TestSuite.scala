@@ -2,11 +2,11 @@ package utest
 
 //import acyclic.file
 
-import utest.framework.Formatter
-import scala.concurrent.{Future, ExecutionContext}
+import utest.framework.{Formatter, TestHierarchy}
+
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
-
 import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
 
 /**
@@ -27,14 +27,14 @@ abstract class TestSuite
   /**
    * The tests within this `object`.
    */
-  def tests: framework.Tree[framework.Test]
+  def tests: TestHierarchy
 }
 
 trait TestSuiteMacro{
   /**
     * Macro to demarcate a `Tree[Test]`.
     */
-  def apply(expr: Unit): framework.Tree[framework.Test] = macro framework.TreeBuilder.applyImpl
+  def apply(expr: Unit): TestHierarchy = macro framework.TreeBuilder.applyImpl
 }
 object TestSuite extends TestSuiteMacro{
 

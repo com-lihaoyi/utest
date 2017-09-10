@@ -22,10 +22,10 @@ object FrameworkTests extends utest.TestSuite{
   }
   implicit val ec = utest.framework.ExecutionContext.RunNow
   def tests = this{
-    def testHelloWorld(tests: utest.framework.Tree[Test]) = {
+    def testHelloWorld(tests: TestHierarchy) = {
       val results = utest.run(tests)
-      assert(tests.length == 4)
-      assert(tests.leaves.length == 3)
+      assert(tests.nameTree.length == 4)
+      assert(tests.nameTree.leaves.length == 3)
       assert(results.leaves.length == 3)
       assert(results.leaves.count(_.value.isFailure) == 2)
       assert(results.leaves.count(_.value.isSuccess) == 1)
@@ -281,8 +281,8 @@ object FrameworkTests extends utest.TestSuite{
         }
       }
       // listing tests B and C works despite failure of A
-      assertMatch(tests.toSeq.map(_.name)){ case Seq(_, "A", "B", "C")=>}
-      assert(tests.leaves.length == 1)
+      assertMatch(tests.nameTree.toSeq){ case Seq(_, "A", "B", "C")=>}
+      assert(tests.nameTree.leaves.length == 1)
       val successes = utest.run(tests).leaves.count(_.value.isSuccess)
       // Only the single outer test "C" gets run once, and it results in
       // one failure
