@@ -60,7 +60,8 @@ final class MasterRunner(args: Array[String],
       val failureMsg: fansi.Str =
         if (failures.get() == Nil) ""
         else fansi.Str(failureHeader) ++ fansi.Str.join(
-          failures.get().flatMap(Seq[fansi.Str]("\n", _)): _*
+          // reverse, because the list gets accumulated backwards
+          failures.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
         )
 
       val summary: fansi.Str =

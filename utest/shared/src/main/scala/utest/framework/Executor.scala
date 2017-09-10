@@ -82,7 +82,7 @@ trait Executor{
       wrap,
       ec
     ).map{res =>
-      for(output <- utest.framework.Formatter.format(label, res)){
+      for(output <- formatter.format(label, res)){
         printStream.println(output)
       }
 

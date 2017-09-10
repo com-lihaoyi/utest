@@ -15,12 +15,12 @@ trait Formatter {
   def formatColor: Boolean = true
   def formatTruncateHeight: Int = 30
   def formatTrace: Boolean = true
-  def formatWrapThreshold: Int = 100
+  def formatWrapWidth: Int = 100
 
-  def formatValue(x: Any) = formatValueColor(x.toString)
+  def formatValue(x: Any) = testValueColor(x.toString)
 
   def toggledColor(t: fansi.Attrs) = if(formatColor) t else fansi.Attrs.Empty
-  def formatValueColor = toggledColor(fansi.Color.Blue)
+  def testValueColor = toggledColor(fansi.Color.Blue)
   def exceptionClassColor = toggledColor(fansi.Underlined.On ++ fansi.Color.LightRed)
   def exceptionMsgColor = toggledColor(fansi.Color.Red)
   def exceptionPrefixColor = toggledColor(fansi.Color.Red)
@@ -34,15 +34,24 @@ trait Formatter {
 
   def formatMillisColor = toggledColor(fansi.Color.DarkGray)
 
-  def formatException(x: Throwable) = {
+  def formatException(x: Throwable, leftIndent: String) = {
     val output = mutable.Buffer.empty[fansi.Str]
     var current = x
     while(current != null){
       output.append(
-        exceptionClassColor(current.getClass.getName),
-        ": ",
-        exceptionMsgColor(current.getMessage)
+        joinLineStr(
+          lineWrapInput(
+            fansi.Str.join(
+              exceptionClassColor(current.getClass.getName),
+              ": ",
+              exceptionMsgColor(current.getMessage)
+            ),
+            leftIndent
+          ),
+          leftIndent
+        )
       )
+
       val stack = current.getStackTrace
 
 
@@ -58,59 +67,71 @@ trait Formatter {
             case -1 => e.getFileName
             case n => e.getFileName.drop(n + 1)
           }
+
+          val frameIndent = leftIndent + "  "
           output.append(
-            "\n  ",
-            exceptionPrefixColor(e.getClassName + "."),
-            exceptionMethodColor(e.getMethodName), "(",
-            exceptionLineNumberColor(shortenedFilename), ":",
-            exceptionLineNumberColor(e.getLineNumber.toString),
-            ")"
+            "\n", frameIndent,
+            joinLineStr(
+              lineWrapInput(
+                fansi.Str.join(
+                  exceptionPrefixColor(e.getClassName + "."),
+                  exceptionMethodColor(e.getMethodName), "(",
+                  exceptionLineNumberColor(shortenedFilename), ":",
+                  exceptionLineNumberColor(e.getLineNumber.toString), ")"
+                ),
+                frameIndent
+              ),
+              frameIndent
+            )
           )
         }
-      if (current != null) output.append("\n")
       current = current.getCause
+      if (current != null) output.append("\n", leftIndent)
     }
 
     fansi.Str.join(output:_*)
   }
 
+  def lineWrapInput(input: fansi.Str, leftIndent: String): Seq[fansi.Str] = {
+    val output = mutable.Buffer.empty[fansi.Str]
+    val plainText = input.plainText
+    var index = 0
+    while(index < plainText.length){
+      val nextWholeLine = index + (formatWrapWidth - leftIndent.length)
+      val (nextIndex, skipOne) = plainText.indexOf('\n', index + 1) match{
+        case -1 =>
+          if (nextWholeLine < plainText.length) (nextWholeLine, false)
+          else (plainText.length, false)
+        case n =>
+          if (nextWholeLine < n) (nextWholeLine, false)
+          else (n, true)
+      }
+
+      output.append(input.substring(index, nextIndex))
+      if (skipOne) index = nextIndex + 1
+      else index = nextIndex
+    }
+    output
+  }
+
+  def joinLineStr(lines: Seq[fansi.Str], leftIndent: String) = {
+    fansi.Str.join(lines.flatMap(Seq[fansi.Str]("\n", leftIndent, _)).drop(2):_*)
+  }
 
   private[this] def prettyTruncate(r: Result, leftIndent: String): fansi.Str = {
-    val rendered: fansi.Str = r.value match{
+    r.value match{
       case Success(()) => ""
-      case Success(v) => formatValue(v)
-      case Failure(e) => formatException(e)
+      case Success(v) =>
+
+        val wrapped = lineWrapInput(formatValue(v), leftIndent)
+        val truncated =
+          if (wrapped.length <= formatWrapWidth) wrapped
+          else wrapped.take(formatWrapWidth) :+ fansi.Str("...")
+
+        joinLineStr(truncated, leftIndent)
+
+      case Failure(e) => formatException(e, leftIndent)
     }
-
-    val truncUnit = {
-      val output = mutable.Buffer.empty[fansi.Str]
-      val plainText = rendered.plainText
-      var index = 0
-      while(
-        index < plainText.length &&
-        (output.length < formatTruncateHeight || r.value.isInstanceOf[Failure[_]])
-      ){
-        val nextWholeLine = index + (formatWrapThreshold - leftIndent.length)
-        val (nextIndex, skipOne) = plainText.indexOf('\n', index + 1) match{
-          case -1 =>
-            if (nextWholeLine < plainText.length) (nextWholeLine, false)
-            else (plainText.length, false)
-          case n =>
-            if (nextWholeLine < n) (nextWholeLine, false)
-            else (n, true)
-        }
-
-        output.append(rendered.substring(index, nextIndex))
-        if (skipOne) index = nextIndex + 1
-        else index = nextIndex
-      }
-      if (index < plainText.length){
-        output.append("...")
-      }
-      output.flatMap(Seq[fansi.Str]("\n", leftIndent, _)).drop(2)
-    }
-
-    fansi.Str.join(truncUnit:_*)
   }
 
   def wrapLabel(leftIndentCount: Int, r: Result, label: String): fansi.Str = {
@@ -124,9 +145,8 @@ trait Formatter {
 
     val rhs = prettyTruncate(r, leftIndent + "  ")
 
-
     val sep =
-      if (lhs.length + rhs.length <= formatWrapThreshold) " "
+      if (lhs.length + rhs.length <= formatWrapWidth) " "
       else "\n" + leftIndent + "  "
 
     lhs ++ sep ++ rhs
