@@ -13,9 +13,12 @@ final class MasterRunner(args: Array[String],
                          setup: () => Unit,
                          teardown: () => Unit,
                          showSummaryThreshold: Int,
+                         startHeader: String => String,
                          resultsHeader: String,
                          failureHeader: String)
                          extends BaseRunner(args, remoteArgs, testClassLoader){
+
+  println(startHeader(path.fold("")(" " + _)))
   setup()
   val results = new AtomicReference[List[String]](Nil)
   val success = new AtomicInteger(0)

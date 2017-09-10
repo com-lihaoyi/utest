@@ -42,8 +42,9 @@ abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader)
                           extends sbt.testing.Runner{
-  val path = args.lift(0).filter(_(0) != '-')
-  val query = path.map(Query.parse(_).right.get).getOrElse(Nil)
+
+  lazy val path = args.headOption.filter(_(0) != '-')
+  lazy val query = path.map(Query.parse(_).right.get).getOrElse(Nil)
 
   def addResult(r: String): Unit
   def addFailure(r: String): Unit

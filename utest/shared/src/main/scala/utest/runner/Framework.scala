@@ -15,6 +15,7 @@ class Framework extends sbt.testing.Framework{
   def resultsHeader = BaseRunner.renderBanner("Results")
   def failureHeader = BaseRunner.renderBanner("Failures")
 
+  def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)
   def fingerprints(): Array[sbt.testing.Fingerprint] = Array(
     new SubclassFingerprint {
       def superclassName = "utest.TestSuite"
@@ -33,6 +34,7 @@ class Framework extends sbt.testing.Framework{
       setup,
       teardown,
       showSummaryThreshold,
+      startHeader,
       resultsHeader,
       failureHeader
     )
