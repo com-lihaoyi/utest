@@ -36,7 +36,7 @@ trait Formatter {
     else fansi.Attrs.Empty
 
   private[this] def prettyTruncate(r: Result, leftIndent: String): fansi.Str = {
-      val rendered: fansi.Str = r.value match{
+    val rendered: fansi.Str = r.value match{
       case Success(()) => ""
       case Success(v) => formatValue(v)
       case Failure(e) => formatException(e)
@@ -47,7 +47,7 @@ trait Formatter {
       val plainText = rendered.plainText
       var index = 0
       while(index < plainText.length && output.length < formatTruncateHeight){
-        val nextWholeLine = index + formatWrapThreshold
+        val nextWholeLine = index + (formatWrapThreshold - leftIndent.length)
         val (nextIndex, skipOne) = plainText.indexOf('\n', index + 1) match{
           case -1 =>
             if (nextWholeLine < plainText.length) (nextWholeLine, false)
