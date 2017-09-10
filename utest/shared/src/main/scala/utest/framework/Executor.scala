@@ -6,6 +6,8 @@ import scala.concurrent.Future
 import scala.concurrent.duration.Deadline
 import scala.util.{Failure, Success}
 import utest.PlatformShims
+
+
 trait Executor{
   import Executor._
   /**
@@ -18,9 +20,9 @@ trait Executor{
   def runAsync(tests: Tree[Test],
                onComplete: (Seq[String], Result) => Unit = (_, _) => (),
                query: Query#Trees = Nil,
-               wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x)
-              (implicit ec: concurrent.ExecutionContext): Future[HTree[String, Result]] = {
-
+               wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
+               ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Future[HTree[String, Result]] = {
+    implicit val ec0 = ec
     resolveQueryIndices(tests, query, Nil) match{
       case Left(errors) => throw new utest.NoSuchTestException(errors:_*)
       case Right(resolution) =>
@@ -57,13 +59,47 @@ trait Executor{
   def run(tests: Tree[Test],
           onComplete: (Seq[String], Result) => Unit = (_, _) => (),
           query: Seq[Tree[String]] = Nil,
-          wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x)
-         (implicit ec: concurrent.ExecutionContext): HTree[String, Result] = {
+          wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
+          ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): HTree[String, Result] = {
 
-    PlatformShims.await(runAsync(tests, onComplete, query, wrap))
+    PlatformShims.await(runAsync(tests, onComplete, query, wrap, ec))
   }
+  def runWithAsync(tests: Tree[Test],
+                   formatter: utest.framework.Formatter,
+                   label: String,
+                   query: Seq[Tree[String]] = Nil,
+                   wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
+                   printStream: java.io.PrintStream = System.out,
+                   ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Future[Boolean] = {
+    implicit val ec0 = ec
+    runAsync(
+      tests,
+      onComplete = (subpath, res) => {
+        formatter.formatSingle(label +: subpath, res)
+          .foreach(printStream.println)
+      },
+      query,
+      wrap,
+      ec
+    ).map{res =>
+      for(output <- utest.framework.Formatter.format(label, res)){
+        printStream.println(output)
+      }
 
+      res.leaves.forall(_.value.isSuccess)
+    }
+  }
+  def runWith(tests: Tree[Test],
+              formatter: utest.framework.Formatter,
+              label: String,
+              query: Seq[Tree[String]] = Nil,
+              wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
+              printStream: java.io.PrintStream = System.out,
+              ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Boolean = {
+    PlatformShims.await(runWithAsync(tests, formatter, label, query, wrap, printStream, ec))
+  }
 }
+
 /**
   * Created by lihaoyi on 9/9/17.
   */

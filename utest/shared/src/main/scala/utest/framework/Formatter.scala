@@ -50,7 +50,6 @@ trait Formatter {
       val plainText = rendered.plainText
       var index = 0
       while(index < plainText.length && output.length < formatTruncateHeight){
-        println(output.length -> formatTruncateHeight)
         val nextNewline = plainText.indexOf('\n', index + 1) match{
           case -1 => plainText.length
           case n => n

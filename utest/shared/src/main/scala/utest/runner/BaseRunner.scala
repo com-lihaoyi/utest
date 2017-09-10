@@ -124,8 +124,9 @@ abstract class BaseRunner(val args: Array[String],
         }
       },
       query = innerQuery,
-      wrap = suite.utestWrap(_, _)(ec)
-    )(ec)
+      wrap = suite.utestWrap(_, _)(ec),
+      ec = ec
+    )
 
     results.map(suite.format(name, _).foreach(x => addResult(x.render)))
   }
