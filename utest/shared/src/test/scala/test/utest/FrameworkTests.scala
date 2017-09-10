@@ -236,9 +236,11 @@ object FrameworkTests extends utest.TestSuite{
           assert(!isNative)
           0.asInstanceOf[String]
         }
-     }
-      assertMatch(utest.run(tests, query=utest.Query("ah")).toSeq)
-                 {case Seq(Result("ah", Failure(_), _))=>}
+      }
+      val treeResult = utest.run(tests, query=utest.Query("ah"))
+      val result = treeResult.leaves.toSeq
+
+      assertMatch(result) {case Seq(Result("ah", Failure(_), _))=>}
     }
 
     'testSelection{
@@ -252,14 +254,13 @@ object FrameworkTests extends utest.TestSuite{
         }
       }
 
-      assertMatch(utest.run(tests, query=utest.Query("A.C")).toSeq)
-                 {case Seq(Result("C", Success(1), _))=>}
+      val res1 = utest.run(tests, query=utest.Query("A.C")).leaves.toVector
+      assertMatch(res1) {case Seq(Result("C", Success(1), _))=>}
 
-      assertMatch(utest.run(tests, query=utest.Query("A")).toSeq)
-                 {case Seq(Result("A", Success(()), _), Result("C", Success(1), _))=>}
+      val res2 = utest.run(tests, query=utest.Query("A")).leaves.toVector
+      assertMatch(res2) {case Seq(Result("C", Success(1), _))=>}
 
-      assertMatch(utest.run(tests, query=utest.Query("B")).toSeq){case Seq(
-        Result("B", Success(()), _),
+      assertMatch(utest.run(tests, query=utest.Query("B")).leaves.toSeq){case Seq(
         Result("D", Success(2), _),
         Result("E", Success(3), _)
       )=>}
@@ -283,19 +284,16 @@ object FrameworkTests extends utest.TestSuite{
       }
       // listing tests B and C works despite failure of A
       assertMatch(tests.toSeq.map(_.name)){ case Seq(_, "A", "B", "C")=>}
-      val successes = utest.run(tests).iterator.count(_.value.isSuccess)
-      println("successes : "+  successes )
-      assert(successes == 1)
-      // When a test fails, don't both trying to run any inner tests and just
-      // die fail the immediately
-      assert(timesRun == 2)
-      val res = utest.run(tests).toSeq
+      assert(tests.leaves.length == 1)
+      val successes = utest.run(tests).leaves.count(_.value.isSuccess)
+      // Only the single outer test "C" gets run once, and it results in
+      // one failure
+      assert(successes == 0)
+      assert(timesRun == 1)
+      val res = utest.run(tests).leaves.toSeq
       // Check that the right exceptions are thrown
       assertMatch(res){case Seq(
-        Result(_, Success(_), _),
-        Result("A", Failure(_: AssertionError), _),
-        Result("B", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _),
-        Result("C", Failure(SkippedOuterFailure(Seq("A"), _: AssertionError)), _)
+        Result("C", Failure(_: AssertionError), _)
       )=>}
       "timeRun: " + timesRun
     }

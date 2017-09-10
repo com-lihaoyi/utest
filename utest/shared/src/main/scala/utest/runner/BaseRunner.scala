@@ -119,10 +119,7 @@ abstract class BaseRunner(val args: Array[String],
               e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
             )
             addFailure(str.fold("")(_.render))
-            addTrace(
-              if (e.isInstanceOf[SkippedOuterFailure]) ""
-              else e.getStackTrace.map(_.toString).mkString("\n")
-            )
+            addTrace(e.getStackTrace.map(_.toString).mkString("\n"))
           case _ => ()
         }
       },
@@ -130,7 +127,7 @@ abstract class BaseRunner(val args: Array[String],
       wrap = suite.utestWrap(_, _)(ec)
     )(ec)
 
-    results.map(suite.format).map(_.foreach(x => addResult(x.render)))
+    results.map(suite.format(name, _)).map(_.foreach(x => addResult(x.render)))
   }
 
 

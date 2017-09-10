@@ -13,8 +13,6 @@ trait Executor{
     * the tree of the results.
     *
     * @param onComplete Called each time a single [[Test]] finishes
-    * @param outerError Whether or not an outer test failed, and this test can
-    *                   be failed immediately without running
     * @param ec Used to
     */
   def runAsync(tests: Tree[Test],
@@ -29,7 +27,10 @@ trait Executor{
         val thunkTree = collectQueryTerminals(tests, resolution, Nil, Nil)
 
         val forced = thunkTree.map{case (terminal, revStringPath, thunk) => () =>
-          if (!terminal) Future.successful(Result(revStringPath.head, Success(()), 0))
+          val head = revStringPath.headOption.getOrElse("")
+          if (!terminal) Future.successful(
+            Result(head, Success(()), 0)
+          )
           else {
 
             val start = Deadline.now
@@ -43,15 +44,19 @@ trait Executor{
             )
 
             def millis = (Deadline.now-start).toMillis
-            res.map(v => Result(revStringPath.head, Success(v), millis))
-              .recover{case e: Throwable => Result(revStringPath.head, Failure(unbox(e)), millis)}
-              .map{r => if (terminal) onComplete(revStringPath.reverse, r); r}
+            res.map(v => Result(head, Success(v), millis))
+               .recover{case e: Throwable =>
+                 Result(head, Failure(unbox(e)), millis)
+               }
+               .map{r =>
+                 if (terminal) onComplete(revStringPath.reverse, r)
+                 r
+               }
           }
         }
 
         evaluateFutureTree(forced)
     }
-
   }
 
   def run(tests: Tree[Test],
@@ -136,14 +141,17 @@ object Executor extends Executor{
 
     if (query.isEmpty) collectTestNodes(test, revIntPath, revStringPath)
     else{
-      val children = for(subquery <- query) yield collectQueryTerminals(
-        test.children(subquery.value),
-        subquery.children,
-        subquery.value :: revIntPath,
-        test.value.name :: revStringPath
-      )
+      val children = for(subquery <- query) yield {
+        val testChild = test.children(subquery.value)
+        collectQueryTerminals(
+          testChild,
+          subquery.children,
+          subquery.value :: revIntPath,
+          testChild.value.name :: revStringPath
+        )
+      }
 
-      Tree((false, test.value.name :: revStringPath, () => ()), children:_*)
+      Tree((false, revStringPath, () => ()), children:_*)
     }
   }
 
@@ -157,7 +165,7 @@ object Executor extends Executor{
     if (test.children.isEmpty) {
       Tree((
         true,
-        test.value.name :: revStringPath,
+        revStringPath,
         () => test.value.thunkTree.run(revIntPath.reverse)
       ))
     }

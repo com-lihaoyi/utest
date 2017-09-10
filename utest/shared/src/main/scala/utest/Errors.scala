@@ -2,10 +2,6 @@ package utest
 
 //import acyclic.file
 
-case class SkippedOuterFailure(errorPath: Seq[String],
-                               outerError: Throwable)
-                               extends Exception(errorPath.mkString("."), outerError)
-
 /**
  * Indicates that there was no test to run at the path you provided
  */

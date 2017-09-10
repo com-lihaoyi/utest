@@ -46,43 +46,49 @@ trait Formatter {
     truncUnit
   }
 
-  def wrapLabel(leftIndentCount: Int, r: Result, label: String) = {
+  def wrapLabel(leftIndentCount: Int, r: Result, label: String, isLeaf: Boolean): fansi.Str = {
     val leftIndent = "  " * leftIndentCount
-    val lhs = fansi.Str.join(
-      leftIndent,
-      formatIcon(r.value.isInstanceOf[Success[_]]), " ",
-      label, " ",
-      formatMillisColor(r.milliDuration + "ms"), " "
-    )
-    val rhs = prettyTruncate(r, e => formatResultColor(false)(e.toString))
+    if (!isLeaf) leftIndent + "- " + label
+    else {
+      val lhs = fansi.Str.join(
+        leftIndent,
+        formatIcon(r.value.isInstanceOf[Success[_]]), " ",
+        label, " ",
+        formatMillisColor(r.milliDuration + "ms"), " "
+      )
 
-    val sep =
-      if (lhs.length + rhs.length <= formatWrapThreshold) " "
-      else "\n" + leftIndent + "  "
+      val rhs = prettyTruncate(r, e => formatResultColor(false)(e.toString))
 
-    lhs ++ sep ++ rhs
+      val sep =
+        if (lhs.length + rhs.length <= formatWrapThreshold) " "
+        else "\n" + leftIndent + "  "
+
+      lhs ++ sep ++ rhs
+    }
   }
 
   def formatSingle(path: Seq[String], r: Result): Option[fansi.Str] = Some{
-    wrapLabel(0, r, path.mkString("."))
+    wrapLabel(0, r, path.mkString("."), true)
   }
 
   def formatIcon(success: Boolean): fansi.Str = {
     formatResultColor(success)(if (success) "+" else "X")
   }
 
-  def format(results: Tree[Result]): Option[fansi.Str] = Some{
-    val linearized = mutable.Buffer.empty[(Int, Result)]
+  def format(topLevelName: String, results: Tree[Result]): Option[fansi.Str] = Some{
+    val linearized = mutable.Buffer.empty[(Int, Result, Boolean)]
 
-    rec(0, results){ (depth, r) => linearized.append(depth -> r) }
+    rec(0, Tree(results.value.copy(name = topLevelName), results.children:_*)){
+      (depth, r, isLeaf) => linearized.append((depth, r, isLeaf))
+    }
 
     linearized
-      .map{case (depth, r) => wrapLabel(depth, r, r.name)}
+      .map{case (depth, r, isLeaf) => wrapLabel(depth, r, r.name, isLeaf)}
       .mkString("\n")
   }
 
-  private[this] def rec(depth: Int, r: Tree[Result])(f: (Int, Result) => Unit): Unit = {
-    f(depth, r.value)
+  private[this] def rec(depth: Int, r: Tree[Result])(f: (Int, Result, Boolean) => Unit): Unit = {
+    f(depth, r.value, r.children.isEmpty)
     r.children.foreach(rec(depth+1, _)(f))
   }
 }
