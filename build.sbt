@@ -53,12 +53,12 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       id = "lihaoyi",
       name = "Li Haoyi",
       url = url("https://github.com/lihaoyi")
-    ),
-    autoCompilerPlugins := true,
-
-    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.7"),
-
-    scalacOptions += "-P:acyclic:force"
+    )//,
+//    autoCompilerPlugins := true,
+//
+//    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.7"),
+//
+//    scalacOptions += "-P:acyclic:force"
 
 )
   .jsSettings(
@@ -76,7 +76,8 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     crossScalaVersions := Seq("2.11.11"),
     libraryDependencies ++= Seq(
       "org.scala-native" %%% "test-interface" % "0.3.0"
-    )
+    ),
+    nativeLinkStubs := true
   )
 
 def macroDependencies(version: String) =
