@@ -13,7 +13,7 @@ object Formatter extends Formatter
 trait Formatter {
 
   def formatColor: Boolean = true
-  def formatTruncateHeight: Int = 100
+  def formatTruncateHeight: Int = 30
   def formatTrace: Boolean = true
   def formatWrapThreshold: Int = 100
 
