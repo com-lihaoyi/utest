@@ -1,14 +1,15 @@
 package utest
 package asserts
 //import acyclic.file
-import scala.annotation.{tailrec, StaticAnnotation}
-import scala.reflect.macros.{ParseException, TypecheckException, Context}
-import scala.util.{Failure, Success, Try, Random}
-import scala.reflect.ClassTag
-import scala.reflect.internal.util.{Position, OffsetPosition}
-import scala.reflect.internal.util.OffsetPosition
-import scala.reflect.macros.{TypecheckException, Context}
+import utest.framework.StackMarker
 
+import scala.annotation.{StaticAnnotation, tailrec}
+import scala.reflect.macros.{Context, ParseException, TypecheckException}
+import scala.util.{Failure, Random, Success, Try}
+import scala.reflect.ClassTag
+import scala.reflect.internal.util.{OffsetPosition, Position}
+import scala.reflect.internal.util.OffsetPosition
+import scala.reflect.macros.{Context, TypecheckException}
 import scala.language.experimental.macros
 
 /**
@@ -16,7 +17,6 @@ import scala.language.experimental.macros
  * message for boolean expression assertion.
  */
 object Asserts {
-  def wrap[T](t: => T): T = t
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
     def calcPosMsg(pos: scala.reflect.api.Position) = {
@@ -97,7 +97,7 @@ object Asserts {
   }
 
 
-  def assertImpl(funcs: AssertEntry[Boolean]*) = wrap{
+  def assertImpl(funcs: AssertEntry[Boolean]*) = StackMarker.dropInside{
     val tries = for (entry <- funcs) yield Try{
       val (value, die) = Util.getAssertionEntry(entry)
       if (!value) die(null)
@@ -126,7 +126,7 @@ object Asserts {
    * is returned if raised, and an `AssertionError` is raised if the expected
    * exception does not appear.
    */
-  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = wrap{
+  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = StackMarker.dropInside{
     val (res, logged, src) = Util.runAssertionEntry(entry)
     res match{
       case Failure(e: T) => e
@@ -149,7 +149,7 @@ object Asserts {
    * exception does not appear.
    */
   def assertMatchImpl(entry: AssertEntry[Any])
-                     (pf: PartialFunction[Any, Unit]): Unit = wrap{
+                     (pf: PartialFunction[Any, Unit]): Unit = StackMarker.dropInside{
     val (value, die) = Util.getAssertionEntry(entry)
     if (pf.isDefinedAt(value)) ()
     else die(null)

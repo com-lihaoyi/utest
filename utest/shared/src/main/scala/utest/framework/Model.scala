@@ -57,7 +57,7 @@ class TestThunkTree(inner: => (Any, Seq[TestThunkTree])){
         val (res, children) = inner
         children(head).run(tail)
       case Nil =>
-        val (res, children) = inner
+        val (res, children) = StackMarker.dropOutside(inner)
         res
     }
   }
