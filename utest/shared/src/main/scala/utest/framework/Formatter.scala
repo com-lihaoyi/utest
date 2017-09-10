@@ -33,11 +33,21 @@ trait Formatter {
 
       StackMarker.filterCallStack(stack)
         .foreach { e =>
+          // Scala.js for some reason likes putting in full-paths into the
+          // filename slot, rather than just the last segment of the file-path
+          // like Scala-JVM does. This results in that portion of the
+          // stacktrace being terribly long, wrapping around and generally
+          // being impossible to read. We thus manually drop the earlier
+          // portion of the file path and keep only the last segment
+          val shortenedFilename = e.getFileName.lastIndexOf('/') match{
+            case -1 => e.getFileName
+            case n => e.getFileName.drop(n + 1)
+          }
           output.append(
             "\n",
             fansi.Color.Red(e.getClassName + "."),
             fansi.Color.Yellow(e.getMethodName), "(",
-            fansi.Color.Green(e.getFileName), ":",
+            fansi.Color.Green(shortenedFilename), ":",
             fansi.Color.Green(e.getLineNumber.toString),
             ")"
           )
