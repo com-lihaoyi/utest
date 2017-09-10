@@ -19,15 +19,30 @@ trait Formatter {
 
   def formatValue(x: Any) = formatValueColor(x.toString)
 
-  def formatValueColor: fansi.Attrs =
-    if (formatColor) fansi.Color.Blue
-    else fansi.Attrs.Empty
+  def toggledColor(t: fansi.Attrs) = if(formatColor) t else fansi.Attrs.Empty
+  def formatValueColor = toggledColor(fansi.Color.Blue)
+  def exceptionClassColor = toggledColor(fansi.Underlined.On ++ fansi.Color.LightRed)
+  def exceptionMsgColor = toggledColor(fansi.Color.Red)
+  def exceptionPrefixColor = toggledColor(fansi.Color.Red)
+  def exceptionMethodColor = toggledColor(fansi.Color.Yellow)
+  def exceptionLineNumberColor = toggledColor(fansi.Color.Green)
+
+  def formatResultColor(success: Boolean) = toggledColor(
+    if (success) fansi.Color.Green
+    else fansi.Color.Red
+  )
+
+  def formatMillisColor = toggledColor(fansi.Color.DarkGray)
 
   def formatException(x: Throwable) = {
     val output = mutable.Buffer.empty[fansi.Str]
     var current = x
     while(current != null){
-      output.append(formatResultColor(false)(current.toString))
+      output.append(
+        exceptionClassColor(current.getClass.getName),
+        ": ",
+        exceptionMsgColor(current.getMessage)
+      )
       val stack = current.getStackTrace
 
 
@@ -44,11 +59,11 @@ trait Formatter {
             case n => e.getFileName.drop(n + 1)
           }
           output.append(
-            "\n",
-            fansi.Color.Red(e.getClassName + "."),
-            fansi.Color.Yellow(e.getMethodName), "(",
-            fansi.Color.Green(shortenedFilename), ":",
-            fansi.Color.Green(e.getLineNumber.toString),
+            "\n  ",
+            exceptionPrefixColor(e.getClassName + "."),
+            exceptionMethodColor(e.getMethodName), "(",
+            exceptionLineNumberColor(shortenedFilename), ":",
+            exceptionLineNumberColor(e.getLineNumber.toString),
             ")"
           )
         }
@@ -59,14 +74,6 @@ trait Formatter {
     fansi.Str.join(output:_*)
   }
 
-  def formatResultColor(success: Boolean): fansi.Attrs =
-    if (!formatColor) fansi.Attrs.Empty
-    else if (success) fansi.Color.Green
-    else fansi.Color.Red
-
-  def formatMillisColor: fansi.Attrs =
-    if (formatColor) fansi.Color.DarkGray
-    else fansi.Attrs.Empty
 
   private[this] def prettyTruncate(r: Result, leftIndent: String): fansi.Str = {
     val rendered: fansi.Str = r.value match{

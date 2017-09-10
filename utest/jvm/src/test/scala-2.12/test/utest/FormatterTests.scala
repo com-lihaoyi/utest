@@ -42,35 +42,35 @@ object FormatterTests extends utest.TestSuite {
         val expected = trim(
           """X MyTestSuite.test1 0ms
             |  java.lang.Exception: wrapper
-            |  test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:24)
-            |  test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
+            |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:24)
+            |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
             |  utest.AssertionError: try assert(x == 2)
             |  x: Int = 1
-            |  test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:22)
-            |  test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
+            |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:22)
+            |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
             |+ MyTestSuite.test2 0ms  1
             |X MyTestSuite.test3 0ms
             |  java.lang.IndexOutOfBoundsException: 10
-            |  scala.collection.LinearSeqOptimized.apply(LinearSeqOptimized.scala:63)
-            |  scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
-            |  scala.collection.immutable.List.apply(List.scala:86)
-            |  test.utest.FormatterTests$.$anonfun$tests$12(FormatterTests.scala:31)
-            |- MyTestSuite
-            |  X test1 0ms
-            |    java.lang.Exception: wrapper
-            |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:24)
-            |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
-            |    utest.AssertionError: try assert(x == 2)
-            |    x: Int = 1
-            |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:22)
-            |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
-            |  + test2 0ms  1
-            |  X test3 0ms
-            |    java.lang.IndexOutOfBoundsException: 10
             |    scala.collection.LinearSeqOptimized.apply(LinearSeqOptimized.scala:63)
             |    scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
             |    scala.collection.immutable.List.apply(List.scala:86)
             |    test.utest.FormatterTests$.$anonfun$tests$12(FormatterTests.scala:31)
+            |- MyTestSuite
+            |  X test1 0ms
+            |    java.lang.Exception: wrapper
+            |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:24)
+            |      test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
+            |    utest.AssertionError: try assert(x == 2)
+            |    x: Int = 1
+            |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:22)
+            |      test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:22)
+            |  + test2 0ms  1
+            |  X test3 0ms
+            |    java.lang.IndexOutOfBoundsException: 10
+            |      scala.collection.LinearSeqOptimized.apply(LinearSeqOptimized.scala:63)
+            |      scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
+            |      scala.collection.immutable.List.apply(List.scala:86)
+            |      test.utest.FormatterTests$.$anonfun$tests$12(FormatterTests.scala:31)
           """.stripMargin
         )
 
