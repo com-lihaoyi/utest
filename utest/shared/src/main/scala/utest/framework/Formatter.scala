@@ -13,7 +13,7 @@ object Formatter extends Formatter
 trait Formatter {
 
   def formatColor: Boolean = true
-  def formatTruncateHeight: Int = 20
+  def formatTruncateHeight: Int = 100
   def formatTrace: Boolean = true
   def formatWrapThreshold: Int = 90
 
@@ -24,8 +24,31 @@ trait Formatter {
     else fansi.Attrs.Empty
 
   def formatException(x: Throwable) = {
-    formatResultColor(false)(x.toString)
+    val output = mutable.Buffer.empty[fansi.Str]
+    var current = x
+    while(current != null){
+      output.append(formatResultColor(false)(current.toString))
+      current.getStackTrace
+        .takeWhile(x =>
+          !(x.getClassName == "utest.framework.TestThunkTree"  && x.getMethodName == "run")
+        )
+        .foreach { e =>
+          output.append(
+            "\n",
+            fansi.Color.Red(e.getClassName + "."),
+            fansi.Color.Yellow(e.getMethodName), "(",
+            fansi.Color.Green(e.getFileName), ":",
+            fansi.Color.Green(e.getLineNumber.toString),
+            ")"
+          )
+        }
+      if (current != null) output.append("\n")
+      current = current.getCause
+    }
+
+    fansi.Str.join(output:_*)
   }
+
   def formatResultColor(success: Boolean): fansi.Attrs =
     if (!formatColor) fansi.Attrs.Empty
     else if (success) fansi.Color.Green
