@@ -1,6 +1,7 @@
 package utest
 package framework
 //import acyclic.file
+
 import scala.collection.mutable
 import scala.util.{Failure, Success}
 
@@ -12,7 +13,7 @@ object Formatter extends Formatter
 trait Formatter {
 
   def formatColor: Boolean = true
-  def formatTruncate: Int = 200
+  def formatTruncateHeight: Int = 20
   def formatTrace: Boolean = true
   def formatWrapThreshold: Int = 90
 
@@ -38,19 +39,34 @@ trait Formatter {
     fansi.Str.join(input.split('\n').flatMap(Seq[fansi.Str]("\n", leftIndent, _)).drop(2):_*)
   }
   private[this] def prettyTruncate(r: Result, leftIndent: String): fansi.Str = {
-
-
-    val cutUnit: fansi.Str = r.value match{
+      val rendered: fansi.Str = r.value match{
       case Success(()) => ""
-      case Success(v) => indentMultilineStr(formatValue(v), leftIndent)
-      case Failure(e) => indentMultilineStr(formatException(e), leftIndent)
+      case Success(v) => formatValue(v)
+      case Failure(e) => formatException(e)
     }
 
-    val truncUnit =
-      if (cutUnit.length <= formatTruncate) cutUnit
-      else cutUnit.substring(0, formatTruncate) ++ "..."
+    val truncUnit = {
+      val output = mutable.Buffer.empty[fansi.Str]
+      val plainText = rendered.plainText
+      var index = 0
+      while(index < plainText.length && output.length < formatTruncateHeight){
+        println(output.length -> formatTruncateHeight)
+        val nextNewline = plainText.indexOf('\n', index + 1) match{
+          case -1 => plainText.length
+          case n => n
+        }
 
-    truncUnit
+        val nextIndex = math.min(index + formatWrapThreshold, nextNewline)
+        output.append(rendered.substring(index, nextIndex))
+        index = nextIndex
+      }
+      if (index < plainText.length){
+        output.append("...")
+      }
+      output.flatMap(Seq[fansi.Str]("\n", leftIndent, _)).drop(2)
+    }
+
+    fansi.Str.join(truncUnit:_*)
   }
 
   def wrapLabel(leftIndentCount: Int, r: Result, label: String): fansi.Str = {
