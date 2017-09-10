@@ -5,7 +5,11 @@ package utest.framework
   * meant to be filtered out later.
   */
 object StackMarker {
+  // Ask Scalac/Scala.js nicely to try and avoid inlining these two marker methods,
+  // to make sure they don't disappear from the stack traces
+  @noinline
   def dropInside[T](t: => T): T = t
+  @noinline
   def dropOutside[T](t: => T): T = t
   def filterCallStack(stack: Seq[StackTraceElement]): Seq[StackTraceElement] = {
     val droppedInside = stack.indexWhere(x =>
