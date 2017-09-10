@@ -15,8 +15,9 @@ final class MasterRunner(args: Array[String],
                          showSummaryThreshold: Int,
                          startHeader: String => String,
                          resultsHeader: String,
-                         failureHeader: String)
-                         extends BaseRunner(args, remoteArgs, testClassLoader){
+                         failureHeader: String,
+                         useSbtLoggers: Boolean)
+                         extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers){
 
   println(startHeader(path.fold("")(" " + _)))
   setup()

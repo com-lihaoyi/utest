@@ -40,7 +40,8 @@ object BaseRunner{
 
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
-                          testClassLoader: ClassLoader)
+                          testClassLoader: ClassLoader,
+                          useSbtLoggers: Boolean)
                           extends sbt.testing.Runner{
 
   lazy val path = args.headOption.filter(_(0) != '-')
@@ -88,12 +89,6 @@ abstract class BaseRunner(val args: Array[String],
       })
     }
 
-
-
-    loggers.foreach(_.info(BaseRunner.renderBanner("Starting Suite " + name)))
-
-
-
     val innerQuery = {
       def rec(currentQuery: Query#Trees, segments: List[String]): Query#Trees = {
         segments match{
@@ -117,7 +112,10 @@ abstract class BaseRunner(val args: Array[String],
       (subpath, result) => {
         val str = suite.formatSingle(name.split('.') ++ subpath, result)
 
-        str.foreach{msg => loggers.foreach(_.info(msg.split('\n').mkString("\n")))}
+        str.foreach{msg =>
+          if (useSbtLoggers) loggers.foreach(_.info(msg.split('\n').mkString("\n")))
+          else println(msg)
+        }
         result.value match{
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)

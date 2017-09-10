@@ -30,6 +30,15 @@ class Framework extends sbt.testing.Framework{
     */
   def showSummaryThreshold = 40
 
+  /**
+    * Whether to use SBT's test-logging infrastructure, or just println.
+    *
+    * Defaults to println because SBT's test logging doesn't seem to give us
+    * anything that we want, and does annoying things like making a left-hand
+    * gutter and buffering input by default
+    */
+  def useSbtLoggers = false
+
   def resultsHeader = BaseRunner.renderBanner("Results")
   def failureHeader = BaseRunner.renderBanner("Failures")
 
@@ -51,7 +60,8 @@ class Framework extends sbt.testing.Framework{
       showSummaryThreshold,
       startHeader,
       resultsHeader,
-      failureHeader
+      failureHeader,
+      useSbtLoggers
     )
   }
 
@@ -59,6 +69,6 @@ class Framework extends sbt.testing.Framework{
                   remoteArgs: Array[String],
                   testClassLoader: ClassLoader,
                   send: String => Unit) = {
-    new ScalaJsSlaveRunner(args, remoteArgs, testClassLoader, send, setup, teardown)
+    new ScalaJsSlaveRunner(args, remoteArgs, testClassLoader, send, setup, teardown, useSbtLoggers)
   }
 }

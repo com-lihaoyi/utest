@@ -15,7 +15,7 @@ trait Formatter {
   def formatColor: Boolean = true
   def formatTruncateHeight: Int = 100
   def formatTrace: Boolean = true
-  def formatWrapThreshold: Int = 90
+  def formatWrapThreshold: Int = 100
 
   def formatValue(x: Any) = formatValueColor(x.toString)
 
@@ -86,7 +86,10 @@ trait Formatter {
       val output = mutable.Buffer.empty[fansi.Str]
       val plainText = rendered.plainText
       var index = 0
-      while(index < plainText.length && output.length < formatTruncateHeight){
+      while(
+        index < plainText.length &&
+        (output.length < formatTruncateHeight || r.value.isInstanceOf[Failure[_]])
+      ){
         val nextWholeLine = index + (formatWrapThreshold - leftIndent.length)
         val (nextIndex, skipOne) = plainText.indexOf('\n', index + 1) match{
           case -1 =>
