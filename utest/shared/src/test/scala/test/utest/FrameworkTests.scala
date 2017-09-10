@@ -26,7 +26,6 @@ object FrameworkTests extends utest.TestSuite{
       val results = utest.run(tests)
       assert(tests.length == 4)
       assert(tests.leaves.length == 3)
-      assert(results.length == 4)
       assert(results.leaves.length == 3)
       assert(results.leaves.count(_.value.isFailure) == 2)
       assert(results.leaves.count(_.value.isSuccess) == 1)
@@ -146,7 +145,7 @@ object FrameworkTests extends utest.TestSuite{
         val results = utest.run(tests)
         val expected = Seq("i am cow", 1, 2, Seq('a', 'b')).map(Success[Any])
         assert(results.leaves.map(_.value).toList == expected)
-        results.map(_.value.get)
+        results.leaves.map(_.value.get)
       }
       'onlyLastThingReturns{
         val tests = this {
@@ -154,7 +153,7 @@ object FrameworkTests extends utest.TestSuite{
           'omg{
           }
         }
-        val res = utest.run(tests).value.value
+        val res = utest.run(tests).leaves.next().value
         assert(res == Success(()))
       }
     }
@@ -167,7 +166,7 @@ object FrameworkTests extends utest.TestSuite{
           'omg{
           }
         }
-        val res = utest.run(tests).value.value
+        val res = utest.run(tests).leaves.next().value
         assert(res == Success(()))
       }
       'lexicalScopingWorks{
@@ -189,7 +188,6 @@ object FrameworkTests extends utest.TestSuite{
           }
         }
         val results = utest.run(tests)
-        assert(results.iterator.count(_.value.isSuccess) == 4)
         assert(results.leaves.count(_.value.isSuccess) == 1)
         results.leaves.map(_.value.get).toList
       }
@@ -223,7 +221,7 @@ object FrameworkTests extends utest.TestSuite{
         }
         val results = utest.run(tests)
         assert(results.leaves.count(_.value.isSuccess) == 3)
-        results.map(_.value.get)
+        results.leaves.map(_.value)
       }
     }
 

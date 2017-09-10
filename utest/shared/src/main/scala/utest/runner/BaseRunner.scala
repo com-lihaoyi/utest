@@ -127,7 +127,7 @@ abstract class BaseRunner(val args: Array[String],
       wrap = suite.utestWrap(_, _)(ec)
     )(ec)
 
-    results.map(suite.format(name, _)).map(_.foreach(x => addResult(x.render)))
+    results.map(suite.format(name, _).foreach(x => addResult(x.render)))
   }
 
 

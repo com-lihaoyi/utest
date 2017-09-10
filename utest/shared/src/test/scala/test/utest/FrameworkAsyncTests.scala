@@ -67,16 +67,16 @@ object FrameworkAsyncTests extends utest.TestSuite{
       }
 
       utest.runAsync(tests).map { results =>
-        assert(results.toSeq(0).value.isSuccess) // root
-        assert(results.toSeq(1).value.isSuccess) // testSuccessAsync
-        assert(results.toSeq(2).value.isFailure) // testFailAsync
-        assert(results.toSeq(3).value.isSuccess) // testSuccess
-        assert(results.toSeq(4).value.isFailure) // testFail
-        assert(results.toSeq(5).value.isSuccess) // normalSuccess
-        assert(results.toSeq(6).value.isFailure) // normalFail
-        assert(results.toSeq(7).value.isFailure) // testFailUnexpected
-        assert(results.toSeq(8).value.isFailure) // testCastError
-        results.toSeq(1).value
+        val leafResults = results.leaves.toSeq
+        assert(leafResults(0).value.isSuccess) // testSuccessAsync
+        assert(leafResults(1).value.isFailure) // testFailAsync
+        assert(leafResults(2).value.isSuccess) // testSuccess
+        assert(leafResults(3).value.isFailure) // testFail
+        assert(leafResults(4).value.isSuccess) // normalSuccess
+        assert(leafResults(5).value.isFailure) // normalFail
+        assert(leafResults(6).value.isFailure) // testFailUnexpected
+        assert(leafResults(7).value.isFailure) // testCastError
+        leafResults(1).value
       }
 
     }

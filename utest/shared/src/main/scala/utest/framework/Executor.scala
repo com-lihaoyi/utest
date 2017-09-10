@@ -19,40 +19,35 @@ trait Executor{
                onComplete: (Seq[String], Result) => Unit = (_, _) => (),
                query: Query#Trees = Nil,
                wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x)
-              (implicit ec: concurrent.ExecutionContext): Future[Tree[Result]] = {
+              (implicit ec: concurrent.ExecutionContext): Future[HTree[String, Result]] = {
 
     resolveQueryIndices(tests, query, Nil) match{
       case Left(errors) => throw new utest.NoSuchTestException(errors:_*)
       case Right(resolution) =>
         val thunkTree = collectQueryTerminals(tests, resolution, Nil, Nil)
 
-        val forced = thunkTree.map{case (terminal, revStringPath, thunk) => () =>
+        val forced = thunkTree.mapLeaves{case (revStringPath, thunk) => () =>
           val head = revStringPath.headOption.getOrElse("")
-          if (!terminal) Future.successful(
-            Result(head, Success(()), 0)
+
+          val start = Deadline.now
+          val res: Future[Any] = wrap(revStringPath.reverse,
+            try thunk() match{
+              case x: Future[_] => x
+              case notFuture => Future.successful(notFuture)
+            } catch{
+              case e: Throwable => Future.failed(e)
+            }
           )
-          else {
 
-            val start = Deadline.now
-            val res: Future[Any] = wrap(revStringPath.reverse,
-              try thunk() match{
-                case x: Future[_] => x
-                case notFuture => Future.successful(notFuture)
-              } catch{
-                case e: Throwable => Future.failed(e)
-              }
-            )
-
-            def millis = (Deadline.now-start).toMillis
-            res.map(v => Result(head, Success(v), millis))
-               .recover{case e: Throwable =>
-                 Result(head, Failure(unbox(e)), millis)
-               }
-               .map{r =>
-                 if (terminal) onComplete(revStringPath.reverse, r)
-                 r
-               }
-          }
+          def millis = (Deadline.now-start).toMillis
+          res.map(v => Result(head, Success(v), millis))
+             .recover{case e: Throwable =>
+               Result(head, Failure(unbox(e)), millis)
+             }
+             .map{r =>
+               onComplete(revStringPath.reverse, r)
+               r
+             }
         }
 
         evaluateFutureTree(forced)
@@ -63,7 +58,7 @@ trait Executor{
           onComplete: (Seq[String], Result) => Unit = (_, _) => (),
           query: Seq[Tree[String]] = Nil,
           wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x)
-         (implicit ec: concurrent.ExecutionContext): Tree[Result] = {
+         (implicit ec: concurrent.ExecutionContext): HTree[String, Result] = {
 
     PlatformShims.await(runAsync(tests, onComplete, query, wrap))
   }
@@ -87,12 +82,16 @@ object Executor extends Executor{
   }
 
 
-  def evaluateFutureTree[T](t: Tree[() => Future[T]])
-                           (implicit ec: concurrent.ExecutionContext): Future[Tree[T]] = {
-    for{
-      v <- t.value()
-      childValues <- Future.traverse(t.children.toSeq)(evaluateFutureTree(_))
-    } yield Tree(v, childValues:_*)
+  def evaluateFutureTree[N, L](t: HTree[N, () => Future[L]])
+                           (implicit ec: concurrent.ExecutionContext): Future[HTree[N, L]] = {
+    t match{
+      case HTree.Leaf(f) => f().map(HTree.Leaf(_))
+      case HTree.Node(v, children @ _*) =>
+        for{
+          childValues <- Future.traverse(children.toSeq)(evaluateFutureTree(_))
+        } yield HTree.Node(v, childValues:_*)
+    }
+
   }
 
   /**
@@ -137,7 +136,7 @@ object Executor extends Executor{
   def collectQueryTerminals(test: Tree[Test],
                             query: Seq[Tree[Int]],
                             revIntPath: List[Int],
-                            revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
+                            revStringPath: List[String]): HTree[String, (List[String], () => Any)] = {
 
     if (query.isEmpty) collectTestNodes(test, revIntPath, revStringPath)
     else{
@@ -151,7 +150,7 @@ object Executor extends Executor{
         )
       }
 
-      Tree((false, revStringPath, () => ()), children:_*)
+      HTree.Node(revStringPath.headOption.getOrElse(""), children:_*)
     }
   }
 
@@ -161,17 +160,16 @@ object Executor extends Executor{
     */
   def collectTestNodes(test: Tree[Test],
                        revIntPath: List[Int],
-                       revStringPath: List[String]): Tree[(Boolean, List[String], () => Any)] = {
+                       revStringPath: List[String]): HTree[String, (List[String], () => Any)] = {
     if (test.children.isEmpty) {
-      Tree((
-        true,
+      HTree.Leaf((
         revStringPath,
         () => test.value.thunkTree.run(revIntPath.reverse)
       ))
     }
     else{
-      Tree(
-        (false, test.value.name :: revStringPath, () => ()),
+      HTree.Node(
+        test.value.name,
         test.children.zipWithIndex.map{case (c, i) =>
           collectTestNodes(c, i :: revIntPath, c.value.name :: revStringPath)
         }:_*

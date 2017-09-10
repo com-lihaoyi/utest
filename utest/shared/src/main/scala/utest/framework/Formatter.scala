@@ -46,50 +46,55 @@ trait Formatter {
     truncUnit
   }
 
-  def wrapLabel(leftIndentCount: Int, r: Result, label: String, isLeaf: Boolean): fansi.Str = {
+  def wrapLabel(leftIndentCount: Int, r: Result, label: String): fansi.Str = {
     val leftIndent = "  " * leftIndentCount
-    if (!isLeaf) leftIndent + "- " + label
-    else {
-      val lhs = fansi.Str.join(
-        leftIndent,
-        formatIcon(r.value.isInstanceOf[Success[_]]), " ",
-        label, " ",
-        formatMillisColor(r.milliDuration + "ms"), " "
-      )
+    val lhs = fansi.Str.join(
+      leftIndent,
+      formatIcon(r.value.isInstanceOf[Success[_]]), " ",
+      label, " ",
+      formatMillisColor(r.milliDuration + "ms"), " "
+    )
 
-      val rhs = prettyTruncate(r, e => formatResultColor(false)(e.toString))
+    val rhs = prettyTruncate(r, e => formatResultColor(false)(e.toString))
 
-      val sep =
-        if (lhs.length + rhs.length <= formatWrapThreshold) " "
-        else "\n" + leftIndent + "  "
+    val sep =
+      if (lhs.length + rhs.length <= formatWrapThreshold) " "
+      else "\n" + leftIndent + "  "
 
-      lhs ++ sep ++ rhs
-    }
+    lhs ++ sep ++ rhs
   }
 
   def formatSingle(path: Seq[String], r: Result): Option[fansi.Str] = Some{
-    wrapLabel(0, r, path.mkString("."), true)
+    wrapLabel(0, r, path.mkString("."))
   }
 
   def formatIcon(success: Boolean): fansi.Str = {
     formatResultColor(success)(if (success) "+" else "X")
   }
 
-  def format(topLevelName: String, results: Tree[Result]): Option[fansi.Str] = Some{
-    val linearized = mutable.Buffer.empty[(Int, Result, Boolean)]
+  def format(topLevelName: String, results: HTree[String, Result]): Option[fansi.Str] = Some{
+    val linearized = mutable.Buffer.empty[fansi.Str]
 
-    rec(0, Tree(results.value.copy(name = topLevelName), results.children:_*)){
-      (depth, r, isLeaf) => linearized.append((depth, r, isLeaf))
+    val relabelled = results match{
+      case HTree.Node(v, c@_*) => HTree.Node(topLevelName, c:_*)
+      case HTree.Leaf(r) => HTree.Leaf(r.copy(name = topLevelName))
+    }
+    rec(0, relabelled){
+      case (depth, Left(name)) => linearized.append("  " * depth + "- " + name)
+      case (depth, Right(r)) => linearized.append(wrapLabel(depth, r, r.name))
     }
 
-    linearized
-      .map{case (depth, r, isLeaf) => wrapLabel(depth, r, r.name, isLeaf)}
-      .mkString("\n")
+    linearized.mkString("\n")
   }
 
-  private[this] def rec(depth: Int, r: Tree[Result])(f: (Int, Result, Boolean) => Unit): Unit = {
-    f(depth, r.value, r.children.isEmpty)
-    r.children.foreach(rec(depth+1, _)(f))
+  private[this] def rec(depth: Int, r: HTree[String, Result])
+                       (f: (Int, Either[String, Result]) => Unit): Unit = {
+    r match{
+      case HTree.Leaf(l) => f(depth, Right(l))
+      case HTree.Node(v, c@_*) =>
+        f(depth, Left(v))
+        c.foreach(rec(depth+1, _)(f))
+    }
   }
 }
 
