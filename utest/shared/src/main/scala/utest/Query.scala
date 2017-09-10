@@ -64,7 +64,7 @@ class Query(input: String) {
   def chain(index: Int): Parsed[Tree[String]] = repSep(index, item, '.') match{
     case Left(e) => Left(e)
     case Right((v, i)) =>
-      if (input.lift(i).contains('.')) curlies(i+1) match{
+      if (input.lift(i) == Some('.')) curlies(i+1) match{
         case Right((v2, i2)) => Right(treeify(v, v2), i2)
         case Left(e) => Left(e)
       } else Right((treeify(v, Nil), i))
