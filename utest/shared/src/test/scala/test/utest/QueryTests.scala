@@ -30,7 +30,7 @@ object QueryTests extends utest.TestSuite{
       Right(List(Tree("hello", Tree(" w o r l d ", Tree("cow")))))
     )
     * - check(
-      parse("hello.world.1"),
+      parse("hello.world."),
       Right(List(Tree("hello", Tree("world", Tree("1")))))
     )
     * - check(

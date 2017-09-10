@@ -44,11 +44,8 @@ abstract class BaseRunner(val args: Array[String],
   def addResult(r: String): Unit
   def addFailure(r: String): Unit
   def addTrace(trace: String): Unit
-  def addTotal(v: Int): Unit
   def incSuccess(): Unit
   def incFailure(): Unit
-
-
 
   def tasks(taskDefs: Array[TaskDef]) = {
     for{

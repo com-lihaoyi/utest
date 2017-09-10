@@ -10,6 +10,7 @@ class Framework extends sbt.testing.Framework{
 
   def setup() = ()
   def teardown() = ()
+  def showSummaryThreshold = 20
   def fingerprints(): Array[sbt.testing.Fingerprint] = Array(
     new SubclassFingerprint {
       def superclassName = "utest.TestSuite"
@@ -21,7 +22,7 @@ class Framework extends sbt.testing.Framework{
   def runner(args: Array[String],
              remoteArgs: Array[String],
              testClassLoader: ClassLoader) = {
-    new MasterRunner(args, remoteArgs, testClassLoader, setup, teardown)
+    new MasterRunner(args, remoteArgs, testClassLoader, setup, teardown, showSummaryThreshold)
   }
 
   def slaveRunner(args: Array[String],

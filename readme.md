@@ -942,6 +942,10 @@ Changelog
 - Much smarter test-output-value truncation, now based on lines-of-output
   (including wrapping) rather than number-of-characters
 - How long tests take is now displayed in the standard test output format
+- Hierarchical test summary and failure-summary are now only shown when you have
+  a large number of tests, since it's not use when running individual or small
+  numbers of tests. The default threshold is 20, which can be configured by
+  defining a custom framework overriding `showSummaryThreshold`
 - Revamped test-query system, now allowing you to run multiple groups of tests
   at once via `test-only -- mypackage.{foo,bar,baz}` or `{mypackage,
   myotherpackage}` or `mypackage.{foo,bar.{baz,qux}}`
