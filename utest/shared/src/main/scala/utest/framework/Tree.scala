@@ -34,6 +34,9 @@ case class Tree[+T](value: T, children: Tree[T]*){
     children.foldLeft(1)(_ + _.length)
   }
 
+  def map[V](f: T => V): Tree[V] = {
+    Tree(f(value), children.map(_.map(f)):_*)
+  }
   /**
    * An iterator over the values stored on the nodes of this tree, in a depth
    * first manner starting from the root.

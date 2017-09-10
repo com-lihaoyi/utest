@@ -20,13 +20,13 @@ object TreeBuilder {
     import c.universe._
 //    println("==END==")
 //    println(showCode(expr.tree))
-    def render(t: Tree) = {
+    def render(t: c.Tree) = {
       t match{
         case q"scala.Symbol.apply(${Literal(Constant(foo))})" => foo.toString
         case Literal(Constant(foo)) => foo.toString
       }
     }
-    def matcher(i: Int): PartialFunction[Tree, (String, Tree, Int)] = {
+    def matcher(i: Int): PartialFunction[c.Tree, (String, c.Tree, Int)] = {
       // Special case for *
       case q"""utest.this.`package`.*.-($body)""" => (i.toString, body, i + 1)
       case q"""utest.`package`.*.-($body)""" => (i.toString, body, i + 1)
@@ -42,7 +42,7 @@ object TreeBuilder {
       case q"""utest.`package`.TestableSymbol($value).-($body)""" => (render(value), body, i)
     }
 
-    def recurse(t: Tree, path: Seq[String]): (Tree, Tree) = {
+    def recurse(t: c.Tree, path: Seq[String]): (c.Tree, Seq[c.Tree]) = {
       val b = t match{
         case b: Block => b
         case t => Block(Nil, t)
@@ -51,7 +51,7 @@ object TreeBuilder {
       val (nested, normal0) = b.children.partition(matcher(0).isDefinedAt)
 
       val transformer = new Transformer{
-        override def transform(t: Tree) = {
+        override def transform(t: c.Tree) = {
           t match{
             case q"framework.this.TestPath.synthetic" =>
               c.typeCheck(q"utest.framework.TestPath(Seq(..$path))")
@@ -70,7 +70,7 @@ object TreeBuilder {
           (normal.init, normal.last)
         }
 
-      val (_, thingies) = nested.foldLeft(0 -> Seq[(String, Tree, Tree)]()) {
+      val (_, thingies) = nested.foldLeft(0 -> Seq[(String, c.Tree, c.Tree)]()) {
         case ((index, trees), nextTree) =>
           val (name, tree2, newIndex) = matcher(index)(nextTree)
           (newIndex, trees :+(name, q"$name", tree2))
@@ -84,25 +84,32 @@ object TreeBuilder {
           .unzip
 
       val suiteFrags = nameTrees.zip(suites).map{
-        case (name, suite) => q"$name -> $suite"
+        case (name, suite) => q"utest.framework.Tree($name, ..$suite)"
       }
 
       val testTree = c.typeCheck(q"""
         new utest.framework.TestThunkTree({
           ..$normal2
-          ($last, Seq(..$testTrees))
+          ${
+            if (testTrees.isEmpty) q"Left($last)"
+            else q"$last; Right(Seq(..$testTrees))"
+          }
         })
       """)
 
-      val suite = q"utest.framework.Test.create(..$suiteFrags)"
 
-      (testTree, suite)
+      (testTree, suiteFrags)
     }
 
     val (testTree, suite) = recurse(expr.tree, Vector())
 
-    val res = q"""$suite(this.getClass.getName.replace("$$", ""), $testTree)"""
+    val res = q"""
+      utest.framework.Test.create(..$suite)(
+        this.getClass.getName.replace("$$", ""),
+        $testTree
+      )"""
 //    println("==END==")
+
 //    println(showCode(res))
     // jump through some hoops to avoid using scala.Predef implicits,
     // to make @paulp happy

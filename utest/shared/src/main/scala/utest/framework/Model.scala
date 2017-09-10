@@ -23,11 +23,11 @@ object Test{
    * Generally called by the [[TestSuite.apply]] macro and doesn't need to
    * be called manually.
    */
-  def create(tests: (String, (String, TestThunkTree) => Tree[Test])*)
+  def create(tests: Tree[String]*)
             (name: String, testTree: TestThunkTree): Tree[Test] = {
     Tree(
       new Test(name, testTree),
-      tests.map{ case (k, v) => v(k, testTree) }:_*
+      tests.map(_.map(Test(_, testTree))):_*
     )
   }
 }
@@ -46,7 +46,7 @@ case class Test(name: String, thunkTree: TestThunkTree)
  * you to query the metadata without executing the tests. Generally created by
  * the [[TestSuite]] macro and not instantiated manually.
  */
-class TestThunkTree(inner: => (Any, Seq[TestThunkTree])){
+class TestThunkTree(inner: => Either[Any, Seq[TestThunkTree]]){
   /**
    * Runs the test in this [[TestThunkTree]] at the specified `path`. Called
    * by the [[TestTreeSeq.run]] method and usually not called manually.
@@ -54,10 +54,10 @@ class TestThunkTree(inner: => (Any, Seq[TestThunkTree])){
   def run(path: List[Int]): Any = {
     path match {
       case head :: tail =>
-        val (res, children) = inner
+        val Right(children) = inner
         children(head).run(tail)
       case Nil =>
-        val (res, children) = StackMarker.dropOutside(inner)
+        val Left(res) = StackMarker.dropOutside(inner)
         res
     }
   }

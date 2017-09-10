@@ -5,7 +5,6 @@ import utest._
   */
 object Main {
   def main(args: Array[String]): Unit = {
-
     val boa = new java.io.ByteArrayOutputStream()
     val tests = TestSuite{
       'test1-{
@@ -14,8 +13,13 @@ object Main {
       'test2-1
 
       'test3-{
-        val a = List[Byte](1, 2)
-        a(10)
+        'inner1-{
+          val a = List[Byte](1, 2)
+          a(10)
+        }
+        'inner2-{
+          "yay"
+        }
       }
     }
     val results = utest.runWith(
@@ -26,3 +30,4 @@ object Main {
     if (results.leaves.exists(_.value.isFailure)) System.exit(1)
   }
 }
+
