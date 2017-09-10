@@ -928,6 +928,29 @@ To publish use
 Changelog
 =========
 
+0.5.0
+-----
+
+- Stack traces for chained exceptions (i.e. those with a `.getCause != null`)
+  are now properly displayed when tests fail
+- Portions of stack traces caused by the internals of the `assert` macros are
+  now hidden, since they aren't relevant to any failure in user code
+- Revamped test output format, motivated by
+  [drhumlen](https://github.com/drhumlen)'s
+  [PR 113](https://github.com/lihaoyi/utest/pull/113), which should be much
+  easier to read and skim
+- Much smarter test-output-value truncation, now based on lines-of-output
+  (including wrapping) rather than number-of-characters
+- How long tests take is now displayed in the standard test output format
+- Revamped test-query system, now allowing you to run multiple groups of tests
+  at once via `test-only -- mypackage.{foo,bar,baz}` or `{mypackage,
+  myotherpackage}` or `mypackage.{foo,bar.{baz,qux}}`
+- Overhauled the [Execution Model](#execution-model) of test suites: now only
+  the inner-most blocks within your `TestSuite{...}` block count as tests, and
+  the surrounding blocks do not. Thus the surrounding blocks no longer show
+  pass/fail status, return a test result-value, or get run independently.
+
+
 0.4.8
 -----
 
