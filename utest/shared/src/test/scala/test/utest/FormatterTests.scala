@@ -4,6 +4,7 @@ import concurrent.ExecutionContext.Implicits.global
 object FormatterTests extends utest.TestSuite {
   val tests = this{
     "hello"-{
+      var trimmedOutput0: String = ""
       for(i <- 0 until 10) {
         val boa = new java.io.ByteArrayOutputStream()
         val printStream = new java.io.PrintStream(boa)
@@ -25,6 +26,7 @@ object FormatterTests extends utest.TestSuite {
           printStream = printStream
         )
         val trimmedOutput = utest.fansi.Str(new String(boa.toByteArray)).plainText.trim
+        trimmedOutput0 = trimmedOutput
         val expected =
           """
           |X MyTestSuite.test1 0ms  java.lang.Exception: test1
@@ -39,6 +41,7 @@ object FormatterTests extends utest.TestSuite {
         // Warm up the code a few times first to ensure it finishes in 0ms per test
         if (i == 9) assert(trimmedOutput == expected)
       }
+      trimmedOutput0
     }
   }
 }
