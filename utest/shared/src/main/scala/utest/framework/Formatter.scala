@@ -146,7 +146,7 @@ trait Formatter {
     val rhs = prettyTruncate(r, leftIndent + "  ")
 
     val sep =
-      if (lhs.length + rhs.length <= formatWrapWidth) " "
+      if (lhs.length + rhs.length <= formatWrapWidth && !rhs.plainText.contains('\n')) " "
       else "\n" + leftIndent + "  "
 
     lhs ++ sep ++ rhs
