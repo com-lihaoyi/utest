@@ -12,7 +12,9 @@ final class MasterRunner(args: Array[String],
                          testClassLoader: ClassLoader,
                          setup: () => Unit,
                          teardown: () => Unit,
-                         showSummaryThreshold: Int)
+                         showSummaryThreshold: Int,
+                         resultsHeader: String,
+                         failureHeader: String)
                          extends BaseRunner(args, remoteArgs, testClassLoader){
   setup()
   val results = new AtomicReference[List[String]](Nil)
@@ -44,8 +46,7 @@ final class MasterRunner(args: Array[String],
   def done(): String = {
     teardown()
     val total = success.get() + failure.get()
-    val header = "-----------------------------------Results-----------------------------------"
-    val failureHeader = "-----------------------------------Failures-----------------------------------"
+
 
     val body = results.get.mkString("\n")
 
@@ -58,7 +59,7 @@ final class MasterRunner(args: Array[String],
     val summary: fansi.Str =
       if (total < showSummaryThreshold) ""
       else fansi.Str.join(
-        header, "\n",
+        resultsHeader, "\n",
         body, "\n",
         failureMsg, "\n"
       )

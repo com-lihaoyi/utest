@@ -32,6 +32,10 @@ object BaseRunner{
     }
     rec(query, testSuitePath.toList)
   }
+  def renderBanner(s: String) = {
+    val dashes = "-" * ((78 - s.length) / 2)
+    dashes + " " + s + " " + dashes
+  }
 }
 
 abstract class BaseRunner(val args: Array[String],
@@ -74,10 +78,9 @@ abstract class BaseRunner(val args: Array[String],
       })
     }
 
-    val title = s"Starting Suite " + name
-    val dashes = "-" * ((80 - title.length) / 2)
 
-    loggers.foreach(_.info(dashes + title + dashes))
+
+    loggers.foreach(_.info(BaseRunner.renderBanner("Starting Suite " + name)))
 
 
 
