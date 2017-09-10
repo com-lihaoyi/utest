@@ -77,16 +77,13 @@ abstract class BaseRunner(val args: Array[String],
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
 
     def handleEvent(op: OptionalThrowable, st: Status) = {
+      println("handleEvent " + st)
       eventHandler.handle(new Event {
-        def fullyQualifiedName() = path.getOrElse("")
+        def fullyQualifiedName() = name
         def throwable() = op
         def status() = st
         def selector() = new TestSelector(path.getOrElse(""))
-        def fingerprint() = new SubclassFingerprint {
-          def superclassName = "utest.TestSuite"
-          def isModule = true
-          def requireNoArgConstructor = true
-        }
+        def fingerprint() = Fingerprint
         def duration() = 0
       })
     }

@@ -16,13 +16,7 @@ class Framework extends sbt.testing.Framework{
   def failureHeader = BaseRunner.renderBanner("Failures")
 
   def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)
-  def fingerprints(): Array[sbt.testing.Fingerprint] = Array(
-    new SubclassFingerprint {
-      def superclassName = "utest.TestSuite"
-      def isModule = true
-      def requireNoArgConstructor = true
-    }
-  )
+  def fingerprints(): Array[sbt.testing.Fingerprint] = Array(Fingerprint)
 
   def runner(args: Array[String],
              remoteArgs: Array[String],
