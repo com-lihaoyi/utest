@@ -961,6 +961,8 @@ Changelog
   the surrounding blocks do not. Thus the surrounding blocks no longer show
   pass/fail status, return a test result-value, or get run independently.
 
+- Various user errors (non-existent test, non-existing test suite, invalid test
+  query syntax) now give slightly more friendly error messages
 
 0.4.8
 -----
