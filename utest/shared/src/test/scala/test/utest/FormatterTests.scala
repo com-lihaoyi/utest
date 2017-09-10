@@ -13,8 +13,9 @@ object FormatterTests extends utest.TestSuite {
         val printStream = new java.io.PrintStream(boa)
         val tests = TestSuite {
           'test1 - {
-            try throw new Exception("test1")
-            catch{case e: Exception =>
+            val x = 1
+            try assert(x == 2)
+            catch{case e: Throwable =>
               throw new Exception("wrapper", e)
             }
           }
@@ -37,33 +38,35 @@ object FormatterTests extends utest.TestSuite {
           """
           |X MyTestSuite.test1 0ms
           |  java.lang.Exception: wrapper
-          |  test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:18)
-          |  test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:16)
-          |  java.lang.Exception: test1
-          |  test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:16)
-          |  test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:16)
+          |  test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:19)
+          |  test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:17)
+          |  utest.AssertionError: try assert(x == 2)
+          |  x: Int = 1
+          |  test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:17)
+          |  test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:17)
           |+ MyTestSuite.test2 0ms  1
           |X MyTestSuite.test3 0ms
           |  java.lang.IndexOutOfBoundsException: 10
           |  scala.collection.LinearSeqOptimized.apply(LinearSeqOptimized.scala:63)
           |  scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
           |  scala.collection.immutable.List.apply(List.scala:86)
-          |  test.utest.FormatterTests$.$anonfun$tests$11(FormatterTests.scala:25)
+          |  test.utest.FormatterTests$.$anonfun$tests$12(FormatterTests.scala:26)
           |- MyTestSuite
           |  X test1 0ms
           |    java.lang.Exception: wrapper
-          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:18)
-          |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:16)
-          |    java.lang.Exception: test1
-          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:16)
-          |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:16)
+          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:19)
+          |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:17)
+          |    utest.AssertionError: try assert(x == 2)
+          |    x: Int = 1
+          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:17)
+          |    test.utest.FormatterTests$.$anonfun$tests$9(FormatterTests.scala:17)
           |  + test2 0ms  1
           |  X test3 0ms
           |    java.lang.IndexOutOfBoundsException: 10
           |    scala.collection.LinearSeqOptimized.apply(LinearSeqOptimized.scala:63)
           |    scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
           |    scala.collection.immutable.List.apply(List.scala:86)
-          |    test.utest.FormatterTests$.$anonfun$tests$11(FormatterTests.scala:25)
+          |    test.utest.FormatterTests$.$anonfun$tests$12(FormatterTests.scala:26)
           """.stripMargin
         )
 

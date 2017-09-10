@@ -28,9 +28,20 @@ trait Formatter {
     var current = x
     while(current != null){
       output.append(formatResultColor(false)(current.toString))
-      current.getStackTrace
-        .takeWhile(x =>
-          !(x.getClassName == "utest.framework.TestThunkTree"  && x.getMethodName == "run")
+      val stack = current.getStackTrace
+      val assertDropped = stack.indexWhere(x =>
+        x.getClassName == "utest.asserts.Asserts$" && x.getMethodName == "wrap"
+      )
+
+      val frameworkDropped = stack.indexWhere(x =>
+        x.getClassName == "utest.framework.TestThunkTree" && x.getMethodName == "run"
+      )
+
+
+      stack
+        .slice(
+          assertDropped match {case -1 => 0 case n => n + 2},
+          frameworkDropped match {case -1 => stack.length case n => n}
         )
         .foreach { e =>
           output.append(

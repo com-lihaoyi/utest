@@ -16,6 +16,7 @@ import scala.language.experimental.macros
  * message for boolean expression assertion.
  */
 object Asserts {
+  def wrap[T](t: => T): T = t
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
     def calcPosMsg(pos: scala.reflect.api.Position) = {
@@ -96,7 +97,7 @@ object Asserts {
   }
 
 
-  def assertImpl(funcs: AssertEntry[Boolean]*) = {
+  def assertImpl(funcs: AssertEntry[Boolean]*) = wrap{
     val tries = for (entry <- funcs) yield Try{
       val (value, die) = Util.getAssertionEntry(entry)
       if (!value) die(null)
@@ -125,7 +126,7 @@ object Asserts {
    * is returned if raised, and an `AssertionError` is raised if the expected
    * exception does not appear.
    */
-  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
+  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = wrap{
     val (res, logged, src) = Util.runAssertionEntry(entry)
     res match{
       case Failure(e: T) => e
@@ -148,7 +149,7 @@ object Asserts {
    * exception does not appear.
    */
   def assertMatchImpl(entry: AssertEntry[Any])
-                     (pf: PartialFunction[Any, Unit]): Unit = {
+                     (pf: PartialFunction[Any, Unit]): Unit = wrap{
     val (value, die) = Util.getAssertionEntry(entry)
     if (pf.isDefinedAt(value)) ()
     else die(null)
