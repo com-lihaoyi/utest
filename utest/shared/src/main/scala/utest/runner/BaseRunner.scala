@@ -115,10 +115,8 @@ abstract class BaseRunner(val args: Array[String],
     val results = utest.framework.Executor.runAsync(
       suite.tests,
       (subpath, result) => {
-        if(result.value.isSuccess) incSuccess() else incFailure()
-
         val str = suite.formatSingle(name.split('.') ++ subpath, result)
-        handleEvent(new OptionalThrowable(), Status.Success)
+
         str.foreach{msg => loggers.foreach(_.info(msg.split('\n').mkString("\n")))}
         result.value match{
           case Failure(e) =>
@@ -128,9 +126,12 @@ abstract class BaseRunner(val args: Array[String],
             e.setStackTrace(
               e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
             )
+            incFailure()
             addFailure(str.fold("")(_.render))
             addTrace(e.getStackTrace.map(_.toString).mkString("\n"))
-          case _ => ()
+          case _ =>
+            handleEvent(new OptionalThrowable(), Status.Success)
+            incSuccess()
         }
       },
       query = innerQuery,

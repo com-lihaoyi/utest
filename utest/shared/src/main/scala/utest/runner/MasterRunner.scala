@@ -73,13 +73,16 @@ final class MasterRunner(args: Array[String],
       println(
         fansi.Str.join(
           summary,
-          s"Tests: $total", "\n",
-          s"Passed: $success", "\n",
-          s"Failed: $failure"
+          s"Tests: ", total.toString, ", ",
+          s"Passed: ", success.toString, ", ",
+          s"Failed: ", failure.toString
         ).render
       )
     }
-    ""
+    // Don't print anything, but also don't print the default message it
+    // normally prints if you return an empty string, and don't print the
+    // [info] gutter it prints if you return " "
+    "\n"
   }
 
   def receiveMessage(msg: String): Option[String] = {
