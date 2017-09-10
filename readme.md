@@ -945,6 +945,10 @@ Changelog
 - Much smarter test-output-value truncation, now based on lines-of-output
   (including wrapping) rather than number-of-characters
 
+- Line-wrapping of output is now indentation aware: it wraps to the next line
+  with the same indentation, preserving the outline of indentation on the left
+  making it easier to skim
+
 - How long tests take is now displayed in the standard test output format
 
 - Hierarchical test summary and failure-summary are now only shown when you have
