@@ -53,7 +53,17 @@ abstract class BaseRunner(val args: Array[String],
   def incFailure(): Unit
 
   def tasks(taskDefs: Array[TaskDef]) = {
-    for{
+    val allPaths = query.flatMap(_.leafPaths)
+    // This is in theory quadratic but it is probably find
+    val unknownPaths = allPaths.filter( p =>
+      !taskDefs.exists{ t =>
+        val taskSegments = t.fullyQualifiedName().split('.')
+        taskSegments.startsWith(p) || p.startsWith(taskSegments)
+      }
+    )
+    if (unknownPaths.nonEmpty){
+      throw new NoSuchTestException(unknownPaths:_*)
+    }else for{
       taskDef <- taskDefs
       if BaseRunner.checkOverlap(query, taskDef.fullyQualifiedName().split('.'))
     } yield makeTask(taskDef)

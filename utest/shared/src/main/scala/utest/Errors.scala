@@ -6,7 +6,7 @@ package utest
  * Indicates that there was no test to run at the path you provided
  */
 case class NoSuchTestException(path: Seq[String]*)
-  extends Exception("["+path.map(_.mkString(".")).mkString(",") + "]")
+  extends Exception(path.map(_.mkString(".")).mkString("[", ", ", "]"))
 
 /**
  * A special `AssertionError` thrown by utest's macro-powered asserts that 
