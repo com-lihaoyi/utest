@@ -18,22 +18,23 @@ object TestPath{
   implicit def synthetic: TestPath = ???
 }
 
+/**
+  * Represents a single hierarchy of tests, arranged in a tree structure, with
+  * every node having a name and an associated executable test.
+  *
+  * The two hierarchies are parallel: thus you can inspect the `nameTree` to
+  * browse the test listing without running anything, and once you decide which
+  * test to run you can feed the `List[Int]` path of that test in the `nameTree`
+  * into the `callTree` to execute it and return the result.
+  */
 case class TestHierarchy(nameTree: Tree[String], callTree: TestThunkTree)
-/**
- * Represents the metadata around a single test in a [[TestTreeSeq]]. This is
- * a pretty simple data structure, as much of the information related to it
- * comes contextually when traversing the [[utest.framework.TestTreeSeq]] to reach it.
- */
-case class Test(name: String, thunkTree: TestThunkTree)
-
 
 /**
- * A tree of nested lexical scopes that accompanies the tree of tests. This
- * is separated from the tree of metadata in [[TestTreeSeq]] in order to allow
- * you to query the metadata without executing the tests. Generally created by
- * the [[TestSuite]] macro and not instantiated manually.
- */
-class TestThunkTree(inner: => Either[Any, Seq[TestThunkTree]]){
+  * The executable portion of a tree of tests. Each node contains an
+  * executable, which when run either returns a Left(result) or a
+  * Right(sequence) of child nodes which you can execute.
+  */
+class TestThunkTree(inner: => Either[Any, IndexedSeq[TestThunkTree]]){
   /**
    * Runs the test in this [[TestThunkTree]] at the specified `path`. Called
    * by the [[TestTreeSeq.run]] method and usually not called manually.

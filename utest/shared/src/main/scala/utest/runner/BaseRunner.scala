@@ -2,11 +2,10 @@ package utest
 package runner
 //import acyclic.file
 import sbt.testing._
-import utest.TestSuite
 
 import scala.util.Failure
 import org.scalajs.testinterface.TestUtils
-import utest.framework.{Test, Tree}
+import utest.framework.Tree
 object BaseRunner{
   /**
     * Checks whether the given query needs the TestSuite at testSuitePath

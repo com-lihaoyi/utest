@@ -54,7 +54,7 @@ object TreeBuilder {
         override def transform(t: c.Tree) = {
           t match{
             case q"framework.this.TestPath.synthetic" =>
-              c.typeCheck(q"_root_.utest.framework.TestPath(_root_.scala.Seq(..$path))")
+              c.typeCheck(q"_root_.utest.framework.TestPath(_root_.scala.Array(..$path))")
             case _ => super.transform(t)
           }
         }
@@ -92,7 +92,7 @@ object TreeBuilder {
           ..$normal2
           ${
             if (testTrees.isEmpty) q"_root_.scala.Left($last)"
-            else q"$last; _root_.scala.Right(Seq(..$testTrees))"
+            else q"$last; _root_.scala.Right(Array(..$testTrees))"
           }
         })
       """)

@@ -1,7 +1,5 @@
 
 import utest.asserts._
-import utest.framework.Test
-import utest.framework.Tree
 import scala.concurrent.duration._
 
 /**
