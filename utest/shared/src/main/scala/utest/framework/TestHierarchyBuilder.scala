@@ -7,7 +7,7 @@ import scala.reflect.macros._
 /**
   * Created by haoyi on 3/11/16.
   */
-object TreeBuilder {
+object TestHierarchyBuilder {
   /**
     * Raise an exception if a test is nested badly within a `TestSuite{ ... }`
     * block.
@@ -18,28 +18,27 @@ object TreeBuilder {
 
   def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[TestHierarchy] = {
     import c.universe._
-//    println("==END==")
-//    println(showCode(expr.tree))
-    def render(t: c.Tree) = {
+
+    def literalValue(t: c.Tree) = {
       t match{
         case q"scala.Symbol.apply(${Literal(Constant(foo))})" => foo.toString
         case Literal(Constant(foo)) => foo.toString
       }
     }
+
+    def checkLhs(prefix: c.Tree) = prefix match{
+      case q"utest.this.`package`.TestableString" => true
+      case q"utest.`package`.TestableString" => true
+      case q"utest.this.`package`.TestableSymbol" => true
+      case q"utest.`package`.TestableSymbol" => true
+      case _ => false
+    }
     def matcher(i: Int): PartialFunction[c.Tree, (String, c.Tree, Int)] = {
       // Special case for *
       case q"""utest.this.`package`.*.-($body)""" => (i.toString, body, i + 1)
       case q"""utest.`package`.*.-($body)""" => (i.toString, body, i + 1)
-
-      // Strings using -
-      case q"""utest.this.`package`.TestableString($value).-($body)""" => (render(value), body, i)
-      case q"""utest.`package`.TestableString($value).-($body)""" => (render(value), body, i)
-
-      // Symbols using - or apply
-      case q"""utest.this.`package`.TestableSymbol($value).apply($body)""" => (render(value), body, i)
-      case q"""utest.`package`.TestableSymbol($value).apply($body)""" => (render(value), body, i)
-      case q"""utest.this.`package`.TestableSymbol($value).-($body)""" => (render(value), body, i)
-      case q"""utest.`package`.TestableSymbol($value).-($body)""" => (render(value), body, i)
+      case q"""$p($value).apply($body)""" if checkLhs(p) => (literalValue(value), body, i)
+      case q"""$p($value).-($body)""" if checkLhs(p) => (literalValue(value), body, i)
     }
 
     def recurse(t: c.Tree, path: Seq[String]): (c.Tree, Seq[c.Tree]) = {
@@ -78,44 +77,39 @@ object TreeBuilder {
 
       val (names, nameTrees, bodies) = thingies.unzip3
 
-      val (testTrees, suites) =
-        thingies
-          .map{case (name, tree, body) => recurse(body, path :+ name)}
+      val (childCallTrees, childNameTrees) =
+        names.zip(bodies)
+          .map{case (name, body) => recurse(body, path :+ name)}
           .unzip
 
-      val suiteFrags = nameTrees.zip(suites).map{
+      val nameTree = nameTrees.zip(childNameTrees).map{
         case (name, suite) => q"_root_.utest.framework.Tree($name, ..$suite)"
       }
 
-      val testTree = c.typeCheck(q"""
-        new _root_.utest.framework.TestThunkTree({
+      val callTree = c.typeCheck(q"""
+        new _root_.utest.framework.TestCallTree({
           ..$normal2
           ${
-            if (testTrees.isEmpty) q"_root_.scala.Left($last)"
-            else q"$last; _root_.scala.Right(Array(..$testTrees))"
+            if (childCallTrees.isEmpty) q"_root_.scala.Left($last)"
+            else q"$last; _root_.scala.Right(Array(..$childCallTrees))"
           }
         })
       """)
 
-
-      (testTree, suiteFrags)
+      (callTree, nameTree)
     }
 
-    val (testTree, suite) = recurse(expr.tree, Vector())
+    val (callTree, nameTree) = recurse(expr.tree, Vector())
 
     val res = q"""
       _root_.utest.framework.TestHierarchy(
         _root_.utest.framework.Tree(
           this.getClass.getName.replace("$$", ""),
-          ..$suite
+          ..$nameTree
         ),
-        $testTree
+        $callTree
       )"""
-//    println("==END==")
 
-//    println(showCode(res))
-    // jump through some hoops to avoid using scala.Predef implicits,
-    // to make @paulp happy
     c.Expr[TestHierarchy](res)
   }
 }

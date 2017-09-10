@@ -34,7 +34,7 @@ trait TestSuiteMacro{
   /**
     * Macro to demarcate a `Tree[Test]`.
     */
-  def apply(expr: Unit): TestHierarchy = macro framework.TreeBuilder.applyImpl
+  def apply(expr: Unit): TestHierarchy = macro framework.TestHierarchyBuilder.applyImpl
 }
 object TestSuite extends TestSuiteMacro{
 

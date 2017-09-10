@@ -1,12 +1,9 @@
 package utest
 package framework
 
-import utest.Query
 
-import scala.util.{Success, Failure, Try}
-import scala.concurrent.duration.Deadline
+import scala.util.Try
 import scala.language.experimental.macros
-import scala.concurrent.Future
 
 import utest.PlatformShims
 
@@ -27,16 +24,16 @@ object TestPath{
   * test to run you can feed the `List[Int]` path of that test in the `nameTree`
   * into the `callTree` to execute it and return the result.
   */
-case class TestHierarchy(nameTree: Tree[String], callTree: TestThunkTree)
+case class TestHierarchy(nameTree: Tree[String], callTree: TestCallTree)
 
 /**
   * The executable portion of a tree of tests. Each node contains an
   * executable, which when run either returns a Left(result) or a
   * Right(sequence) of child nodes which you can execute.
   */
-class TestThunkTree(inner: => Either[Any, IndexedSeq[TestThunkTree]]){
+class TestCallTree(inner: => Either[Any, IndexedSeq[TestCallTree]]){
   /**
-   * Runs the test in this [[TestThunkTree]] at the specified `path`. Called
+   * Runs the test in this [[TestCallTree]] at the specified `path`. Called
    * by the [[TestTreeSeq.run]] method and usually not called manually.
    */
   def run(path: List[Int]): Any = {
