@@ -137,7 +137,7 @@ abstract class BaseRunner(val args: Array[String],
       ec = ec
     )
 
-    results.map(suite.format(name, _).foreach(x => addResult(x.render)))
+    results.map(suite.formatSummary(name, _).foreach(x => addResult(x.render)))
   }
 
 

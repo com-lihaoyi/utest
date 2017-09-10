@@ -23,6 +23,6 @@ object Main {
       utest.framework.Formatter,
       "MyTestSuite"
     )
-    if (!results) System.exit(0)
+    if (results.leaves.exists(_.value.isFailure)) System.exit(1)
   }
 }

@@ -70,7 +70,7 @@ trait Executor{
                    query: Seq[Tree[String]] = Nil,
                    wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
                    printStream: java.io.PrintStream = System.out,
-                   ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Future[Boolean] = {
+                   ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Future[HTree[String, Result]] = {
     implicit val ec0 = ec
     runAsync(
       tests,
@@ -81,13 +81,7 @@ trait Executor{
       query,
       wrap,
       ec
-    ).map{res =>
-      for(output <- formatter.format(label, res)){
-        printStream.println(output)
-      }
-
-      res.leaves.forall(_.value.isSuccess)
-    }
+    )
   }
   def runWith(tests: Tree[Test],
               formatter: utest.framework.Formatter,
@@ -95,7 +89,7 @@ trait Executor{
               query: Seq[Tree[String]] = Nil,
               wrap: (Seq[String], => Future[Any]) => Future[Any] = (_, x) => x,
               printStream: java.io.PrintStream = System.out,
-              ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Boolean = {
+              ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): HTree[String, Result] = {
     PlatformShims.await(runWithAsync(tests, formatter, label, query, wrap, printStream, ec))
   }
 }

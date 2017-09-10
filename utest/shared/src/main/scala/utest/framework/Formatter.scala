@@ -165,7 +165,7 @@ trait Formatter {
     formatResultColor(success)(if (success) "+" else "X")
   }
 
-  def format(topLevelName: String, results: HTree[String, Result]): Option[fansi.Str] = Some{
+  def formatSummary(topLevelName: String, results: HTree[String, Result]): Option[fansi.Str] = Some{
 
     val relabelled = results match{
       case HTree.Node(v, c@_*) => HTree.Node(topLevelName, c:_*)
