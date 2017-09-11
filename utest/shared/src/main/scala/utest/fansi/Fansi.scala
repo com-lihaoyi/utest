@@ -712,17 +712,18 @@ sealed abstract class Category(val offset: Int, val width: Int)(implicit catName
 /**
   * [[Attr]]s to turn text bold/bright or disable it
   */
-object Bold extends Category(offset = 0, width = 1)("Bold"){
-  val On  = makeAttr(Console.BOLD, 1)("On")
-  val Off = makeNoneAttr(          0)("Off")
-  val all: Vector[Attr] = Vector(On, Off)
+object Bold extends Category(offset = 0, width = 2)("Bold"){
+  val Faint = makeAttr("\u001b[2m",  2)("Faint")
+  val On    = makeAttr(Console.BOLD, 1)("On")
+  val Off   = makeNoneAttr(          0)("Off")
+  val all: Vector[Attr] = Vector(On, Off, Faint)
 }
 
 /**
   * [[Attr]]s to reverse the background/foreground colors of your text,
   * or un-reverse them
   */
-object Reversed extends Category(offset = 1, width = 1)("Reversed"){
+object Reversed extends Category(offset = 2, width = 1)("Reversed"){
   val On  = makeAttr(Console.REVERSED,   1)("On")
   val Off = makeAttr("\u001b[27m",       0)("Off")
   val all: Vector[Attr] = Vector(On, Off)
@@ -730,7 +731,7 @@ object Reversed extends Category(offset = 1, width = 1)("Reversed"){
 /**
   * [[Attr]]s to enable or disable underlined text
   */
-object Underlined extends Category(offset = 2, width = 1)("Underlined"){
+object Underlined extends Category(offset = 3, width = 1)("Underlined"){
   val On  = makeAttr(Console.UNDERLINED, 1)("On")
   val Off = makeAttr("\u001b[24m",       0)("Off")
   val all: Vector[Attr] = Vector(On, Off)
@@ -739,7 +740,7 @@ object Underlined extends Category(offset = 2, width = 1)("Underlined"){
 /**
   * [[Attr]]s to set or reset the color of your foreground text
   */
-object Color extends ColorCategory(offset = 3, width = 25, colorCode = 38)("Color"){
+object Color extends ColorCategory(offset = 4, width = 25, colorCode = 38)("Color"){
 
   val Reset        = makeAttr("\u001b[39m",     0)("Reset")
   val Black        = makeAttr(Console.BLACK,    1)("Black")
@@ -769,7 +770,7 @@ object Color extends ColorCategory(offset = 3, width = 25, colorCode = 38)("Colo
 /**
   * [[Attr]]s to set or reset the color of your background
   */
-object Back extends ColorCategory(offset = 28, width = 25, colorCode = 48)("Back"){
+object Back extends ColorCategory(offset = 29, width = 25, colorCode = 48)("Back"){
 
   val Reset        = makeAttr("\u001b[49m",       0)("Reset")
   val Black        = makeAttr(Console.BLACK_B,    1)("Black")

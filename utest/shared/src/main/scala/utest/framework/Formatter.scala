@@ -33,7 +33,7 @@ trait Formatter {
     else fansi.Color.Red
   )
 
-  def formatMillisColor = toggledColor(fansi.Color.DarkGray)
+  def formatMillisColor = toggledColor(fansi.Bold.Faint)
 
   def formatException(x: Throwable, leftIndent: String) = {
     val output = mutable.Buffer.empty[fansi.Str]
