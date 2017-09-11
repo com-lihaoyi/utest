@@ -971,6 +971,11 @@ Changelog
 - Using uTest with `fork in Test := true` in SBT no longer gives an incorrect
   results summmary
 
+- Fix problem with lazy vals in test blocks crashing the compiler
+  [#67](https://github.com/lihaoyi/utest/issues/67). Note that the issue is only
+  fixed on 2.12.3, and not on Scala 2.10.x or 2.11.x.
+
+
 0.4.8
 -----
 
