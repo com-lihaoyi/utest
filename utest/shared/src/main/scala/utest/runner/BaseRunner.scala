@@ -72,19 +72,25 @@ abstract class BaseRunner(val args: Array[String],
   }
 
   def runSuite(loggers: Seq[Logger],
-               name: String,
+               suiteName: String,
                eventHandler: EventHandler,
                taskDef: TaskDef) = {
-    val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
+    val suite = TestUtils.loadModule(suiteName, testClassLoader).asInstanceOf[TestSuite]
 
-    def handleEvent(op: OptionalThrowable, st: Status) = {
+    def handleEvent(op: OptionalThrowable,
+                    st: Status,
+                    subpath: Seq[String],
+                    millis: Long) = {
+
       eventHandler.handle(new Event {
-        def fullyQualifiedName() = name
+        def fullyQualifiedName() = suiteName
         def throwable() = op
         def status() = st
-        def selector() = new TestSelector(path.getOrElse(""))
+        def selector() = {
+          new NestedTestSelector(suiteName, subpath.mkString("."))
+        }
         def fingerprint() = taskDef.fingerprint()
-        def duration() = 0
+        def duration() = millis
       })
     }
 
@@ -100,7 +106,7 @@ abstract class BaseRunner(val args: Array[String],
         }
 
       }
-      rec(query, name.split('.').toList)
+      rec(query, suiteName.split('.').toList)
     }
 
     implicit val ec = utest.framework.ExecutionContext.RunNow
@@ -109,7 +115,7 @@ abstract class BaseRunner(val args: Array[String],
     val results = utest.framework.Executor.runAsync(
       suite.tests,
       (subpath, result) => {
-        val str = suite.formatSingle(name.split('.') ++ subpath, result)
+        val str = suite.formatSingle(suiteName.split('.') ++ subpath, result)
 
         str.foreach{msg =>
           if (useSbtLoggers) loggers.foreach(_.info(msg.split('\n').mkString("\n")))
@@ -117,7 +123,7 @@ abstract class BaseRunner(val args: Array[String],
         }
         result.value match{
           case Failure(e) =>
-            handleEvent(new OptionalThrowable(e), Status.Failure)
+            handleEvent(new OptionalThrowable(e), Status.Failure, subpath, result.milliDuration)
             // Trim the stack trace so all the utest internals don't get shown,
             // since the user probably doesn't care about those anyway
             e.setStackTrace(
@@ -127,7 +133,7 @@ abstract class BaseRunner(val args: Array[String],
             addFailure(str.fold("")(_.render))
             addTrace(e.getStackTrace.map(_.toString).mkString("\n"))
           case _ =>
-            handleEvent(new OptionalThrowable(), Status.Success)
+            handleEvent(new OptionalThrowable(), Status.Success, subpath, result.milliDuration)
             incSuccess()
         }
       },
@@ -136,7 +142,7 @@ abstract class BaseRunner(val args: Array[String],
       ec = ec
     )
 
-    results.map(suite.formatSummary(name, _).foreach(x => addResult(x.render)))
+    results.map(suite.formatSummary(suiteName, _).foreach(x => addResult(x.render)))
   }
 
 
