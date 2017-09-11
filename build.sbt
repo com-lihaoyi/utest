@@ -6,7 +6,7 @@ import sbt.addCompilerPlugin
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
 scalaVersion       in ThisBuild := "2.12.2"
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M1")
+crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M2")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
 //triggeredMessage   in ThisBuild := Watched.clearWhenTriggered

@@ -931,6 +931,8 @@ Changelog
 0.5.0
 -----
 
+- Cross-publish for Scala 2.13.0-M2, Scala.js 0.6.20, Scala-Native 0.3.3
+
 - Stack traces for chained exceptions (i.e. those with a `.getCause != null`)
   are now properly displayed when tests fail
 
@@ -974,7 +976,6 @@ Changelog
 - Fix problem with lazy vals in test blocks crashing the compiler
   [#67](https://github.com/lihaoyi/utest/issues/67). Note that the issue is only
   fixed on 2.12.3, and not on Scala 2.10.x or 2.11.x.
-
 
 0.4.8
 -----
