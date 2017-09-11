@@ -5,22 +5,22 @@ import utest._
 object SharedFixturesTests extends TestSuite{
   var x = 0
   val tests = this{
-    'A{
+    'outer1 - {
       x += 1
-      'X{
+      'inner1 - {
         x += 2
         assert(x == 3)
         x
       }
-      'Y{
+      'inner2 - {
         x += 3
         assert(x == 7)
         x
       }
     }
-    'B{
+    'outer2{
       x += 4
-      'Z{
+      'inner3 - {
         x += 5
         assert(x == 16)
         x

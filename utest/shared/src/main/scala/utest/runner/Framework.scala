@@ -28,7 +28,7 @@ class Framework extends sbt.testing.Framework{
     * output gets noisy does it become valuable to show the clean summaries at
     * the end of the test run.
     */
-  def showSummaryThreshold = 40
+  def showSummaryThreshold = 30
 
   /**
     * Whether to use SBT's test-logging infrastructure, or just println.

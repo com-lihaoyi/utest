@@ -14,7 +14,6 @@ trait Formatter {
 
   def formatColor: Boolean = true
   def formatTruncateHeight: Int = 15
-  def formatTrace: Boolean = true
   def formatWrapWidth: Int = 100
 
   def formatValue(x: Any) = testValueColor(x.toString)

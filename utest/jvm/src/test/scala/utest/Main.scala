@@ -4,6 +4,8 @@ package utest
   */
 object Main {
   def main(args: Array[String]): Unit = {
-
+//    utest.framework.Executor.run(
+//      test.utest.examples.HelloTests.tests
+//    )
   }
 }

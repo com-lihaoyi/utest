@@ -5,11 +5,11 @@ import utest._
 object NestedTests extends TestSuite{
   val tests =  this{
     val x = 1
-    'outer{
+    'outer1 - {
       val y = x + 1
-      'inner{
+      'inner1 - {
         val z = y + 1
-        'innerest{
+        'innerest - {
           assert(
             x == 1,
             y == 2,
@@ -17,6 +17,14 @@ object NestedTests extends TestSuite{
           )
           (x, y, z)
         }
+      }
+    }
+    'outer2 - {
+      'inner2 - {
+        assert(4 > 3)
+      }
+      'inner3 - {
+        assert(5 > 4)
       }
     }
   }

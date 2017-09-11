@@ -31,6 +31,7 @@ package object utest extends utest.framework.Executor{
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @deprecated("Use the 'foo - {...} syntax instead")
     @reflect.internal.annotations.compileTimeOnly("Symbol#apply method should only be used directly inside a TestSuite{} macro")
     def apply(x: => Any) = ()
     /**
