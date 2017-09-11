@@ -15,7 +15,11 @@ case class NoSuchTestException(path: Seq[String]*)
 case class AssertionError(msg: String,
                           captured: Seq[TestValue],
                           cause: Throwable = null)
-                          extends java.lang.AssertionError(msg, cause)
+// Referring to non-existent method java.lang.AssertionError.<init>(java.lang.String,java.lang.Throwable) in Scala.js 1.0.0-M1
+//                          extends java.lang.AssertionError(msg, cause) {
+                          extends java.lang.AssertionError(msg) {
+  super.initCause(cause)
+}
 
 case class MultipleErrors(thrown: Throwable*) extends Exception(thrown(0).getMessage, thrown(0).getCause)
 /**
