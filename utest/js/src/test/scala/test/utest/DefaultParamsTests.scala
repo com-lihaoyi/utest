@@ -4,6 +4,7 @@ import utest._
 import scala.scalajs.js
 import js.annotation.JSExport
 
+@js.native
 trait WithDefaultParams extends js.Object{
   def cmp(a: Int, b: Int = 5): Boolean = js.native
 }
