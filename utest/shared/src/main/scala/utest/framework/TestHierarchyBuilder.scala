@@ -34,12 +34,12 @@ object TestHierarchyBuilder {
       case q"utest.`package`.TestableSymbol" => true
       case _ => false
     }
-    def matcher(i: Int): PartialFunction[c.Tree, (String, c.Tree, Int)] = {
+    def matcher(i: Int): PartialFunction[c.Tree, (Option[String], c.Tree)] = {
       // Special case for *
-      case q"""utest.this.`package`.*.-($body)""" => (i.toString, body, i + 1)
-      case q"""utest.`package`.*.-($body)""" => (i.toString, body, i + 1)
-      case q"""$p($value).apply($body)""" if checkLhs(p) => (literalValue(value), body, i)
-      case q"""$p($value).-($body)""" if checkLhs(p) => (literalValue(value), body, i)
+      case q"""utest.this.`package`.*.-($body)""" => (None, body)
+      case q"""utest.`package`.*.-($body)""" => (None, body)
+      case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
+      case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
     }
 
     def recurse(t: c.Tree, path: Seq[String]): (c.Tree, Seq[c.Tree]) = {
@@ -75,10 +75,15 @@ object TestHierarchyBuilder {
         val names = mutable.Buffer.empty[String]
         val bodies = mutable.Buffer.empty[c.Tree]
         for(inner <- nested){
-          val (name, tree2, newIndex) = matcher(index)(inner)
-          names.append(name)
+          val (nameOpt, tree2) = matcher(index)(inner)
+          nameOpt match{
+            case Some(name) => names.append(name)
+            case None =>
+              names.append(index.toString)
+              index += 1
+          }
           bodies.append(tree2)
-          index = newIndex
+
         }
         (names, bodies)
       }
@@ -110,7 +115,7 @@ object TestHierarchyBuilder {
     val res = q"""
       _root_.utest.framework.TestHierarchy(
         _root_.utest.framework.Tree(
-          this.getClass.getName.replace("$$", ""),
+          "",
           ..$nameTree
         ),
         $callTree
