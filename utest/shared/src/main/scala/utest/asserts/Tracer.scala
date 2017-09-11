@@ -34,10 +34,18 @@ object Tracer{
           case i @ Ident(name)
             if i.symbol.pos != NoPosition
             && i.pos != NoPosition
-            && i.symbol.pos.source == i.pos.source
-            && !i.symbol.isMethod =>
             // only trace identifiers coming from the same file,
             // since those are the ones people probably care about
+            && i.symbol.pos.source == i.pos.source
+            // Don't trace methods, since you cannot just print them "standalone"
+            // without providing arguments
+            && !i.symbol.isMethod
+            // Don't trace identifiers which are synthesized by the compiler
+            // as part of the language implementation
+            && !i.symbol.isImplementationArtifact
+            // Don't trace "magic" identifiers with '$'s in them
+            && !name.toString.contains('$') =>
+
             wrapWithLoggedValue(c)(tree, loggerName, tree.tpe.widen)
           case i: Typed =>
             i.tpe match {
