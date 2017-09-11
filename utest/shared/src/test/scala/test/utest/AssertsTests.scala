@@ -149,7 +149,13 @@ object AssertsTests extends utest.TestSuite{
           e.msg
         }
       }
+      'interceptWithAssignment{
+        var W = 1
+        try utest.asserts.intercept[Exception] { W = 2 }
+        catch{case e: utest.AssertionError => e.getMessage}
+      }
     }
+
     'assertMatch{
       'success{
         val thing = Seq(1, 2, 3)

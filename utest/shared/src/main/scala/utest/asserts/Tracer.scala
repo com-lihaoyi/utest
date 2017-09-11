@@ -59,6 +59,9 @@ object Tracer{
               case _ => super.transform(tree)
             }
 
+          // Don't recurse and trace the LHS of assignments
+          case i: Assign => super.transform(i.rhs)
+
           case _ => super.transform(tree)
         }
       }
