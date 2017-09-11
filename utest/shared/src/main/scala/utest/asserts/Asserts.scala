@@ -1,14 +1,15 @@
 package utest
 package asserts
 //import acyclic.file
-import scala.annotation.{tailrec, StaticAnnotation}
-import scala.reflect.macros.{ParseException, TypecheckException, Context}
-import scala.util.{Failure, Success, Try, Random}
-import scala.reflect.ClassTag
-import scala.reflect.internal.util.{Position, OffsetPosition}
-import scala.reflect.internal.util.OffsetPosition
-import scala.reflect.macros.{TypecheckException, Context}
+import utest.framework.StackMarker
 
+import scala.annotation.{StaticAnnotation, tailrec}
+import scala.reflect.macros.{Context, ParseException, TypecheckException}
+import scala.util.{Failure, Random, Success, Try}
+import scala.reflect.ClassTag
+import scala.reflect.internal.util.{OffsetPosition, Position}
+import scala.reflect.internal.util.OffsetPosition
+import scala.reflect.macros.{Context, TypecheckException}
 import scala.language.experimental.macros
 
 /**
@@ -96,9 +97,9 @@ object Asserts {
   }
 
 
-  def assertImpl(funcs: AssertEntry[Boolean]*) = {
+  def assertImpl(funcs: AssertEntry[Boolean]*) = StackMarker.dropInside{
     val tries = for (entry <- funcs) yield Try{
-      val (value, die) = getAssertionEntry(entry)
+      val (value, die) = Util.getAssertionEntry(entry)
       if (!value) die(null)
     }
     val failures = tries.collect{case util.Failure(thrown) => thrown}
@@ -125,12 +126,12 @@ object Asserts {
    * is returned if raised, and an `AssertionError` is raised if the expected
    * exception does not appear.
    */
-  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
-    val (res, logged, src) = runAssertionEntry(entry)
+  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = StackMarker.dropInside{
+    val (res, logged, src) = Util.runAssertionEntry(entry)
     res match{
       case Failure(e: T) => e
-      case Failure(e: Throwable) => assertError(src, logged, e)
-      case Success(v) => assertError(src, logged, null)
+      case Failure(e: Throwable) => Util.assertError(src, logged, e)
+      case Success(v) => Util.assertError(src, logged, null)
     }
   }
 
@@ -148,25 +149,22 @@ object Asserts {
    * exception does not appear.
    */
   def assertMatchImpl(entry: AssertEntry[Any])
-                     (pf: PartialFunction[Any, Unit]): Unit = {
-    val (value, die) = getAssertionEntry(entry)
+                     (pf: PartialFunction[Any, Unit]): Unit = StackMarker.dropInside{
+    val (value, die) = Util.getAssertionEntry(entry)
     if (pf.isDefinedAt(value)) ()
     else die(null)
   }
 }
-object DummyTypeclass {
-  implicit def DummyImplicit[T] = new DummyTypeclass[T]
-}
-class DummyTypeclass[+T]
-class Show extends StaticAnnotation
-trait Asserts[V[_]]{
-  def assertPrettyPrint[T: V](t: T): String
+
+
+trait Asserts{
+  def assertPrettyPrint(t: Any): fansi.Str = t.toString
 
   /**
     * Provides a nice syntax for asserting things are equal, that is pretty
     * enough to embed in documentation and examples
     */
-  implicit class ArrowAssert[T](lhs: T){
+  implicit class ArrowAssert(lhs: Any){
     def ==>[V](rhs: V) = {
       (lhs, rhs) match{
           // Hack to make Arrays compare sanely; at some point we may want some
@@ -181,7 +179,7 @@ trait Asserts[V[_]]{
 
   /**
     * Asserts that the given expression fails to compile, and returns a
-    * [[framework.CompileError]] containing the message of the failure. If the expression
+    * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
   def compileError(expr: String): CompileError = macro Asserts.compileError

@@ -2,76 +2,120 @@ package utest
 package runner
 //import acyclic.file
 import sbt.testing._
-import utest.TestSuite
 
 import scala.util.Failure
-
 import org.scalajs.testinterface.TestUtils
+import utest.framework.Tree
+object BaseRunner{
+  /**
+    * Checks whether the given query needs the TestSuite at testSuitePath
+    * to execute or not. It needs to execute if one of the terminal nodes in the
+    * query is one of the TestSuite's ancestors in the tree, or one-or-more of
+    * it's children, but not if the terminal nodes are unrelated.
+    */
+  def checkOverlap(query: Seq[Tree[String]], testSuitePath: Seq[String]): Boolean = {
+    def rec(current: Seq[Tree[String]], remainingSegments: List[String]): Boolean = {
+      (current, remainingSegments) match {
+        // The query refers to a *parent* node of this TestSuite, thus this tree gets run
+        case (Nil, _) => true
+        // The query refers to a *child* node of this TestSuite, also meaning this tree gets run
+        case (_, Nil) => true
+
+        case (subtrees, nextSegment :: rest) =>
+          subtrees.find(_.value == nextSegment) match{
+            // This query refers only to sibling nodes for this TestSuite, so we do not run it
+            case None => false
+            case Some(subtree) => rec(subtree.children, rest)
+          }
+      }
+    }
+    rec(query, testSuitePath.toList)
+  }
+  def renderBanner(s: String) = {
+    val dashes = "-" * ((78 - s.length) / 2)
+    dashes + " " + s + " " + dashes
+  }
+}
+
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
-                          testClassLoader: ClassLoader)
+                          testClassLoader: ClassLoader,
+                          useSbtLoggers: Boolean)
                           extends sbt.testing.Runner{
+
+  lazy val path = args.headOption.filter(_(0) != '-')
+  lazy val query = path
+    .map(Query(_))
+    .getOrElse(Nil)
+
   def addResult(r: String): Unit
   def addFailure(r: String): Unit
   def addTrace(trace: String): Unit
-  def addTotal(v: Int): Unit
   def incSuccess(): Unit
   def incFailure(): Unit
 
-  def tasks(taskDefs: Array[TaskDef]) = taskDefs.map(makeTask)
+  def tasks(taskDefs: Array[TaskDef]) = {
+    val allPaths = query.flatMap(_.leafPaths)
+    // This is in theory quadratic but it is probably find
+    val unknownPaths = allPaths.filter( p =>
+      !taskDefs.exists{ t =>
+        val taskSegments = t.fullyQualifiedName().split('.')
+        taskSegments.startsWith(p) || p.startsWith(taskSegments)
+      }
+    )
+    if (unknownPaths.nonEmpty){
+      throw new NoSuchTestException(unknownPaths:_*)
+    }else for{
+      taskDef <- taskDefs
+      if BaseRunner.checkOverlap(query, taskDef.fullyQualifiedName().split('.'))
+    } yield makeTask(taskDef)
+  }
 
-  /**
-    * Actually performs the running of a particular test
-    *
-    * @param selector The name of the test within the test class/object
-    * @param loggers SBT loggers which are interested in the logspam generated
-    * @param name The name of the test class/object
-    */
-  def runSuite(selector: Seq[String],
-               loggers: Seq[Logger],
+  def runSuite(loggers: Seq[Logger],
                name: String,
-               eventHandler: EventHandler) = {
+               eventHandler: EventHandler,
+               taskDef: TaskDef) = {
     val suite = TestUtils.loadModule(name, testClassLoader).asInstanceOf[TestSuite]
-    val selectorString = selector.mkString(".")
 
     def handleEvent(op: OptionalThrowable, st: Status) = {
       eventHandler.handle(new Event {
-        def fullyQualifiedName() = selectorString
+        def fullyQualifiedName() = name
         def throwable() = op
         def status() = st
-        def selector() = new TestSelector(selectorString)
-        def fingerprint() = new SubclassFingerprint {
-          def superclassName = "utest.TestSuite"
-          def isModule = true
-          def requireNoArgConstructor = true
-        }
+        def selector() = new TestSelector(path.getOrElse(""))
+        def fingerprint() = taskDef.fingerprint()
         def duration() = 0
       })
     }
 
-    val title = s"Starting Suite " + name
-    val dashes = "-" * ((80 - title.length) / 2)
-    loggers.foreach(_.info(dashes + title + dashes))
+    val innerQuery = {
+      def rec(currentQuery: Query#Trees, segments: List[String]): Query#Trees = {
+        segments match{
+          case head :: tail =>
+            currentQuery.find(_.value == head) match{
+              case None => Nil
+              case Some(sub) => rec(sub.children, tail)
+            }
+          case Nil => currentQuery
+        }
 
-    val (indices, found) = suite.tests.resolve(selector)
-
-    addTotal(found.length)
-
-    implicit val ec =
-      if (utest.framework.ArgParse.find("--parallel", _.toBoolean, false, true)(args)){
-        scala.concurrent.ExecutionContext.global
-      }else{
-        utest.framework.ExecutionContext.RunNow
       }
+      rec(query, name.split('.').toList)
+    }
 
-    val results = suite.tests.runAsync(
-      (subpath, s) => {
-        if(s.value.isSuccess) incSuccess() else  incFailure()
+    implicit val ec = utest.framework.ExecutionContext.RunNow
 
-        val str = suite.formatSingle(selector ++ subpath, s)
-        handleEvent(new OptionalThrowable(), Status.Success)
-        str.foreach{msg => loggers.foreach(_.info(name + "" + msg))}
-        s.value match{
+
+    val results = utest.framework.Executor.runAsync(
+      suite.tests,
+      (subpath, result) => {
+        val str = suite.formatSingle(name.split('.') ++ subpath, result)
+
+        str.foreach{msg =>
+          if (useSbtLoggers) loggers.foreach(_.info(msg.split('\n').mkString("\n")))
+          else println(msg)
+        }
+        result.value match{
           case Failure(e) =>
             handleEvent(new OptionalThrowable(e), Status.Failure)
             // Trim the stack trace so all the utest internals don't get shown,
@@ -79,25 +123,25 @@ abstract class BaseRunner(val args: Array[String],
             e.setStackTrace(
               e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
             )
-            addFailure(name + "" + str.getOrElse(""))
-            addTrace(
-              if (e.isInstanceOf[SkippedOuterFailure]) ""
-              else e.getStackTrace.map(_.toString).mkString("\n")
-            )
-          case _ => ()
+            incFailure()
+            addFailure(str.fold("")(_.render))
+            addTrace(e.getStackTrace.map(_.toString).mkString("\n"))
+          case _ =>
+            handleEvent(new OptionalThrowable(), Status.Success)
+            incSuccess()
         }
       },
-      testPath = selector,
-      wrap = suite.utestWrap(_)(ec)
-    )(ec)
+      query = innerQuery,
+      wrap = suite.utestWrap(_, _)(ec),
+      ec = ec
+    )
 
-    results.map(suite.format).map(_.foreach(addResult))
+    results.map(suite.formatSummary(name, _).foreach(x => addResult(x.render)))
   }
 
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {
-    val path = args.lift(0).filter(_(0) != '-').getOrElse("")
-    new Task(taskDef, args, path, runSuite)
+    new Task(taskDef, runSuite(_, taskDef.fullyQualifiedName(), _, taskDef))
   }
   // Scala.js test interface specific methods
   def deserializeTask(task: String, deserializer: String => TaskDef): sbt.testing.Task =

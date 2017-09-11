@@ -2,14 +2,11 @@ package utest
 
 //import acyclic.file
 
-case class SkippedOuterFailure(errorPath: Seq[String],
-                               outerError: Throwable)
-                               extends Exception(errorPath.mkString("."), outerError)
-
 /**
  * Indicates that there was no test to run at the path you provided
  */
-case class NoSuchTestException(path: String*) extends Exception("["+path.mkString(".") + "]")
+case class NoSuchTestException(path: Seq[String]*)
+  extends Exception(path.map(_.mkString(".")).mkString("[", ", ", "]"))
 
 /**
  * A special `AssertionError` thrown by utest's macro-powered asserts that 
@@ -33,7 +30,7 @@ case class TestValue(name: String, tpeName: String, value: Any)
 
 /**
  * Simplified versions of the errors thrown during compilation, for use with the
- * [[compileError]] macro. Contains only a single message and no position since
+ * [[utest.asserts.Asserts.compileError]] macro. Contains only a single message and no position since
  * things compiled using macros don't really have source positions.
  */
 trait CompileError{

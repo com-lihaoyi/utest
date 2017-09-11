@@ -31,7 +31,7 @@ object Parallel {
                     (implicit interval: RetryInterval, max: RetryMax): Unit = {
     val start = Deadline.now
     @tailrec def rec(): Unit = {
-      val result = funcs.map(runAssertionEntry)
+      val result = funcs.map(Util.runAssertionEntry)
 
       val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src) => (logged, src) }
       die match{
@@ -41,7 +41,7 @@ object Parallel {
             Thread.sleep(interval.d.toMillis)
             rec()
           }else{
-            assertError(
+            Util.assertError(
               "eventually " + src,
               result.filter(_._1 != Success(true)).flatMap(_._2)
             )
@@ -60,11 +60,11 @@ object Parallel {
                      (implicit interval: RetryInterval, max: RetryMax): Unit = {
     val start = Deadline.now
     @tailrec def rec(): Unit = {
-      val result = funcs.map(runAssertionEntry)
+      val result = funcs.map(Util.runAssertionEntry)
       val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src) => (logged, src) }
       die match{
         case Some((logged, src)) =>
-          assertError(
+          Util.assertError(
             "continually " + src,
             logged
           )

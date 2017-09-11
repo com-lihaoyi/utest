@@ -9,12 +9,12 @@ object SharedFixturesTests extends TestSuite{
       x += 1
       'X{
         x += 2
-        assert(x == 4)
+        assert(x == 3)
         x
       }
       'Y{
         x += 3
-        assert(x == 8)
+        assert(x == 7)
         x
       }
     }
@@ -22,7 +22,7 @@ object SharedFixturesTests extends TestSuite{
       x += 4
       'Z{
         x += 5
-        assert(x == 21)
+        assert(x == 16)
         x
       }
     }

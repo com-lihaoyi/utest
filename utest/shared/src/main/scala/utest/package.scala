@@ -1,13 +1,11 @@
 
 import utest.asserts._
-import utest.framework.{Test, TestTreeSeq}
-import utest.framework.Tree
 import scala.concurrent.duration._
 
 /**
  * Created by haoyi on 1/24/14.
  */
-package object utest {
+package object utest extends utest.framework.Executor{
   implicit val retryInterval = new RetryInterval(100.millis)
   implicit val retryMax = new RetryMax(1.second)
   import scala.language.experimental.macros
@@ -42,13 +40,6 @@ package object utest {
     @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a TestSuite{} macro")
     def -(x: => Any) = ()
   }
-
-  /**
-   * Extension methods on `Tree[Test]` in order to conveniently run the tests
-   * and aggregate the results
-   */
-  implicit def toTestSeq(t: Tree[Test]) = new TestTreeSeq(t)
-
 
   /**
    * Placeholder object used to declare test cases which you don't want to 

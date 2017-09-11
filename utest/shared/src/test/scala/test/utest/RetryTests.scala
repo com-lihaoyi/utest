@@ -20,7 +20,7 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
 }
 
 object SuiteManualRetryTests extends utest.TestSuite{
-  override def utestWrap(body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
+  override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
     def rec(count: Int): Future[Any] = {
       body.recoverWith { case e =>
         if (count < 5) rec(count + 1)

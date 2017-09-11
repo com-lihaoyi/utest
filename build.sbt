@@ -1,5 +1,7 @@
 import sbtcrossproject.{crossProject, CrossType}
 import com.typesafe.sbt.pgp.PgpKeys._
+import sbt.Keys.scalacOptions
+import sbt.addCompilerPlugin
 
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
@@ -7,7 +9,7 @@ scalaVersion       in ThisBuild := "2.12.2"
 crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M1")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
-triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
+//triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
 releaseTagComment  in ThisBuild := s"v${(version in ThisBuild).value}"
 releaseVcsSign     in ThisBuild := true
 
@@ -51,8 +53,14 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       id = "lihaoyi",
       name = "Li Haoyi",
       url = url("https://github.com/lihaoyi")
-    )
-  )
+    )//,
+//    autoCompilerPlugins := true,
+//
+//    addCompilerPlugin("com.lihaoyi" %% "acyclic" % "0.1.7"),
+//
+//    scalacOptions += "-P:acyclic:force"
+
+)
   .jsSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion
   )
@@ -68,7 +76,8 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     crossScalaVersions := Seq("2.11.11"),
     libraryDependencies ++= Seq(
       "org.scala-native" %%% "test-interface" % "0.3.0"
-    )
+    ),
+    nativeLinkStubs := true
   )
 
 def macroDependencies(version: String) =

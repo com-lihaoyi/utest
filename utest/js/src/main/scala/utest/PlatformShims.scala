@@ -1,6 +1,5 @@
 package utest
 
-
 import scala.concurrent.Future
 
 /**

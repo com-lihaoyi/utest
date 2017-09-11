@@ -11,11 +11,17 @@ final class MasterRunner(args: Array[String],
                          remoteArgs: Array[String],
                          testClassLoader: ClassLoader,
                          setup: () => Unit,
-                         teardown: () => Unit)
-                         extends BaseRunner(args, remoteArgs, testClassLoader){
+                         teardown: () => Unit,
+                         showSummaryThreshold: Int,
+                         startHeader: String => String,
+                         resultsHeader: String,
+                         failureHeader: String,
+                         useSbtLoggers: Boolean)
+                         extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers){
+
+  println(startHeader(path.fold("")(" " + _)))
   setup()
   val results = new AtomicReference[List[String]](Nil)
-  val total = new AtomicInteger(0)
   val success = new AtomicInteger(0)
   val failure = new AtomicInteger(0)
   val failures = new AtomicReference[List[String]](Nil)
@@ -35,40 +41,50 @@ final class MasterRunner(args: Array[String],
     if (!traces.compareAndSet(old, r :: old)) addTrace(r)
   }
 
-  def addTotal(v: Int): Unit = total.addAndGet(v)
   def incSuccess(): Unit = success.incrementAndGet()
   def incFailure(): Unit = failure.incrementAndGet()
 
   def successCount: Int = success.get
   def failureCount: Int = failure.get
-  def totalCount: Int = total.get
 
   def done(): String = {
     teardown()
-    val header = "-----------------------------------Results-----------------------------------"
+    val total = success.get() + failure.get()
+    /**
+      * Print out the results summary ourselves rather than returning it from
+      * `done`, to work around https://github.com/sbt/sbt/issues/3510
+      */
+    if (total > 0) {
+      val body = results.get.mkString("\n")
 
-    val body = results.get.mkString("\n")
+      val failureMsg: fansi.Str =
+        if (failures.get() == Nil) ""
+        else fansi.Str(failureHeader) ++ fansi.Str.join(
+          // reverse, because the list gets accumulated backwards
+          failures.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
+        )
 
-    val failureMsg = if (failures.get() == Nil) ""
-    else Seq(
-      Console.RED + "Failures:",
-      failures.get()
-              .zip(traces.get())
-              // We pre-pending to a list, so need to reverse to make the order correct
-              .reverse
-              // ignore those with an empty trace, e.g. utest.SkippedOuterFailures,
-              // since those are generally just spam (we already can see the outer failure)
-              .collect{case (f, t) if t != "" => f + ("\n" + t).replace("\n", "\n"+Console.RED)}
-              .mkString("\n")
-    ).mkString("\n")
-    Seq(
-      header,
-      body,
-      failureMsg,
-      s"Tests: $total",
-      s"Passed: $success",
-      s"Failed: $failure"
-    ).mkString("\n")
+      val summary: fansi.Str =
+        if (total < showSummaryThreshold) ""
+        else fansi.Str.join(
+          resultsHeader, "\n",
+          body, "\n",
+          failureMsg, "\n"
+        )
+
+      println(
+        fansi.Str.join(
+          summary,
+          s"Tests: ", total.toString, ", ",
+          s"Passed: ", success.toString, ", ",
+          s"Failed: ", failure.toString
+        ).render
+      )
+    }
+    // Don't print anything, but also don't print the default message it
+    // normally prints if you return an empty string, and don't print the
+    // [info] gutter it prints if you return " "
+    "\n"
   }
 
   def receiveMessage(msg: String): Option[String] = {
@@ -77,7 +93,6 @@ final class MasterRunner(args: Array[String],
       case 'h' => // hello message. nothing special to do
       case 'r' => addResult(msg.tail)
       case 'f' => addFailure(msg.tail)
-      case 't' => addTotal(msg.tail.toInt)
       case 'c' => addTrace(msg.tail)
       case 'i' => msg(1) match {
         case 's' => incSuccess()
@@ -87,7 +102,7 @@ final class MasterRunner(args: Array[String],
       case _ => badMessage
     }
 
-    val countMsg = s"$successCount,$failureCount,$totalCount"
+    val countMsg = s"$successCount,$failureCount"
     Some(countMsg)
   }
 

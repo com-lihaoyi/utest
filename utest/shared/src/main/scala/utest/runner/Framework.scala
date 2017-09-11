@@ -8,26 +8,67 @@ class Framework extends sbt.testing.Framework{
 
   def name(): String = "utest"
 
+  /**
+    * Override to run code before tests start running. Useful for setting up
+    * global databases, initializing caches, etc.
+    */
   def setup() = ()
-  def teardown() = ()
-  def fingerprints(): Array[sbt.testing.Fingerprint] = Array(
-    new SubclassFingerprint {
-      def superclassName = "utest.TestSuite"
-      def isModule = true
-      def requireNoArgConstructor = true
-    }
-  )
 
-  def runner(args: Array[String],
+  /**
+    * Override to run code after tests finish running. Useful for shutting
+    * down daemon processes, closing network connections, etc.
+    */
+  def teardown() = ()
+
+  /**
+    * How many tests need to run before uTest starts printing out the test
+    * results summary and test failure summary at the end of a test run. For
+    * small sets of tests, these aren't necessary since all the output fits
+    * nicely on one screen; only when the number of tests gets large and their
+    * output gets noisy does it become valuable to show the clean summaries at
+    * the end of the test run.
+    */
+  def showSummaryThreshold = 40
+
+  /**
+    * Whether to use SBT's test-logging infrastructure, or just println.
+    *
+    * Defaults to println because SBT's test logging doesn't seem to give us
+    * anything that we want, and does annoying things like making a left-hand
+    * gutter and buffering input by default
+    */
+  def useSbtLoggers = false
+
+  def resultsHeader = BaseRunner.renderBanner("Results")
+  def failureHeader = BaseRunner.renderBanner("Failures")
+
+
+  def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)
+
+
+  final def fingerprints(): Array[sbt.testing.Fingerprint] = Array(Fingerprint)
+
+  final def runner(args: Array[String],
              remoteArgs: Array[String],
              testClassLoader: ClassLoader) = {
-    new MasterRunner(args, remoteArgs, testClassLoader, setup, teardown)
+    new MasterRunner(
+      args,
+      remoteArgs,
+      testClassLoader,
+      setup,
+      teardown,
+      showSummaryThreshold,
+      startHeader,
+      resultsHeader,
+      failureHeader,
+      useSbtLoggers
+    )
   }
 
-  def slaveRunner(args: Array[String],
+  final def slaveRunner(args: Array[String],
                   remoteArgs: Array[String],
                   testClassLoader: ClassLoader,
                   send: String => Unit) = {
-    new ScalaJsSlaveRunner(args, remoteArgs, testClassLoader, send, setup, teardown)
+    new ScalaJsSlaveRunner(args, remoteArgs, testClassLoader, send, setup, teardown, useSbtLoggers)
   }
 }

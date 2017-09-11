@@ -6,7 +6,7 @@ addSbtPlugin("com.jsuereth"      % "sbt-pgp"                  % "1.0.1")
 addSbtPlugin("com.github.gseitz" % "sbt-release"              % "1.0.5")
 addSbtPlugin("org.scala-js"      % "sbt-scalajs"              % scalaJSVersion)
 addSbtPlugin("org.scala-native"  % "sbt-crossproject"         % "0.2.0")
-addSbtPlugin("org.scala-native"  % "sbt-scala-native"         % "0.3.0")
+addSbtPlugin("org.scala-native"  % "sbt-scala-native"         % "0.3.3")
 
 {
   if (scalaJSVersion.startsWith("0.6."))

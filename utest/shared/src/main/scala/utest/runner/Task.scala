@@ -3,16 +3,16 @@ package runner
 //import acyclic.file
 import sbt.testing._
 import sbt.testing
-import scala.concurrent.{Future, Await}
-import concurrent.duration._
 
-import utest.framework.ExecutionContext
+import scala.concurrent.{Await, Future}
+import concurrent.duration._
+import utest.framework.{ExecutionContext, Tree}
 
 class Task(val taskDef: TaskDef,
-           args: Array[String],
-           path: String,
-           runUTestTask: (Seq[String], Seq[Logger], String, EventHandler) => Future[Unit])
+           runUTestTask: (Seq[Logger], EventHandler) => Future[Unit])
            extends sbt.testing.Task{
+
+
 
   def tags(): Array[String] = Array()
 
@@ -27,7 +27,7 @@ class Task(val taskDef: TaskDef,
 
     implicit val ec = ExecutionContext.RunNow
 
-    val logged = executeInternal(eventHandler, loggers).recover { case t =>
+    executeInternal(eventHandler, loggers).recover { case t =>
       loggers.foreach(_.trace(t))
     }.onComplete{_ =>
       continuation(Array())
@@ -35,29 +35,7 @@ class Task(val taskDef: TaskDef,
   }
 
   private def executeInternal(eventHandler: EventHandler, loggers: Array[Logger]) = {
+    runUTestTask(loggers, eventHandler)
 
-    val allPaths: Seq[String] =
-      if (!path.endsWith("}")) Seq(path)
-      else{
-        val (first, last) = path.splitAt(path.lastIndexOf("{"))
-        last.drop(1).dropRight(1).split(",").map(first + _.trim())
-      }
-
-    val fqName = taskDef.fullyQualifiedName()
-
-    if (allPaths.exists(fqName.startsWith)){
-      runUTestTask(Nil, loggers, fqName, eventHandler)
-    } else {
-      implicit val ex = ExecutionContext.RunNow
-      val futs = allPaths.filter(_.startsWith(fqName)).map{p =>
-        runUTestTask(
-          p.drop(fqName.length).split("\\.").filter(_.length > 0),
-          loggers,
-          fqName,
-          eventHandler
-        )
-      }
-      Future.sequence(futs)
-    } // else do nothing
   }
 }
