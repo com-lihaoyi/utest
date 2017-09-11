@@ -59,13 +59,14 @@ object TestHierarchyBuilder {
           }
         }
       }
+
       val normal = normal0.map(transformer.transform(_))
 
       val (normal2, last) =
         if (normal.isEmpty
           || normal.last.isInstanceOf[MemberDefApi]
           || nested.contains(b.children.last)) {
-          (normal, c.typeCheck(q"()"))
+          (normal, q"()")
         }else{
           (normal.init, normal.last)
         }
@@ -97,7 +98,7 @@ object TestHierarchyBuilder {
         case (name, suite) => q"_root_.utest.framework.Tree($name, ..$suite)"
       }
 
-      val callTree = c.typeCheck(q"""
+      val callTree = q"""
         new _root_.utest.framework.TestCallTree({
           ..$normal2
           ${
@@ -105,7 +106,7 @@ object TestHierarchyBuilder {
             else q"$last; _root_.scala.Right(Array(..$childCallTrees))"
           }
         })
-      """)
+      """
 
       (callTree, nameTree)
     }
