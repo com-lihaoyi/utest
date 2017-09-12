@@ -10,14 +10,14 @@ import utest._
 object AssertsTests extends utest.TestSuite{
 
 
-  def tests = this{
-    'assert{
-      'success{
+  def tests = Tests{
+    'assert - {
+      'success - {
         def f(x: Boolean) = x
         assert(f(true))
         "success!"
       }
-      'failure{
+      'failure - {
         val (e, logged, cause) = try {
           val x = 1
           val y = "2"
@@ -52,7 +52,7 @@ object AssertsTests extends utest.TestSuite{
           "Message didnt contain source text " + e.toString
         )
       }
-      'failureWithException{
+      'failureWithException - {
         try {
           assert(Iterator.empty.next() == 10)
           Predef.assert(false)
@@ -63,7 +63,7 @@ object AssertsTests extends utest.TestSuite{
         }
       }
 
-      'tracingOnFailure{
+      'tracingOnFailure - {
         try {
           val a = "i am cow"
           val b = 31337
@@ -75,7 +75,7 @@ object AssertsTests extends utest.TestSuite{
           e.getMessage.contains("98")
         }
       }
-      'multiple{
+      'multiple - {
         // Make sure multiple failures in a single assert are aggregated
         def die = throw new IllegalArgumentException("foo")
         try {
@@ -90,7 +90,7 @@ object AssertsTests extends utest.TestSuite{
           ) = e
         }
       }
-      'show{
+      'show - {
         try assert((math.max(1 + 1, 2): @Show) == 3) catch{
           case utest.AssertionError(
             _,
@@ -101,7 +101,7 @@ object AssertsTests extends utest.TestSuite{
         }
       }
     }
-    'arrowAssert{
+    'arrowAssert - {
       1 ==> 1 // passes
       Array(1, 2, 3) ==> Array(1, 2, 3) // passes
       try{
@@ -110,15 +110,15 @@ object AssertsTests extends utest.TestSuite{
         e
       }
     }
-    'intercept{
-      'success{
+    'intercept - {
+      'success - {
         val e = intercept[MatchError]{
           (0: Any) match { case _: String => }
         }
         Predef.assert(e.toString.contains("MatchError"))
         e.toString
       }
-      'failureWrongException{
+      'failureWrongException - {
         try {
           val x = 1
           val y = 2.0
@@ -136,7 +136,7 @@ object AssertsTests extends utest.TestSuite{
           e.msg
         }
       }
-      'failureNoThrow{
+      'failureNoThrow - {
         try{
           val x = 1
           val y = 2.0
@@ -149,21 +149,21 @@ object AssertsTests extends utest.TestSuite{
           e.msg
         }
       }
-      'interceptWithAssignment{
+      'interceptWithAssignment - {
         var W = 1
         try utest.asserts.intercept[Exception] { W = 2 }
         catch{case e: utest.AssertionError => e.getMessage}
       }
     }
 
-    'assertMatch{
-      'success{
+    'assertMatch - {
+      'success - {
         val thing = Seq(1, 2, 3)
         assertMatch(thing){case Seq(1, _, 3) =>}
         ()
       }
 
-      'failure{
+      'failure - {
         try {
           val x = 1
           val iAmCow = Seq("2.0")
@@ -180,7 +180,7 @@ object AssertsTests extends utest.TestSuite{
         }
       }
 
-      'failureWithException{
+      'failureWithException - {
         try {
           val a = Iterator.empty
           val b = 2
@@ -194,8 +194,8 @@ object AssertsTests extends utest.TestSuite{
         }
       }
     }
-    'compileError{
-      'success {
+    'compileError - {
+      'success - {
         // Make sure that on successfully catching a compilation
         // error, the error it reports is in the correct place for
         // a variety of inputs
@@ -260,7 +260,7 @@ object AssertsTests extends utest.TestSuite{
         )
       }
 
-      'failure{
+      'failure - {
         // Use compileError to check itself to verify that when it
         // doesn't throw an error, it actually does (super meta!)
         * - compileError("""
@@ -299,7 +299,7 @@ object AssertsTests extends utest.TestSuite{
         )
 
       }
-      'compileTimeOnly{
+      'compileTimeOnly - {
         // Make sure that when the body contains a `@compileTimeOnly`, it
         // gets counted as a valid compile error and `compileError` passes
         compileError("compileTimeOnlyVal").check(

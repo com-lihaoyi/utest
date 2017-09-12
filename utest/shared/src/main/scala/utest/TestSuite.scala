@@ -2,7 +2,7 @@ package utest
 
 //import acyclic.file
 
-import utest.framework.{Formatter, TestHierarchy}
+import utest.framework.{Formatter, Tests}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.macros.Context
@@ -15,30 +15,18 @@ import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
  */
 @EnableReflectiveInstantiation
 abstract class TestSuite
-  extends TestSuiteMacro
-  with utest.asserts.Asserts
-  with Formatter{
-
-  def utestWrap(path: Seq[String], runBody: => concurrent.Future[Any])
-               (implicit ec: ExecutionContext): concurrent.Future[Any] = {
-    runBody
-  }
-
-  /**
-   * The tests within this `object`.
-   */
-  def tests: TestHierarchy
+  extends asserts.Asserts
+  with framework.Formatter
+  with framework.Executor{
+  def tests: Tests
+  @deprecated("Use `utest.Tests{...}` instead")
+  def apply(expr: Unit): Tests = macro framework.TestHierarchyBuilder.applyImpl
 }
 
-trait TestSuiteMacro{
-  /**
-    * Macro to demarcate a `Tree[Test]`.
-    */
-  def apply(expr: Unit): TestHierarchy = macro framework.TestHierarchyBuilder.applyImpl
-}
-object TestSuite extends TestSuiteMacro{
+object TestSuite {
 
-
+  @deprecated("Use `utest.Tests{...}` instead")
+  def apply(expr: Unit): Tests = macro framework.TestHierarchyBuilder.applyImpl
   trait Retries extends utest.TestSuite{
     val utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {

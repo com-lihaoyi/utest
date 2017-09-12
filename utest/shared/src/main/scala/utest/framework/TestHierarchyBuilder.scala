@@ -17,7 +17,7 @@ object TestHierarchyBuilder {
     throw new IllegalArgumentException(s"Test nested badly: $testName")
   }
 
-  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[TestHierarchy] = {
+  def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[Tests] = {
     import c.universe._
 
     def literalValue(t: c.Tree) = {
@@ -114,7 +114,7 @@ object TestHierarchyBuilder {
     val (callTree, nameTree) = recurse(expr.tree, Vector())
 
     val res = q"""
-      _root_.utest.framework.TestHierarchy(
+      _root_.utest.framework.Tests(
         _root_.utest.framework.Tree(
           "",
           ..$nameTree
@@ -122,6 +122,6 @@ object TestHierarchyBuilder {
         $callTree
       )"""
 
-    c.Expr[TestHierarchy](res)
+    c.Expr[Tests](res)
   }
 }

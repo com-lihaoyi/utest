@@ -5,7 +5,9 @@ import scala.concurrent.duration._
 /**
  * Created by haoyi on 1/24/14.
  */
-package object utest extends utest.framework.Executor{
+package object utest {
+  val Tests = framework.Tests
+  type Tests = framework.Tests
   implicit val retryInterval = new RetryInterval(100.millis)
   implicit val retryMax = new RetryMax(1.second)
   import scala.language.experimental.macros

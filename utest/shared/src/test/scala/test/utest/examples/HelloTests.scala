@@ -2,7 +2,7 @@ package test.utest.examples
 
 import utest._
 object HelloTests extends TestSuite{
-  val tests = this{
+  val tests = Tests{
     'test1{
 //      throw new Exception("test1")
     }

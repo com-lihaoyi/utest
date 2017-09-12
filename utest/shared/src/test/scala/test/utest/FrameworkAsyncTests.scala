@@ -6,13 +6,13 @@ object FrameworkAsyncTests extends utest.TestSuite{
   implicit val ec = utest.framework.ExecutionContext.RunNow
   private val isNative = sys.props("java.vm.name") == "Scala Native"
 
-  def tests = this{
+  def tests = Tests{
     'hello{
       Future(10)
     }
 
     'asyncFailures {
-      val tests = this {
+      val tests = Tests {
         "testSuccessAsync" - {
           val p = concurrent.Promise[Int]
           utest.Scheduler.scheduleOnce(2 seconds)(p.success(123))
@@ -66,7 +66,7 @@ object FrameworkAsyncTests extends utest.TestSuite{
         }
       }
 
-      utest.runAsync(tests).map { results =>
+      TestRunner.runAsync(tests).map { results =>
         val leafResults = results.leaves.toSeq
         assert(leafResults(0).value.isSuccess) // testSuccessAsync
         assert(leafResults(1).value.isFailure) // testFailAsync

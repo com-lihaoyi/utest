@@ -83,7 +83,7 @@ package test.utest.examples
 import utest._
 
 object HelloTests extends TestSuite{
-  val tests = this{
+  val tests = Tests{
     'test1{
       throw new Exception("test1")
     }
@@ -141,7 +141,7 @@ package test.utest.examples
 import utest._
 
 object NestedTests extends TestSuite{
-  val tests =  this{
+  val tests =  Tests{
     val x = 1
     'outer1 - {
       val y = x + 1
@@ -267,7 +267,7 @@ package test.utest.examples
 import utest._
 
 object SeparateSetupTests extends TestSuite{
-  val tests = this{
+  val tests = Tests{
     var x = 0
     'outer1 - {
       x += 1
@@ -304,7 +304,7 @@ initialized by another test running earlier in the block) while still making it
 convenient to share common setup code between the various tests in your suite.
 
 If you want the fixtures to really-truly be shared between individual tests,
-define it outside the `this{}` block in the enclosing object:
+define it outside the `Tests{}` block in the enclosing object:
 
 ```scala
 package test.utest.examples
@@ -313,7 +313,7 @@ import utest._
 
 object SharedFixturesTests extends TestSuite{
   var x = 0
-  val tests = this{
+  val tests = Tests{
     'outer1{
       x += 1
       'inner1{
@@ -375,7 +375,7 @@ The last way of defining tests is with the `utest.*` symbol, e.g.
 ```scala
 import utest._
 
-val test = TestSuite{
+val test = Tests{
   'test1 - {
     throw new Exception("test1")
   }
@@ -647,7 +647,7 @@ package test.utest.examples
 import utest._
 
 object TestPathTests extends TestSuite{
-  val tests = this{
+  val tests = Tests{
     'testPath{
       'foo {
         assert(implicitly[utest.framework.TestPath].value == Seq("testPath", "foo"))
@@ -704,7 +704,7 @@ Local Retries
 ```scala
 object LocalRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
-  def tests = this{
+  def tests = Tests{
     'hello - retry(3){
       flaky.run
     }
@@ -781,7 +781,7 @@ int to enable test-level retries for all tests within a suite:
 object SuiteRetryTests extends TestSuite with TestSuite.Retries{
   override val utestRetryCount = 3
   val flaky = new FlakyThing
-  def tests = this{
+  def tests = Tests{
     'hello{
       flaky.run
     }
@@ -1016,6 +1016,10 @@ Changelog
 
 - Deprecated the `'foo{...}` syntax for defining tests. We should standardize on
   `"foo" - {...}` or `'foo - {...}`
+
+- The `TestSuite{...}` for defining a block of tests is now deprecated; it never
+  actually defined a `TestSuite` object, so the name was pretty misleading. The
+  new syntax is `Tests{...}`
 
 0.4.8
 -----

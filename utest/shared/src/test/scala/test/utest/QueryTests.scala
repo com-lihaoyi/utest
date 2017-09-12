@@ -12,7 +12,7 @@ object QueryTests extends utest.TestSuite{
     Predef.assert(a == b, a)
   }
 
-  def tests = this{
+  def tests = Tests{
     * - check(
       parse("hello"),
       Right(List(Tree("hello")))

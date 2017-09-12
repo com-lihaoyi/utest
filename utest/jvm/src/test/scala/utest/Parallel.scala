@@ -15,7 +15,7 @@ object Parallel extends TestSuite{
     }
   }
 
-  val tests = TestSuite{
+  val tests = Tests{
 
 //    "parallelizingSpeedsThingsUp"-{
 //      def calc(n: Int, seed: Int) = {
@@ -29,7 +29,7 @@ object Parallel extends TestSuite{
 //        }
 //      }
 //
-//      val tests = TestSuite{
+//      val tests = Tests{
 //        "test1"-calc(1000000000, Random.nextInt())
 //        "test2"-calc(1000000000, Random.nextInt())
 //        "test3"-calc(1000000000, Random.nextInt())

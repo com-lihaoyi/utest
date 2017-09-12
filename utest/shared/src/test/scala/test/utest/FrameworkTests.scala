@@ -1,8 +1,7 @@
 package test.utest
 import utest._
-
+import utest.framework.TestPath
 import scala.util.{Failure, Success}
-import utest.framework._
 import utest.framework.Result
 
 import scala.concurrent.ExecutionContext
@@ -21,9 +20,9 @@ object FrameworkTests extends utest.TestSuite{
     }
   }
   implicit val ec = utest.framework.ExecutionContext.RunNow
-  def tests = this{
-    def testHelloWorld(tests: TestHierarchy) = {
-      val results = utest.run(tests)
+  def tests = Tests{
+    def testHelloWorld(tests: Tests) = {
+      val results = TestRunner.run(tests)
       assert(tests.nameTree.length == 4)
       assert(tests.nameTree.leaves.length == 3)
       assert(results.leaves.length == 3)
@@ -31,8 +30,8 @@ object FrameworkTests extends utest.TestSuite{
       assert(results.leaves.count(_.value.isSuccess) == 1)
       results.leaves.map(_.value).toList
     }
-    'helloWorld{
-      val tests = this{
+    'helloWorld - {
+      val tests = Tests{
         "test1"-{
           throw new Exception("test1")
         }
@@ -46,8 +45,8 @@ object FrameworkTests extends utest.TestSuite{
       }
       testHelloWorld(tests)
     }
-    'helloWorldSymbol{
-      val tests = this{
+    'helloWorldSymbol - {
+      val tests = Tests{
         'test1{
           throw new Exception("test1")
         }
@@ -61,8 +60,8 @@ object FrameworkTests extends utest.TestSuite{
       }
       testHelloWorld(tests)
     }
-    'helloWorldSymbol2{
-      val tests = this{
+    'helloWorldSymbol2 - {
+      val tests = Tests{
         'test1-{
           throw new Exception("test1")
         }
@@ -76,37 +75,37 @@ object FrameworkTests extends utest.TestSuite{
       testHelloWorld(tests)
     }
 
-    'failures{
-      'noSuchTest{
-        val tests = this{
-          'test1{
+    'failures - {
+      'noSuchTest - {
+        val tests = Tests{
+          'test1 - {
             1
           }
 
         }
         try{
-          println(utest.run(tests, query=utest.Query("does.not.exist")))
+          println(TestRunner.run(tests, query=utest.Query("does.not.exist")))
         }catch {case e @ NoSuchTestException(Seq("does")) =>
           assert(e.getMessage.contains("[does]"))
           e.getMessage
         }
       }
       'weirdTestName{
-        val tests = this{
+        val tests = Tests{
           "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
             1
           }
         }
-        utest.run(tests)
+        TestRunner.run(tests)
 
       }
-      'testNestedBadly{
+      'testNestedBadly - {
         // Ideally should not compile, but until I
         // figure that out, a runtime error works great
         //
         // This does not compile
 //        try{
-//          val tests = this{
+//          val tests = Tests{
 //            "outer"-{
 //              if (true){
 //                "inners"-{
@@ -123,17 +122,17 @@ object FrameworkTests extends utest.TestSuite{
       }
     }
 
-    'extractingResults{
-     'basic{
-        val tests = this{
-          'test1{
+    'extractingResults - {
+     'basic - {
+        val tests = Tests{
+          'test1 - {
             "i am cow"
           }
-          'test2{
-            "1"-{
+          'test2 - {
+            "1" - {
               1
             }
-            "2"-{
+            "2" - {
               2
             }
             999
@@ -142,41 +141,41 @@ object FrameworkTests extends utest.TestSuite{
             Seq('a', 'b')
           }
         }
-        val results = utest.run(tests)
+        val results = TestRunner.run(tests)
         val expected = Seq("i am cow", 1, 2, Seq('a', 'b')).map(Success[Any])
         assert(results.leaves.map(_.value).toList == expected)
         results.leaves.map(_.value.get)
       }
-      'onlyLastThingReturns{
-        val tests = this {
+      'onlyLastThingReturns - {
+        val tests = TestSuite {
           12 + 2
-          'omg{
+          'omg - {
           }
         }
-        val res = utest.run(tests).leaves.next().value
+        val res = TestRunner.run(tests).leaves.next().value
         assert(res == Success(()))
       }
     }
 
-    'nesting{
-      'importStatementsWork{
+    'nesting - {
+      'importStatementsWork - {
         // issue #7, just needs to compile
-        val tests = this {
+        val tests = TestSuite {
           import math._
-          'omg{
+          'omg - {
           }
         }
-        val res = utest.run(tests).leaves.next().value
+        val res = TestRunner.run(tests).leaves.next().value
         assert(res == Success(()))
       }
-      'lexicalScopingWorks{
-        val tests = this{
+      'lexicalScopingWorks - {
+        val tests = Tests{
           val x = 1
-          'outer{
+          'outer - {
             val y = x + 1
-            'inner{
+            'inner - {
               val z = y + 1
-              'innerest{
+              'innerest - {
                 assert(
                   x == 1,
                   y == 2,
@@ -187,94 +186,94 @@ object FrameworkTests extends utest.TestSuite{
             }
           }
         }
-        val results = utest.run(tests)
+        val results = TestRunner.run(tests)
         assert(results.leaves.count(_.value.isSuccess) == 1)
         results.leaves.map(_.value.get).toList
       }
 
-      'runForking{
+      'runForking - {
         // Make sure that when you deal with mutable variables in the enclosing
         // scopes, multiple test runs don't affect each other.
-        val tests = this{
+        val tests = Tests{
           var x = 0
-          'A{
+          'A - {
             x += 1
-            'X{
+            'X - {
               x += 2
               assert(x == 3)
               x
             }
-            'Y{
+            'Y - {
               x += 3
               assert(x == 4)
               x
             }
           }
-          'B{
+          'B - {
             x += 4
-            'Z{
+            'Z - {
               x += 5
               assert(x == 9)
               x
             }
           }
         }
-        val results = utest.run(tests)
+        val results = TestRunner.run(tests)
         assert(results.leaves.count(_.value.isSuccess) == 3)
         results.leaves.map(_.value)
       }
     }
 
     // These are Fatal in Scala.JS. Ensure they're handled else they freeze SBT.
-    'catchCastError{
-      val tests = this{
-        'ah {
+    'catchCastError - {
+      val tests = Tests{
+        'ah - {
           // This test is disabled until scala-native/scala-native#858 is not fixed.
           val isNative = sys.props("java.vm.name") == "Scala Native"
           assert(!isNative)
           0.asInstanceOf[String]
         }
       }
-      val treeResult = utest.run(tests, query=utest.Query("ah"))
+      val treeResult = TestRunner.run(tests, query=utest.Query("ah"))
       val result = treeResult.leaves.toSeq
 
       assertMatch(result) {case Seq(Result("ah", Failure(_), _))=>}
     }
 
-    'testSelection{
-      val tests = this{
-        'A{
-          'C{1}
+    'testSelection - {
+      val tests = Tests{
+        'A - {
+          'C - {1}
         }
-        'B{
-          'D{2}
-          'E{3}
+        'B - {
+          'D - {2}
+          'E - {3}
         }
       }
 
-      val res1 = utest.run(tests, query=utest.Query("A.C")).leaves.toVector
+      val res1 = TestRunner.run(tests, query=utest.Query("A.C")).leaves.toVector
       assertMatch(res1) {case Seq(Result("C", Success(1), _))=>}
 
-      val res2 = utest.run(tests, query=utest.Query("A")).leaves.toVector
+      val res2 = TestRunner.run(tests, query=utest.Query("A")).leaves.toVector
       assertMatch(res2) {case Seq(Result("C", Success(1), _))=>}
 
-      assertMatch(utest.run(tests, query=utest.Query("B")).leaves.toSeq){case Seq(
+      assertMatch(TestRunner.run(tests, query=utest.Query("B")).leaves.toSeq){case Seq(
         Result("D", Success(2), _),
         Result("E", Success(3), _)
       )=>}
     }
-    'outerFailures{
+    'outerFailures - {
       // make sure that even when tests themselves fail, test
       // discovery still works and inner tests are visible
 
       var timesRun = 0
 
-      val tests = this{
+      val tests = Tests{
         timesRun += 1
-        "A"-{
+        "A" - {
           assert(false)
-          "B"-{
-            "C"-{
+          "B" - {
+            "C" - {
               1
             }
           }
@@ -283,20 +282,20 @@ object FrameworkTests extends utest.TestSuite{
       // listing tests B and C works despite failure of A
       assertMatch(tests.nameTree.toSeq){ case Seq(_, "A", "B", "C")=>}
       assert(tests.nameTree.leaves.length == 1)
-      val successes = utest.run(tests).leaves.count(_.value.isSuccess)
+      val successes = TestRunner.run(tests).leaves.count(_.value.isSuccess)
       // Only the single outer test "C" gets run once, and it results in
       // one failure
       assert(successes == 0)
       assert(timesRun == 1)
-      val res = utest.run(tests).leaves.toSeq
+      val res = TestRunner.run(tests).leaves.toSeq
       // Check that the right exceptions are thrown
       assertMatch(res){case Seq(
         Result("C", Failure(_: AssertionError), _)
       )=>}
       "timeRun: " + timesRun
     }
-    'testPath{
-      'foo {
+    'testPath - {
+      'foo - {
         assert(implicitly[utest.framework.TestPath] == TestPath(Seq("testPath", "foo")))
       }
     }

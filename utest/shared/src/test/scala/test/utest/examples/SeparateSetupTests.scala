@@ -3,7 +3,7 @@ package test.utest.examples
 import utest._
 
 object SeparateSetupTests extends TestSuite{
-  val tests = this{
+  val tests = Tests{
     var x = 0
     'outer1 - {
       x += 1

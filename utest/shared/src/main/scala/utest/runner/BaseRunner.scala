@@ -112,7 +112,7 @@ abstract class BaseRunner(val args: Array[String],
     implicit val ec = utest.framework.ExecutionContext.RunNow
 
 
-    val results = utest.framework.Executor.runAsync(
+    val results = TestRunner.runAsync(
       suite.tests,
       (subpath, result) => {
         val str = suite.formatSingle(suiteName.split('.') ++ subpath, result)
@@ -138,7 +138,7 @@ abstract class BaseRunner(val args: Array[String],
         }
       },
       query = innerQuery,
-      wrap = suite.utestWrap(_, _)(ec),
+      executor = suite,
       ec = ec
     )
 

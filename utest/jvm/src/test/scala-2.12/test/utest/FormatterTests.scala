@@ -10,8 +10,8 @@ object FormatterTests extends utest.TestSuite {
   def trim(s: String): String = {
     s.trim.lines.map(_.reverse.dropWhile(_ == ' ').reverse).mkString("\n")
   }
-  val tests = this{
-    val tests = TestSuite {
+  val tests = Tests{
+    val tests = this {
       'test1 - {
         val x = 1
         try assert(x == 2)
@@ -33,9 +33,8 @@ object FormatterTests extends utest.TestSuite {
         val boa = new java.io.ByteArrayOutputStream()
         val printStream = new java.io.PrintStream(boa)
 
-        val results = utest.runWith(
+        val results = TestRunner.runAndPrint(
           tests,
-          utest.framework.Formatter,
           "MyTestSuite",
           printStream = printStream
         )
@@ -97,10 +96,10 @@ object FormatterTests extends utest.TestSuite {
         val wrappingFormatter = new utest.framework.Formatter{
           override def formatWrapWidth = 50
         }
-        val results = utest.runWith(
+        val results = TestRunner.runAndPrint(
           tests,
-          wrappingFormatter,
           "MyTestSuite",
+          formatter = wrappingFormatter,
           printStream = printStream
         )
         wrappingFormatter.formatSummary("MyTestSuite", results).foreach(printStream.println)

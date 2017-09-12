@@ -24,8 +24,10 @@ object TestPath{
   * test to run you can feed the `List[Int]` path of that test in the `nameTree`
   * into the `callTree` to execute it and return the result.
   */
-case class TestHierarchy(nameTree: Tree[String], callTree: TestCallTree)
-
+case class Tests(nameTree: Tree[String], callTree: TestCallTree)
+object Tests{
+  def apply(expr: Unit): Tests = macro framework.TestHierarchyBuilder.applyImpl
+}
 /**
   * The executable portion of a tree of tests. Each node contains an
   * executable, which when run either returns a Left(result) or a

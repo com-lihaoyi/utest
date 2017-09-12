@@ -4,7 +4,7 @@ import utest._
 
 object SharedFixturesTests extends TestSuite{
   var x = 0
-  val tests = this{
+  val tests = Tests{
     'outer1 - {
       x += 1
       'inner1 - {

@@ -12,8 +12,8 @@ class FlakyThing{
 object SuiteRetryTests extends TestSuite with TestSuite.Retries{
   override val utestRetryCount = 3
   val flaky = new FlakyThing
-  def tests = this{
-    'hello{
+  def tests = Tests{
+    'hello - {
       flaky.run
     }
   }
@@ -31,8 +31,8 @@ object SuiteManualRetryTests extends utest.TestSuite{
     res
   }
   val flaky = new FlakyThing
-  def tests = this{
-    'hello{
+  def tests = Tests{
+    'hello - {
       flaky.run
     }
   }
@@ -40,7 +40,7 @@ object SuiteManualRetryTests extends utest.TestSuite{
 
 object LocalRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
-  def tests = this{
+  def tests = Tests{
     'hello - retry(3){
       flaky.run
     }
