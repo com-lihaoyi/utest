@@ -52,7 +52,7 @@ object FormatterTests extends utest.TestSuite {
             |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
             |  utest.AssertionError: try assert(x == 2)
             |  x: Int = 1
-            |    utest.asserts.Asserts$.assertImpl(Asserts.scala:113)
+            |    utest.asserts.Asserts$.assertImpl(Asserts.scala:114)
             |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:17)
             |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
             |+ MyTestSuite.test2 0ms  1
@@ -69,7 +69,7 @@ object FormatterTests extends utest.TestSuite {
             |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
             |    utest.AssertionError: try assert(x == 2)
             |    x: Int = 1
-            |      utest.asserts.Asserts$.assertImpl(Asserts.scala:113)
+            |      utest.asserts.Asserts$.assertImpl(Asserts.scala:114)
             |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:17)
             |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
             |  + test2 0ms  1
@@ -120,7 +120,7 @@ object FormatterTests extends utest.TestSuite {
             |  utest.AssertionError: try assert(x == 2)
             |  x: Int = 1
             |    utest.asserts.Asserts$.assertImpl(Asserts.scal
-            |    a:113)
+            |    a:114)
             |    test.utest.FormatterTests$.liftedTree1$1(Forma
             |    tterTests.scala:17)
             |    test.utest.FormatterTests$.$anonfun$tests$3(Fo
@@ -146,7 +146,7 @@ object FormatterTests extends utest.TestSuite {
             |    utest.AssertionError: try assert(x == 2)
             |    x: Int = 1
             |      utest.asserts.Asserts$.assertImpl(Asserts.sc
-            |      ala:113)
+            |      ala:114)
             |      test.utest.FormatterTests$.liftedTree1$1(For
             |      matterTests.scala:17)
             |      test.utest.FormatterTests$.$anonfun$tests$3(

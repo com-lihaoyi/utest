@@ -1182,6 +1182,10 @@ Changelog
   actually defined a `TestSuite` object, so the name was pretty misleading. The
   new syntax is `Tests{...}`
 
+- Remove the `MultipleErrors` wrapper when you test more than one expression in
+  an `assert` and multiple of them fail. Now only the first expression in the
+  `assert` call which fails will have it's exception thrown.
+
 0.4.8
 -----
 

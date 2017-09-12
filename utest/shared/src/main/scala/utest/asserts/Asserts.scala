@@ -108,20 +108,16 @@ object Asserts {
     while(i < funcs.length){
       val (res, logged, src) = Util.runAssertionEntry(funcs(i))
 
+      def prefix = if (funcs.length == 1) "" else s"#${i+1}: "
       res match{
         case Success(value) =>
-          if (!value) failures.append(Util.makeAssertError(src, logged, null))
-        case Failure(e) => failures.append(Util.makeAssertError(src, logged, e))
+          if (!value) throw Util.makeAssertError(prefix + src, logged, null)
+        case Failure(e) => throw Util.makeAssertError(prefix + src, logged, e)
       }
 
       i += 1
     }
 
-    failures match{
-      case Seq() => () // nothing failed, do nothing
-      case Seq(failure) => throw failure
-      case multipleFailures => throw new MultipleErrors(multipleFailures:_*)
-    }
   }
 
   def interceptProxy[T: c.WeakTypeTag]

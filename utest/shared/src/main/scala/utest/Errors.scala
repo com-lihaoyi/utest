@@ -21,7 +21,6 @@ extends java.lang.AssertionError(
   super.initCause(cause)
 }
 
-case class MultipleErrors(thrown: Throwable*) extends Exception(thrown(0).getMessage, thrown(0).getCause)
 /**
  * Information about a value that was logged in one of the macro-powered
  * `assert` functions

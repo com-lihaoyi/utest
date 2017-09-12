@@ -76,19 +76,29 @@ object AssertsTests extends utest.TestSuite{
         }
       }
       'multiple - {
-        // Make sure multiple failures in a single assert are aggregated
         def die = throw new IllegalArgumentException("foo")
-        try {
+        val msg1 = try {
           assert(
             1 == 2,
             die
           )
-        } catch {case e: Throwable =>
-          val utest.MultipleErrors(
-            utest.AssertionError(_, Nil, null),
-            utest.AssertionError(_, Nil, iae: IllegalArgumentException)
-          ) = e
+          ???
+        } catch {case utest.AssertionError(msg, Nil, null) =>
+          msg
         }
+        Predef.assert(msg1.contains("#1: 1 == 2"))
+        val msg2 = try {
+          assert(
+            1 == 1,
+            die
+          )
+          ???
+        } catch {case utest.AssertionError(msg, Nil, iae: IllegalArgumentException) =>
+          msg + iae.getMessage
+        }
+
+        Predef.assert(msg2.contains("foo"))
+        Predef.assert(msg2.contains("#2: die"))
       }
       'show - {
         try assert((math.max(1 + 1, 2): @Show) == 3) catch{
