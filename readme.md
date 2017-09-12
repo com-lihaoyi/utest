@@ -1,4 +1,4 @@
-µTest 0.5.2 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.5.3 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -997,7 +997,8 @@ TestSuites via Scala.js and running them on Node.js, in the browser, or (with
 Scala-Native) on LLVM.
 
 Note that Scala-Native support, like Scala-Native, is experimental. While it is
-tested in a few projects (uTest's own test suite runs in Scala-Native) it does
+tested in a few projects (uTest's own test suite runs in Scala-Native), it does
+have it's own quirks (e.g. `NullPointerException`s appear to be fatal) and does
 not have the weight of third-party usage that the Scala-JVM and Scala.js
 versions of uTest have.
 
