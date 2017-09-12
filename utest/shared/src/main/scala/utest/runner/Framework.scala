@@ -1,8 +1,10 @@
 package utest
 package runner
-//import acyclic.file
-import sbt.testing.SubclassFingerprint
-import sbt.testing.EventHandler
+
+object Framework{
+  def resultsHeader = BaseRunner.renderBanner("Results")
+  def failureHeader = BaseRunner.renderBanner("Failures")
+}
 
 class Framework extends sbt.testing.Framework{
 
@@ -39,8 +41,8 @@ class Framework extends sbt.testing.Framework{
     */
   def useSbtLoggers = false
 
-  def resultsHeader = BaseRunner.renderBanner("Results")
-  def failureHeader = BaseRunner.renderBanner("Failures")
+  def resultsHeader = Framework.resultsHeader
+  def failureHeader = Framework.failureHeader
 
 
   def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)

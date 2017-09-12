@@ -6,7 +6,29 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import sbt.testing.TaskDef
 
 import scala.annotation.tailrec
-
+object MasterRunner{
+  def formatSummary(resultsHeader: fansi.Str,
+                    body: fansi.Str,
+                    failureMsg: fansi.Str,
+                    successCount: Int,
+                    failureCount: Int,
+                    showSummaryThreshold: Int): fansi.Str = {
+    val totalCount = successCount + failureCount
+    val summary: fansi.Str =
+      if (totalCount < showSummaryThreshold) ""
+      else fansi.Str.join(
+        resultsHeader, "\n",
+        body, "\n",
+        failureMsg, "\n"
+      )
+    fansi.Str.join(
+      summary,
+      s"Tests: ", totalCount.toString, ", ",
+      s"Passed: ", successCount.toString, ", ",
+      s"Failed: ", failureCount.toString
+    ).render
+  }
+}
 final class MasterRunner(args: Array[String],
                          remoteArgs: Array[String],
                          testClassLoader: ClassLoader,
@@ -55,30 +77,24 @@ final class MasterRunner(args: Array[String],
       * `done`, to work around https://github.com/sbt/sbt/issues/3510
       */
     if (total > 0) {
-      val body = results.get.mkString("\n")
+      MasterRunner.formatSummary(
+        resultsHeader = resultsHeader,
+        body = results.get.mkString("\n"),
+        failureMsg =
+          if (failures.get() == Nil) ""
+          else fansi.Str(failureHeader) ++ fansi.Str.join(
+            // reverse, because the list gets accumulated backwards
+            failures.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
+          ),
+        successCount = success.get(),
+        failureCount = failure.get(),
+        showSummaryThreshold = showSummaryThreshold
+      )
 
-      val failureMsg: fansi.Str =
-        if (failures.get() == Nil) ""
-        else fansi.Str(failureHeader) ++ fansi.Str.join(
-          // reverse, because the list gets accumulated backwards
-          failures.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
-        )
 
-      val summary: fansi.Str =
-        if (total < showSummaryThreshold) ""
-        else fansi.Str.join(
-          resultsHeader, "\n",
-          body, "\n",
-          failureMsg, "\n"
-        )
 
       println(
-        fansi.Str.join(
-          summary,
-          s"Tests: ", total.toString, ", ",
-          s"Passed: ", success.toString, ", ",
-          s"Failed: ", failure.toString
-        ).render
+
       )
     }
     // Don't print anything, but also don't print the default message it

@@ -18,9 +18,11 @@ features are:
   useless/redundant `must_==`/`must beEqual`/`should be` combinators, but
   including important ones like the [compileError](#compile-error) assert.
 - [Isolation-by-default for tests in the same suite](#sharing-setup-code-and-sharing-setup-objects)
-- [Integration with SBT](#getting-started)
-- [Supports Scala.js and Scala-Native](#scalajs-and-scala-native), Scala
-  2.13.0-M2, basically every Scala version under the sun.
+- Supports every version of Scala under the sun:
+  [Scala.js and Scala-Native](#scalajs-and-scala-native), Scala 2.13.0-M2,
+  projects using [SBT](#getting-started) or
+  [running tests standalone](#running-utest-standalone) (e.g. via a `main`
+  method, or in Ammonite scripts.
 
 Contents
 --------
@@ -47,6 +49,7 @@ Contents
   - [Test Wrapping](#test-wrapping)
   - [Per-Run Setup/Teardown, and other test-running Config](#per-run-setupteardown-and-other-test-running-config)
 - [Scala.js and Scala-Native](#scalajs-and-scala-native)
+- [Running uTest Standalone](#running-utest-standalone)
 - [Why uTest](#why-utest)
 - [Changelog](#changelog)
 
@@ -919,83 +922,106 @@ test integration. The following code snippet demonstrates how to define tests
 and run them directly:
 
 ```scala
-package test.utest
 import utest._
-import scala.concurrent.{ExecutionContext, Future}
-
-object Main {
-  def main(args: Array[String]): Unit = {
-    val tests = Tests{
-      'test1{
-        //      throw new Exception("test1")
-      }
-      'test2{
-        'inner{
-          1
-        }
-      }
-      'test3{
-        val a = List[Byte](1, 2)
-        //      a(10)
-      }
+val tests = Tests{
+  'test1{
+    // throw new Exception("test1")
+  }
+  'test2{
+    'inner{
+      1
     }
-
-    // Run and return results
-    val results1 = TestRunner.run(tests)
-
-    // Run, return results, and print streaming output with the default formatter
-    val results2 = TestRunner.runAndPrint(
-      tests,
-      "MyTestSuite"
-    )
-    // Run, return results, and print output with custom formatter and executor
-    val results3 = TestRunner.runAndPrint(
-      tests,
-      "MyTestSuite",
-      executor = new utest.framework.Executor{
-        override def utestWrap(path: Seq[String], runBody: => Future[Any])
-                     (implicit ec: ExecutionContext): Future[Any] = {
-          println("Getting ready to run " + path.mkString("."))
-          runBody
-        }
-      },
-      formatter = new utest.framework.Formatter{
-        override def formatColor = false
-      }
-    )
-
-    object MyTestSuite extends TestSuite{
-      val tests = Tests{
-        'test1{
-          //      throw new Exception("test1")
-        }
-        'test2{
-          'inner{
-            1
-          }
-        }
-        'test3{
-          val a = List[Byte](1, 2)
-          //      a(10)
-        }
-      }
-    }
-
-
-    // Run `TestSuite` object, and use its configuration for execution and output formatting
-    val results4 = TestRunner.runAndPrint(
-      MyTestSuite.tests,
-      "MyTestSuite",
-      executor = MyTestSuite,
-      formatter = MyTestSuite
-    )
+  }
+  'test3{
+    val a = List[Byte](1, 2)
+    // a(10)
   }
 }
+
+// Run and return results
+val results1 = TestRunner.run(tests)
+```
+
+The `TestRunner.run` call can be customized with additional arguments to control
+how the code is run, or can be replaced with `.runAsync` to handle asynchronous
+testing, or `.runAndPrint`/`.runAndPrintAsync` if you want to print the results
+of tests as they complete using the normal output formatter:
+
+```scala
+
+// Run, return results, and print streaming output with the default formatter
+val results2 = TestRunner.runAndPrint(
+  tests,
+  "MyTestSuiteA"
+)
+// Run, return results, and print output with custom formatter and executor
+val results3 = TestRunner.runAndPrint(
+  tests,
+  "MyTestSuiteA",
+  executor = new utest.framework.Executor{
+    override def utestWrap(path: Seq[String], runBody: => Future[Any])
+                 (implicit ec: ExecutionContext): Future[Any] = {
+      println("Getting ready to run " + path.mkString("."))
+      runBody
+    }
+  },
+  formatter = new utest.framework.Formatter{
+    override def formatColor = false
+  }
+)
+```
+
+Lastly, you can also run `TestSuite` objects in the same way:
+
+```scala
+// Run `TestSuite` object directly without using SBT, and use 
+// its configuration for execution and output formatting
+object MyTestSuite extends TestSuite{
+  val tests = Tests{
+    'test1{
+      // throw new Exception("test1")
+    }
+    'test2{
+      'inner{
+        1
+      }
+    }
+    'test3{
+      val a = List[Byte](1, 2)
+      // a(10)
+    }
+  }
+}
+
+val results4 = TestRunner.runAndPrint(
+  MyTestSuite.tests,
+  "MyTestSuiteB",
+  executor = MyTestSuite,
+  formatter = MyTestSuite
+)
+```
+
+uTest provides helpers to render the standard summary reports at the end of a
+test run, once all your results are in:
+
+```scala
+// Show summary and exit
+val (summary, successes, failures) = TestRunner.renderResults(
+  Seq(
+    "MySuiteA" -> results1,
+    "MySuiteA" -> results2,
+    "MySuiteA" -> results3,
+    "MySuiteB" -> results4
+  )
+)
+if (failures > 0) sys.exit(1)
 ```
 
 You can thus use uTest anywhere you can run Scala code, even when not using SBT:
 in a normal `main` method, within [Ammonite](http://ammonite.io/) scripts, or
 elsewhere.
+
+
 
 Why uTest
 =========

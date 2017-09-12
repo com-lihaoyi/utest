@@ -1,7 +1,9 @@
 package utest
 
 import utest.framework._
+import utest.runner.MasterRunner
 
+import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.duration.Deadline
 import scala.util.{Failure, Success}
@@ -10,6 +12,37 @@ import scala.util.{Failure, Success}
   * Created by lihaoyi on 12/9/17.
   */
 object TestRunner {
+  def renderResults(results: Seq[(String, HTree[String, Result])],
+                    formatter: Formatter = Formatter,
+                    showSummaryThreshold: Int = 30,
+                    resultsHeader: String = runner.Framework.resultsHeader,
+                    failureHeader: String = runner.Framework.failureHeader): (fansi.Str, Int, Int) = {
+
+    val (successes, failures) = results.flatMap(_._2.leaves).partition(_.value.isSuccess)
+
+    val formatted = MasterRunner.formatSummary(
+      resultsHeader,
+      body = {
+        val frags = for {
+          (topLevelName, tree) <- results
+          str <- formatter.formatSummary(topLevelName, tree).toSeq
+          frag <- Seq[fansi.Str]("\n", str)
+        } yield frag
+        fansi.Str.join(frags.drop(1):_*)
+      },
+      failureMsg = {
+        val frags = for{
+          f <- failures
+          str <- formatter.formatSingle(Nil, f)
+        } yield str
+        fansi.Str.join(frags:_*)
+      },
+      successes.length,
+      failures.length,
+      showSummaryThreshold
+    )
+    (formatted, successes.length, failures.length)
+  }
 
   /**
     * Runs this `Tree[Test]` asynchronously and returns a `Future` containing
