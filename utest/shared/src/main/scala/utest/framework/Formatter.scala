@@ -63,9 +63,19 @@ trait Formatter {
           // stacktrace being terribly long, wrapping around and generally
           // being impossible to read. We thus manually drop the earlier
           // portion of the file path and keep only the last segment
-          val shortenedFilename = e.getFileName.lastIndexOf('/') match{
-            case -1 => e.getFileName
-            case n => e.getFileName.drop(n + 1)
+
+          val filenameFrag: ufansi.Str = e.getFileName match{
+            case null => exceptionLineNumberColor("Unknown")
+            case fileName =>
+              val shortenedFilename = fileName.lastIndexOf('/') match{
+                case -1 => fileName
+                case n => fileName.drop(n + 1)
+              }
+              ufansi.Str.join(
+                exceptionLineNumberColor(shortenedFilename),
+                ":",
+                exceptionLineNumberColor(e.getLineNumber.toString)
+              )
           }
 
           val frameIndent = leftIndent + "  "
@@ -78,9 +88,7 @@ trait Formatter {
                   exceptionPrefixColor(e.getClassName + "."),
                   exceptionMethodColor(e.getMethodName),
                   exceptionPunctuationColor("("),
-                  exceptionLineNumberColor(shortenedFilename),
-                  exceptionPunctuationColor(":"),
-                  exceptionLineNumberColor(e.getLineNumber.toString),
+                  filenameFrag,
                   exceptionPunctuationColor(")")
                 ),
                 frameIndent
