@@ -546,6 +546,11 @@ assert(x / y == 10)
 The origin exception is stored as the `cause` of the `utest.AssertionError`, so
 the original stack trace is still available for you to inspect.
 
+uTest's smart asserts live on the `utest` package, and are brought into scope
+via `import utest._`. If you want to continue using the built-in Scala asserts,
+e.g. if you want custom messages if the assert fails, those remain available as
+`Predef.assert`.
+
 Arrow Asserts
 -------------
 

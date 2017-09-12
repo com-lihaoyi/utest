@@ -588,7 +588,7 @@ object Attrs{
   class Multiple private[Attrs] (val resetMask: Long,
                                  val applyMask: Long,
                                  val attrs: Attr*) extends Attrs{
-    assert(attrs.length != 1)
+    Predef.assert(attrs.length != 1)
     override def hashCode() = attrs.hashCode()
     override def equals(other: Any) = (this, other) match{
       case (lhs: Attr, rhs: Attr) => lhs eq rhs
