@@ -1167,7 +1167,7 @@ libraries are currently at.
 Changelog
 =========
 
-0.5.2
+0.5.3
 -----
 
 - Cross-publish for Scala 2.13.0-M2, Scala.js 0.6.20, Scala-Native 0.3.3
