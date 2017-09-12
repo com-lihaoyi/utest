@@ -318,6 +318,11 @@ of tests within a `TestSuite`, individual `TestSuite`s, or packages containing
 `TestSuite`. These all form one a single large tree of tests that you can run,
 using the same uniform syntax.
 
+By default, SBT runs multiple test suites in parallel, so the output from
+those suites may be interleaved. You can set `parallelExecution in Test := false`
+in your SBT config to make the tests execute sequentially, so the output from
+each suite will be grouped together in the terminal
+
 Sharing Setup Code, and Sharing Setup Objects
 ---------------------------------------------
 
