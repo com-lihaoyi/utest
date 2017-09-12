@@ -50,24 +50,20 @@ final class MasterRunner(args: Array[String],
       * `done`, to work around https://github.com/sbt/sbt/issues/3510
       */
     if (total > 0) {
-      DefaultFormatters.formatSummary(
-        resultsHeader = resultsHeader,
-        body = summaryOutputLines.get.mkString("\n"),
-        failureMsg =
-          if (failureOutputLines.get() == Nil) ""
-          else fansi.Str(failureHeader) ++ fansi.Str.join(
-            // reverse, because the list gets accumulated backwards
-            failureOutputLines.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
-          ),
-        successCount = success.get(),
-        failureCount = failure.get(),
-        showSummaryThreshold = showSummaryThreshold
-      )
-
-
-
       println(
-
+        DefaultFormatters.formatSummary(
+          resultsHeader = resultsHeader,
+          body = summaryOutputLines.get.mkString("\n"),
+          failureMsg =
+            if (failureOutputLines.get() == Nil) ""
+            else fansi.Str(failureHeader) ++ fansi.Str.join(
+              // reverse, because the list gets accumulated backwards
+              failureOutputLines.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
+            ),
+          successCount = success.get(),
+          failureCount = failure.get(),
+          showSummaryThreshold = showSummaryThreshold
+        )
       )
     }
     // Don't print anything, but also don't print the default message it

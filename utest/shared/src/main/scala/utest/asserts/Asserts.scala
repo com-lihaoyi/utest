@@ -158,9 +158,7 @@ object Asserts {
 
 
 trait Asserts{
-  def assertPrettyPrint(t: Any): fansi.Str = t.toString
-
-  /**
+    /**
     * Provides a nice syntax for asserting things are equal, that is pretty
     * enough to embed in documentation and examples
     */
