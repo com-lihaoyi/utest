@@ -87,6 +87,12 @@ libraryDependencies += "com.lihaoyi" %%% "utest" % "0.4.8" % "test"
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
 
+For Scala-Native, you will also need
+
+```scala
+nativeLinkStubs := true
+```
+
 Defining and Running a Test Suite
 =================================
 
@@ -989,6 +995,11 @@ ScalaJS, with minor differences:
 Apart from these differences, there should be no problem compiling uTest
 TestSuites via Scala.js and running them on Node.js, in the browser, or (with
 Scala-Native) on LLVM.
+
+Note that Scala-Native support, like Scala-Native, is experimental. While it is
+tested in a few projects (uTest's own test suite runs in Scala-Native) it does
+not have the weight of third-party usage that the Scala-JVM and Scala.js
+versions of uTest have.
 
 Running uTest Standalone
 ========================
