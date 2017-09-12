@@ -1,6 +1,7 @@
-package utest
-
+package test.utest
+import utest._
 import java.util.concurrent.{ScheduledThreadPoolExecutor, TimeUnit}
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 

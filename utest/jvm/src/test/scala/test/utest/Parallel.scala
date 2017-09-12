@@ -1,8 +1,5 @@
-package utest
-
-import scala.concurrent.Future
-import scala.concurrent.duration.Deadline
-import scala.util.Random
+package test.utest
+import utest._
 import utest.asserts.{RetryInterval, RetryMax}
 
 
@@ -67,7 +64,6 @@ object Parallel extends TestSuite{
         error.captured
       }
       "success"-{
-        import framework.ExecutionContext.RunNow
 
         val i = Counter()
 
@@ -80,8 +76,6 @@ object Parallel extends TestSuite{
       "adjustInterval"-{
         import concurrent.duration._
         implicit val retryInterval = RetryInterval(300.millis)
-
-        import framework.ExecutionContext.RunNow
 
         val i = Counter()
 
@@ -96,8 +90,6 @@ object Parallel extends TestSuite{
         import concurrent.duration._
         implicit val retryMax = RetryMax(300.millis)
 
-        import framework.ExecutionContext.RunNow
-
         val i = Counter()
 
         intercept[AssertionError]{
@@ -110,7 +102,6 @@ object Parallel extends TestSuite{
 
     "continually"-{
       "failure"-{
-        import framework.ExecutionContext.RunNow
 
         val i = Counter()
         val error = intercept[AssertionError]{
@@ -125,7 +116,6 @@ object Parallel extends TestSuite{
         expected
       }
       "success"-{
-        import framework.ExecutionContext.RunNow
         val x = Seq(12)
         val y = 1
 

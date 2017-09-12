@@ -910,6 +910,93 @@ Apart from these differences, there should be no problem compiling uTest
 TestSuites via Scala.js and running them on Node.js, in the browser, or (with
 Scala-Native) on LLVM.
 
+Running uTest Standalone
+========================
+
+uTest exposes a straightforward API that allows you to run tests, receive
+results and format them in a nice way when used standalone, without using SBT's
+test integration. The following code snippet demonstrates how to define tests
+and run them directly:
+
+```scala
+package test.utest
+import utest._
+import scala.concurrent.{ExecutionContext, Future}
+
+object Main {
+  def main(args: Array[String]): Unit = {
+    val tests = Tests{
+      'test1{
+        //      throw new Exception("test1")
+      }
+      'test2{
+        'inner{
+          1
+        }
+      }
+      'test3{
+        val a = List[Byte](1, 2)
+        //      a(10)
+      }
+    }
+
+    // Run and return results
+    val results1 = TestRunner.run(tests)
+
+    // Run, return results, and print streaming output with the default formatter
+    val results2 = TestRunner.runAndPrint(
+      tests,
+      "MyTestSuite"
+    )
+    // Run, return results, and print output with custom formatter and executor
+    val results3 = TestRunner.runAndPrint(
+      tests,
+      "MyTestSuite",
+      executor = new utest.framework.Executor{
+        override def utestWrap(path: Seq[String], runBody: => Future[Any])
+                     (implicit ec: ExecutionContext): Future[Any] = {
+          println("Getting ready to run " + path.mkString("."))
+          runBody
+        }
+      },
+      formatter = new utest.framework.Formatter{
+        override def formatColor = false
+      }
+    )
+
+    object MyTestSuite extends TestSuite{
+      val tests = Tests{
+        'test1{
+          //      throw new Exception("test1")
+        }
+        'test2{
+          'inner{
+            1
+          }
+        }
+        'test3{
+          val a = List[Byte](1, 2)
+          //      a(10)
+        }
+      }
+    }
+
+
+    // Run `TestSuite` object, and use its configuration for execution and output formatting
+    val results4 = TestRunner.runAndPrint(
+      MyTestSuite.tests,
+      "MyTestSuite",
+      executor = MyTestSuite,
+      formatter = MyTestSuite
+    )
+  }
+}
+```
+
+You can thus use uTest anywhere you can run Scala code, even when not using SBT:
+in a normal `main` method, within [Ammonite](http://ammonite.io/) scripts, or
+elsewhere.
+
 Why uTest
 =========
 
