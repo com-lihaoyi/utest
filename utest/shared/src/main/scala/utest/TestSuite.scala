@@ -16,15 +16,15 @@ import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
 abstract class TestSuite
   extends framework.Formatter
   with framework.Executor{
-  def tests: framework.Tests
+  def tests: Tests
   @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): framework.Tests = macro framework.TestHierarchyBuilder.applyImpl
+  def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl
 }
 
 object TestSuite {
 
   @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): framework.Tests = macro framework.TestHierarchyBuilder.applyImpl
+  def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl
   trait Retries extends utest.TestSuite{
     val utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
