@@ -1,9 +1,10 @@
 package utest
 package runner
 
+import utest.framework.DefaultFormatters
+
 object Framework{
-  def resultsHeader = BaseRunner.renderBanner("Results")
-  def failureHeader = BaseRunner.renderBanner("Failures")
+
 }
 
 class Framework extends sbt.testing.Framework{
@@ -41,11 +42,11 @@ class Framework extends sbt.testing.Framework{
     */
   def useSbtLoggers = false
 
-  def resultsHeader = Framework.resultsHeader
-  def failureHeader = Framework.failureHeader
+  def resultsHeader = DefaultFormatters.resultsHeader
+  def failureHeader = DefaultFormatters.failureHeader
 
 
-  def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)
+  def startHeader(path: String) = DefaultFormatters.renderBanner("Running Tests" + path)
 
 
   final def fingerprints(): Array[sbt.testing.Fingerprint] = Array(Fingerprint)

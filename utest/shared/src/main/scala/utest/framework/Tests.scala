@@ -1,9 +1,23 @@
 package utest.framework
 
 import utest.framework
-
+import language.experimental.macros
 import scala.collection.mutable
 import scala.reflect.macros._
+/**
+  * Represents a single hierarchy of tests, arranged in a tree structure, with
+  * every node having a name and an associated executable test.
+  *
+  * The two hierarchies are parallel: thus you can inspect the `nameTree` to
+  * browse the test listing without running anything, and once you decide which
+  * test to run you can feed the `List[Int]` path of that test in the `nameTree`
+  * into the `callTree` to execute it and return the result.
+  */
+case class Tests(nameTree: Tree[String], callTree: TestCallTree)
+object Tests{
+  def apply(expr: Unit): Tests = macro framework.TestHierarchyBuilder.applyImpl
+}
+
 
 /**
   * Created by haoyi on 3/11/16.
@@ -102,9 +116,9 @@ object TestHierarchyBuilder {
         new _root_.utest.framework.TestCallTree({
           ..$normal2
           ${
-            if (childCallTrees.isEmpty) q"_root_.scala.Left($last)"
-            else q"$last; _root_.scala.Right(Array(..$childCallTrees))"
-          }
+        if (childCallTrees.isEmpty) q"_root_.scala.Left($last)"
+        else q"$last; _root_.scala.Right(Array(..$childCallTrees))"
+      }
         })
       """
 

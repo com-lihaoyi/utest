@@ -31,10 +31,7 @@ object BaseRunner{
     }
     rec(query, testSuitePath.toList)
   }
-  def renderBanner(s: String) = {
-    val dashes = "-" * ((78 - s.length) / 2)
-    dashes + " " + s + " " + dashes
-  }
+
 }
 
 abstract class BaseRunner(val args: Array[String],

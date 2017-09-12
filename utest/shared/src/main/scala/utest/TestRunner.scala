@@ -1,7 +1,6 @@
 package utest
 
 import utest.framework._
-import utest.runner.MasterRunner
 
 import scala.collection.mutable
 import scala.concurrent.Future
@@ -15,12 +14,12 @@ object TestRunner {
   def renderResults(results: Seq[(String, HTree[String, Result])],
                     formatter: Formatter = Formatter,
                     showSummaryThreshold: Int = 30,
-                    resultsHeader: String = runner.Framework.resultsHeader,
-                    failureHeader: String = runner.Framework.failureHeader): (fansi.Str, Int, Int) = {
+                    resultsHeader: String = DefaultFormatters.resultsHeader,
+                    failureHeader: String = DefaultFormatters.failureHeader): (fansi.Str, Int, Int) = {
 
     val (successes, failures) = results.flatMap(_._2.leaves).partition(_.value.isSuccess)
 
-    val formatted = MasterRunner.formatSummary(
+    val formatted = DefaultFormatters.formatSummary(
       resultsHeader,
       body = {
         val frags = for {

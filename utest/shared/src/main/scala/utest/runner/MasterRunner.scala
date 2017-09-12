@@ -3,32 +3,10 @@ package runner
 //import acyclic.file
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
-import sbt.testing.TaskDef
+import utest.framework.DefaultFormatters
 
 import scala.annotation.tailrec
-object MasterRunner{
-  def formatSummary(resultsHeader: fansi.Str,
-                    body: fansi.Str,
-                    failureMsg: fansi.Str,
-                    successCount: Int,
-                    failureCount: Int,
-                    showSummaryThreshold: Int): fansi.Str = {
-    val totalCount = successCount + failureCount
-    val summary: fansi.Str =
-      if (totalCount < showSummaryThreshold) ""
-      else fansi.Str.join(
-        resultsHeader, "\n",
-        body, "\n",
-        failureMsg, "\n"
-      )
-    fansi.Str.join(
-      summary,
-      s"Tests: ", totalCount.toString, ", ",
-      s"Passed: ", successCount.toString, ", ",
-      s"Failed: ", failureCount.toString
-    ).render
-  }
-}
+
 final class MasterRunner(args: Array[String],
                          remoteArgs: Array[String],
                          testClassLoader: ClassLoader,
@@ -77,7 +55,7 @@ final class MasterRunner(args: Array[String],
       * `done`, to work around https://github.com/sbt/sbt/issues/3510
       */
     if (total > 0) {
-      MasterRunner.formatSummary(
+      DefaultFormatters.formatSummary(
         resultsHeader = resultsHeader,
         body = results.get.mkString("\n"),
         failureMsg =

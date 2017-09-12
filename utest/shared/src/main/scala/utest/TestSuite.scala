@@ -2,7 +2,6 @@ package utest
 
 //import acyclic.file
 
-import utest.framework.{Formatter, Tests}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.macros.Context
@@ -18,15 +17,15 @@ abstract class TestSuite
   extends asserts.Asserts
   with framework.Formatter
   with framework.Executor{
-  def tests: Tests
+  def tests: framework.Tests
   @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): Tests = macro framework.TestHierarchyBuilder.applyImpl
+  def apply(expr: Unit): framework.Tests = macro framework.TestHierarchyBuilder.applyImpl
 }
 
 object TestSuite {
 
   @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): Tests = macro framework.TestHierarchyBuilder.applyImpl
+  def apply(expr: Unit): framework.Tests = macro framework.TestHierarchyBuilder.applyImpl
   trait Retries extends utest.TestSuite{
     val utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
