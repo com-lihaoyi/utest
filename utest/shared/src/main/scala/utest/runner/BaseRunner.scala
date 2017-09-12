@@ -47,7 +47,6 @@ abstract class BaseRunner(val args: Array[String],
 
   def addResult(r: String): Unit
   def addFailure(r: String): Unit
-  def addTrace(trace: String): Unit
   def incSuccess(): Unit
   def incFailure(): Unit
 
@@ -128,7 +127,6 @@ abstract class BaseRunner(val args: Array[String],
             )
             incFailure()
             addFailure(str.fold("")(_.render))
-            addTrace(e.getStackTrace.map(_.toString).mkString("\n"))
           case _ =>
             handleEvent(new OptionalThrowable(), Status.Success, subpath, result.milliDuration)
             incSuccess()

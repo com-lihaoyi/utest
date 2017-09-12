@@ -21,24 +21,19 @@ final class MasterRunner(args: Array[String],
 
   println(startHeader(path.fold("")(" " + _)))
   setup()
-  val results = new AtomicReference[List[String]](Nil)
+  val summaryOutputLines = new AtomicReference[List[String]](Nil)
   val success = new AtomicInteger(0)
   val failure = new AtomicInteger(0)
-  val failures = new AtomicReference[List[String]](Nil)
-  val traces = new AtomicReference[List[String]](Nil)
+  val failureOutputLines = new AtomicReference[List[String]](Nil)
 
   @tailrec def addResult(r: String): Unit = {
-    val old = results.get()
-    if (!results.compareAndSet(old, r :: old)) addResult(r)
+    val old = summaryOutputLines.get()
+    if (!summaryOutputLines.compareAndSet(old, r :: old)) addResult(r)
   }
 
   @tailrec final def addFailure(r: String): Unit = {
-    val old = failures.get()
-    if (!failures.compareAndSet(old, r :: old)) addFailure(r)
-  }
-  @tailrec final def addTrace(r: String): Unit = {
-    val old = traces.get()
-    if (!traces.compareAndSet(old, r :: old)) addTrace(r)
+    val old = failureOutputLines.get()
+    if (!failureOutputLines.compareAndSet(old, r :: old)) addFailure(r)
   }
 
   def incSuccess(): Unit = success.incrementAndGet()
@@ -57,12 +52,12 @@ final class MasterRunner(args: Array[String],
     if (total > 0) {
       DefaultFormatters.formatSummary(
         resultsHeader = resultsHeader,
-        body = results.get.mkString("\n"),
+        body = summaryOutputLines.get.mkString("\n"),
         failureMsg =
-          if (failures.get() == Nil) ""
+          if (failureOutputLines.get() == Nil) ""
           else fansi.Str(failureHeader) ++ fansi.Str.join(
             // reverse, because the list gets accumulated backwards
-            failures.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
+            failureOutputLines.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
           ),
         successCount = success.get(),
         failureCount = failure.get(),
@@ -87,7 +82,6 @@ final class MasterRunner(args: Array[String],
       case 'h' => // hello message. nothing special to do
       case 'r' => addResult(msg.tail)
       case 'f' => addFailure(msg.tail)
-      case 'c' => addTrace(msg.tail)
       case 'i' => msg(1) match {
         case 's' => incSuccess()
         case 'f' => incFailure()
