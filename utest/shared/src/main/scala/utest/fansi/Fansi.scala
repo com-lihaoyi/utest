@@ -341,7 +341,7 @@ object Str{
                         else{
                           currentColor = {
                             (currentColor & ~category.mask) |
-                              ((273 + category.trueIndex(r, g, b)) << category.offset)
+                              ((273L + category.trueIndex(r, g, b)) << category.offset)
                           }
                         }
                       }
