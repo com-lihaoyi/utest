@@ -19,7 +19,7 @@ object DefaultParamsTests extends TestSuite{
 
   val tests = Tests{
     'usedToCrashScalajsCompiler - {
-      utest.asserts.assert(obj.cmp(10))
+      utest.assert(obj.cmp(10))
       obj.cmp(10)
     }
   }
