@@ -1,4 +1,4 @@
-package utest
+package test.utest
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration

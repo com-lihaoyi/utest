@@ -110,7 +110,7 @@ object Parallel extends TestSuite{
           )
         }
 
-        val expected = utest.TestValue("i", "utest.Parallel.Counter", Counter())
+        val expected = utest.TestValue("i", "test.utest.Parallel.Counter", Counter())
 
         assert(error.captured.contains(expected))
         expected

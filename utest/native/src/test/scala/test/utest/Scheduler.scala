@@ -1,7 +1,7 @@
-package utest
+package test.utest
 
-import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 
 object Scheduler {
   // Will execute immediately, because we cannot currenly schedule
