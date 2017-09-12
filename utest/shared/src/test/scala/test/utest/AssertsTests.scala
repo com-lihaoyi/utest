@@ -161,7 +161,7 @@ object AssertsTests extends utest.TestSuite{
       }
       'interceptWithAssignment - {
         var W = 1
-        try utest.asserts.intercept[Exception] { W = 2 }
+        try utest.intercept[Exception] { W = 2 }
         catch{case e: utest.AssertionError => e.getMessage}
       }
     }

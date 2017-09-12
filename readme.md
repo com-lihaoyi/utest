@@ -1203,6 +1203,10 @@ Changelog
   an `assert` and multiple of them fail. Now only the first expression in the
   `assert` call which fails will have it's exception thrown.
 
+- Moved [smart asserts](#smart-asserts) from being embedded into the `TestSuite`
+  objects directly onto the `utest` package, so they are pulled in by the
+  `import utest._` import.
+
 0.4.8
 -----
 

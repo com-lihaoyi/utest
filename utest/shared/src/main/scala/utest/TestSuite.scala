@@ -14,8 +14,7 @@ import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
  */
 @EnableReflectiveInstantiation
 abstract class TestSuite
-  extends asserts.Asserts
-  with framework.Formatter
+  extends framework.Formatter
   with framework.Executor{
   def tests: framework.Tests
   @deprecated("Use `utest.Tests{...}` instead")

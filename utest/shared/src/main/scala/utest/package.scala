@@ -5,7 +5,7 @@ import scala.concurrent.duration._
 /**
  * Created by haoyi on 1/24/14.
  */
-package object utest {
+package object utest extends utest.asserts.Asserts{
   val Tests = framework.Tests
   type Tests = framework.Tests
   implicit val retryInterval = new RetryInterval(100.millis)
