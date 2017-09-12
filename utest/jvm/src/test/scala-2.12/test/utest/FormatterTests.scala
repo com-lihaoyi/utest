@@ -11,7 +11,7 @@ object FormatterTests extends utest.TestSuite {
     s.trim.lines.map(_.reverse.dropWhile(_ == ' ').reverse).mkString("\n")
   }
   val tests = Tests{
-    val tests = this {
+    val tests = Tests {
       'test1 - {
         val x = 1
         try assert(x == 2)

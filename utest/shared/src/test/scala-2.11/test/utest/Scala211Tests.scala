@@ -1,7 +1,7 @@
 package test.utest
 import utest._
 object Foo extends TestSuite{
-  val tests = this {
+  val tests = Tests {
     'compileTimeOnly {
       // Make sure the 2.11 alias scala.annotation.compileTimeOnly works too,
       // in addition to the 2.10 scala.reflect.internal.annotations.compileTimeOnly

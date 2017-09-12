@@ -102,13 +102,13 @@ object HelloTests extends TestSuite{
 
 You can then run this via
 
-```
+```text
 sbt myproject/test
 ```
 
 Which should produce this output:
 
-```javascript
+```text
 -------------------------------- Running Tests --------------------------------
 Setting up CustomFramework
 X test.utest.examples.HelloTests.test1 4ms
@@ -171,11 +171,11 @@ object NestedTests extends TestSuite{
 }
 ```
 
-Here, we have a tree of nested blocks, with two tests at the inner-most blocks
+Here, we have a tree of nested blocks, with three tests at the inner-most blocks
 of this tree: `innerest`, `inner2` and `inner3`. When this suite is run with
 `sbt myproject/test`, it is those three tests that get executed:
 
-```javascript
+```text
 ------------------------------- Running Tests -------------------------------
 + test.utest.examples.NestedTests.outer1.inner1.innerest 14ms  (1,2,3)
 + test.utest.examples.NestedTests.outer2.inner2 0ms
@@ -186,6 +186,55 @@ You can see also that `test.utest.examples.NestedTests.outer1.inner1.innerest`
 displays the value of `(x, y, z)` returned from the test: `(1,2,3)`. Returning a
 value from a test is useful if you want to skim the test's results after a run
 to perform manual sanity-checks on some computed value.
+
+If you find yourself wanting to define a test in a for, loop, e.g.
+
+```scala
+# Doesn't work!
+val tests =  Tests{ 
+  for(fileName <- Seq("hello", "world", "i", "am", "cow")){
+    fileName - {
+      // lots of code using fileName
+    }
+  }
+}
+```
+
+You can instead factor out the common code into a function, and call that from
+each distinct test case:
+
+```scala
+# Works!
+val tests = Tests{
+  def runTestChecks(fileName: String) = {
+    // lots of code using fileName
+  }
+  "hello" - runTestChecks("hello")
+  "world" - runTestChecks("world")
+  "i" - runTestChecks("i")
+  "am" - runTestChecks("am")
+  "cow" - runTestChecks("cow")
+}
+```
+
+Or even using the [TestPath](#testpath) that is available implicitly to every
+test, you can remove the duplication between the test name and the call to
+`runTestChecks()`:
+
+```scala
+# Also works!
+val tests = Tests{
+  def runTestChecks()(implicit path: utest.framework.TestPath) = {
+    val fileName = path.last
+    // lots of code using fileName
+  }
+  "hello" - runTestChecks()
+  "world" - runTestChecks()
+  "i" - runTestChecks()
+  "am" - runTestChecks()
+  "cow" - runTestChecks()
+}
+```
 
 Running Tests
 -------------
@@ -402,7 +451,7 @@ Asynchronous Tests
 ------------------
 
 ```scala
-val tests = this {
+val tests = Tests {
   "testSuccess" - {
     Future {
       assert(true)
