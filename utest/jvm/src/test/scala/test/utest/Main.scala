@@ -5,15 +5,15 @@ import scala.concurrent.{ExecutionContext, Future}
 object Main {
   def main(args: Array[String]): Unit = {
     val tests = Tests{
-      'test1{
+      'test1 - {
         // throw new Exception("test1")
       }
-      'test2{
-        'inner{
+      'test2 - {
+        'inner - {
           1
         }
       }
-      'test3{
+      'test3 - {
         val a = List[Byte](1, 2)
         // a(10)
       }
@@ -48,15 +48,15 @@ object Main {
     // Run `TestSuite` object, and use its configuration for execution and output formatting
     object MyTestSuite extends TestSuite{
       val tests = Tests{
-        'test1{
+        'test1 - {
           // throw new Exception("test1")
         }
-        'test2{
-          'inner{
+        'test2 - {
+          'inner - {
             1
           }
         }
-        'test3{
+        'test3 - {
           val a = List[Byte](1, 2)
           // a(10)
         }

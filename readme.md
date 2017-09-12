@@ -13,10 +13,9 @@ features are:
 
 - Nicely formatted, colored, easy-to-read command-line test output
 - [Single uniform syntax for defining tests and grouping them together](#nesting-tests)
-- [Single uniform syntax for running suites and individual tests](#running-tests)
-- [Single uniform syntax for Smart Asserts](#smart-asserts), without
-  useless/redundant `must_==`/`must beEqual`/`should be` combinators, but
-  including important ones like the [compileError](#compile-error) assert.
+- [Single uniform syntax for running test suites and individual tests](#running-tests)
+- [Single uniform syntax for Smart Asserts](#smart-asserts), instead of multiple
+  redundant `must_==`/`must beEqual`/`should be` opertors
 - [Isolation-by-default for tests in the same suite](#sharing-setup-code-and-sharing-setup-objects)
 - Supports every version of Scala under the sun:
   [Scala.js and Scala-Native](#scalajs-and-scala-native), Scala 2.13.0-M2,
@@ -87,13 +86,13 @@ import utest._
 
 object HelloTests extends TestSuite{
   val tests = Tests{
-    'test1{
+    'test1 - {
       throw new Exception("test1")
     }
-    'test2{
+    'test2 - {
       1
     }
-    'test3{
+    'test3 - {
       val a = List[Byte](1, 2)
       a(10)
     }
@@ -924,15 +923,15 @@ and run them directly:
 ```scala
 import utest._
 val tests = Tests{
-  'test1{
+  'test1 - {
     // throw new Exception("test1")
   }
-  'test2{
-    'inner{
+  'test2 - {
+    'inner - {
       1
     }
   }
-  'test3{
+  'test3 - {
     val a = List[Byte](1, 2)
     // a(10)
   }
@@ -978,15 +977,15 @@ Lastly, you can also run `TestSuite` objects in the same way:
 // its configuration for execution and output formatting
 object MyTestSuite extends TestSuite{
   val tests = Tests{
-    'test1{
+    'test1 - {
       // throw new Exception("test1")
     }
-    'test2{
-      'inner{
+    'test2 - {
+      'inner - {
         1
       }
     }
-    'test3{
+    'test3 - {
       val a = List[Byte](1, 2)
       // a(10)
     }
