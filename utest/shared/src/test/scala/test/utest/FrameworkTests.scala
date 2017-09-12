@@ -84,7 +84,7 @@ object FrameworkTests extends utest.TestSuite{
 
         }
         try{
-          println(TestRunner.run(tests, query=utest.Query("does.not.exist")))
+          println(TestRunner.run(tests, query=utest.TestQueryParser("does.not.exist")))
         }catch {case e @ NoSuchTestException(Seq("does")) =>
           assert(e.getMessage.contains("[does]"))
           e.getMessage
@@ -234,7 +234,7 @@ object FrameworkTests extends utest.TestSuite{
           0.asInstanceOf[String]
         }
       }
-      val treeResult = TestRunner.run(tests, query=utest.Query("ah"))
+      val treeResult = TestRunner.run(tests, query=utest.TestQueryParser("ah"))
       val result = treeResult.leaves.toSeq
 
       assertMatch(result) {case Seq(Result("ah", Failure(_), _))=>}
@@ -251,13 +251,13 @@ object FrameworkTests extends utest.TestSuite{
         }
       }
 
-      val res1 = TestRunner.run(tests, query=utest.Query("A.C")).leaves.toVector
+      val res1 = TestRunner.run(tests, query=utest.TestQueryParser("A.C")).leaves.toVector
       assertMatch(res1) {case Seq(Result("C", Success(1), _))=>}
 
-      val res2 = TestRunner.run(tests, query=utest.Query("A")).leaves.toVector
+      val res2 = TestRunner.run(tests, query=utest.TestQueryParser("A")).leaves.toVector
       assertMatch(res2) {case Seq(Result("C", Success(1), _))=>}
 
-      assertMatch(TestRunner.run(tests, query=utest.Query("B")).leaves.toSeq){case Seq(
+      assertMatch(TestRunner.run(tests, query=utest.TestQueryParser("B")).leaves.toSeq){case Seq(
         Result("D", Success(2), _),
         Result("E", Success(3), _)
       )=>}

@@ -53,7 +53,7 @@ object TestRunner {
   def runAsync(tests: Tests,
 
                onComplete: (Seq[String], Result) => Unit = (_, _) => (),
-               query: Query#Trees = Nil,
+               query: TestQueryParser#Trees = Nil,
                executor: Executor = Executor,
                ec: concurrent.ExecutionContext = utest.framework.ExecutionContext.RunNow): Future[HTree[String, Result]] = {
     implicit val ec0 = ec

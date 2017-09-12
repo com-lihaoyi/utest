@@ -321,7 +321,12 @@ using the same uniform syntax.
 By default, SBT runs multiple test suites in parallel, so the output from
 those suites may be interleaved. You can set `parallelExecution in Test := false`
 in your SBT config to make the tests execute sequentially, so the output from
-each suite will be grouped together in the terminal
+each suite will be grouped together in the terminal.
+
+uTest defaults to emitting ANSI-colored terminal output describing the test run.
+You canconfigure the colors by
+[overriding methods on your test suite](#output-formatting), or disable it
+altogether with `override def formatColor = false`.
 
 Sharing Setup Code, and Sharing Setup Objects
 ---------------------------------------------
@@ -800,8 +805,6 @@ retries more globally across your test suite.
 
 Configuring uTest
 =================
-
-uTest allows for some basic configuration:
 
 Output Formatting
 -----------------

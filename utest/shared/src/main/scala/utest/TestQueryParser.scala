@@ -18,7 +18,7 @@ import scala.collection.mutable
   *
   * But here written manually to avoid the dependency on FastParse.
   */
-class Query(input: String) {
+class TestQueryParser(input: String) {
 
   type Parsed[T] = Either[String, (T, Int)]
   type Trees = Seq[Tree[String]]
@@ -94,28 +94,43 @@ class Query(input: String) {
   val delimiters = "{}.,".toSet
 }
 
-object Query{
+object TestQueryParser{
   def apply(input: String) = {
     parse(input).fold(e => throw new QueryParseError(input, e), x => x)
   }
-  def parse(input: String) = new Query(input).curlies(0) match{
+  def parse(input: String) = new TestQueryParser(input).curlies(0) match{
     case Right((v, i)) =>
-      if (i == input.length) Right(v)
+      if (i == input.length) Right(collapse(v))
       else Left(s"Expected end of input at index $i")
     case Left(e) => Left(e)
   }
 
-  def collapse(input: Query#Trees): Query#Trees = {
-    input.groupBy(_.value)
-      .iterator
-      .map{ case (value, trees) =>
-        val children =
-          if (trees.exists(_.children.isEmpty)) Nil
-          else collapse(trees.flatMap(_.children))
-
-        Tree(value, children:_*)
+  /**
+    * Combine common prefixes, converting
+    *
+    * {foo.bar,foo.baz}
+    *
+    * into
+    *
+    * foo.{bar,baz}
+    */
+  def collapse(input: TestQueryParser#Trees): TestQueryParser#Trees = {
+    val mapping = mutable.Map.empty[String, Int]
+    val ordered = mutable.Buffer.empty[List[Tree[String]]]
+    for(subtree <- input){
+      mapping.get(subtree.value) match{
+        case None =>
+          mapping(subtree.value) = ordered.length
+          ordered.append(List(subtree))
+        case Some(i) =>
+          ordered(i) = subtree :: ordered(i)
       }
-      .toArray[Tree[String]]
+    }
+    for (grouping <- ordered) yield {
+      Tree(grouping.head.value,
+        collapse(grouping.reverse.flatMap(_.children)):_*
+      )
+    }
   }
 }
 case class QueryParseError(input: String, msg: String)

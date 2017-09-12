@@ -42,7 +42,7 @@ abstract class BaseRunner(val args: Array[String],
 
   lazy val path = args.headOption.filter(_(0) != '-')
   lazy val query = path
-    .map(Query(_))
+    .map(TestQueryParser(_))
     .getOrElse(Nil)
 
   def addResult(r: String): Unit
@@ -91,7 +91,7 @@ abstract class BaseRunner(val args: Array[String],
     }
 
     val innerQuery = {
-      def rec(currentQuery: Query#Trees, segments: List[String]): Query#Trees = {
+      def rec(currentQuery: TestQueryParser#Trees, segments: List[String]): TestQueryParser#Trees = {
         segments match{
           case head :: tail =>
             currentQuery.find(_.value == head) match{

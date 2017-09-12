@@ -1,14 +1,14 @@
 package test.utest
 
 import utest.framework.Tree
-import utest.Query
-import utest.Query.parse
+import utest.TestQueryParser
+import utest.TestQueryParser.parse
 import utest._
 
 
 object QueryTests extends utest.TestSuite{
-  def check(a: Either[String, Query#Trees],
-            b: Either[String, Query#Trees]) = {
+  def check(a: Either[String, TestQueryParser#Trees],
+            b: Either[String, TestQueryParser#Trees]) = {
     Predef.assert(a == b, a)
   }
 
@@ -66,6 +66,20 @@ object QueryTests extends utest.TestSuite{
     * - check(
       parse("foo.bar.baz.qux"),
       Right(List(Tree("foo", Tree("bar", Tree("baz", Tree("qux"))))))
+    )
+    * - check(
+      parse("{foo.bar,foo.baz.qux,foo.baz.lol}"),
+      Right(List(Tree("foo", Tree("bar"), Tree("baz", Tree("qux"), Tree("lol")))))
+    )
+    * - check(
+      parse("{test.utest.FrameworkTests,test.utest.QueryTests,test.utest.AssertsTests}"),
+      Right(List(
+        Tree("test", Tree("utest",
+          Tree("FrameworkTests"),
+          Tree("QueryTests"),
+          Tree("AssertsTests")
+        ))
+      ))
     )
 
     * - check(
