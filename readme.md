@@ -819,21 +819,21 @@ def formatWrapWidth: Int = 100
 
 def formatValue(x: Any) = testValueColor(x.toString)
 
-def toggledColor(t: fansi.Attrs) = if(formatColor) t else fansi.Attrs.Empty
-def testValueColor = toggledColor(fansi.Color.Blue)
-def exceptionClassColor = toggledColor(fansi.Underlined.On ++ fansi.Color.LightRed)
-def exceptionMsgColor = toggledColor(fansi.Color.LightRed)
-def exceptionPrefixColor = toggledColor(fansi.Color.Red)
-def exceptionMethodColor = toggledColor(fansi.Color.LightRed)
-def exceptionPunctuationColor = toggledColor(fansi.Color.Red)
-def exceptionLineNumberColor = toggledColor(fansi.Color.LightRed)
+def toggledColor(t: ufansi.Attrs) = if(formatColor) t else ufansi.Attrs.Empty
+def testValueColor = toggledColor(ufansi.Color.Blue)
+def exceptionClassColor = toggledColor(ufansi.Underlined.On ++ ufansi.Color.LightRed)
+def exceptionMsgColor = toggledColor(ufansi.Color.LightRed)
+def exceptionPrefixColor = toggledColor(ufansi.Color.Red)
+def exceptionMethodColor = toggledColor(ufansi.Color.LightRed)
+def exceptionPunctuationColor = toggledColor(ufansi.Color.Red)
+def exceptionLineNumberColor = toggledColor(ufansi.Color.LightRed)
 
 def formatResultColor(success: Boolean) = toggledColor(
-  if (success) fansi.Color.Green
-  else fansi.Color.Red
+  if (success) ufansi.Color.Green
+  else ufansi.Color.Red
 )
 
-def formatMillisColor = toggledColor(fansi.Bold.Faint)
+def formatMillisColor = toggledColor(ufansi.Bold.Faint)
 ```
 
 You can override these configuration methods on every `TestSuite` individually,
@@ -844,9 +844,9 @@ to change, and have your test suites extend from `MyTestSuite` instead.
 
 Note that uTest uses an internal copy of the
 [Fansi](https://www.github.com/lihaoyi/fansi) library, vendored at
-`utest.fansi`, in order to avoid any compatibility problems with any of your
-other dependencies. You can use `utest.fansi` to construct the colored
-`utest.fansi.Str`s that these methods require, or you could just return colored
+`utest.ufansi`, in order to avoid any compatibility problems with any of your
+other dependencies. You can use `ufansi` to construct the colored
+`ufansi.Str`s that these methods require, or you could just return colored
 `java.lang.String` objects containing ANSI escapes, created however you like,
 and they will be automatically parsed into the correct format.
 

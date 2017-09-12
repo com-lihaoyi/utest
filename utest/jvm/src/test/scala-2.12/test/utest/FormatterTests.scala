@@ -40,7 +40,7 @@ object FormatterTests extends utest.TestSuite {
         )
 
         utest.framework.Formatter.formatSummary("MyTestSuite", results).foreach(printStream.println)
-        val trimmedOutput = trim(utest.fansi.Str(new String(boa.toByteArray)).plainText)
+        val trimmedOutput = trim(utest.ufansi.Str(new String(boa.toByteArray)).plainText)
         trimmedOutput0 = trimmedOutput
         // This is very confusing to debug, with all the inner and outer test
         // traces being printed everywhere. Easier to paste it into the test `main`
@@ -105,7 +105,7 @@ object FormatterTests extends utest.TestSuite {
           printStream = printStream
         )
         wrappingFormatter.formatSummary("MyTestSuite", results).foreach(printStream.println)
-        val trimmedOutput = trim(utest.fansi.Str(new String(boa.toByteArray)).plainText)
+        val trimmedOutput = trim(utest.ufansi.Str(new String(boa.toByteArray)).plainText)
         trimmedOutput0 = trimmedOutput
         // This is very confusing to debug, with all the inner and outer test
         // traces being printed everywhere. Easier to paste it into the test `main`

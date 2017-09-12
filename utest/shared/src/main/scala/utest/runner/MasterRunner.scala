@@ -56,9 +56,9 @@ final class MasterRunner(args: Array[String],
           body = summaryOutputLines.get.mkString("\n"),
           failureMsg =
             if (failureOutputLines.get() == Nil) ""
-            else fansi.Str(failureHeader) ++ fansi.Str.join(
+            else ufansi.Str(failureHeader) ++ ufansi.Str.join(
               // reverse, because the list gets accumulated backwards
-              failureOutputLines.get().reverse.flatMap(Seq[fansi.Str]("\n", _)): _*
+              failureOutputLines.get().reverse.flatMap(Seq[ufansi.Str]("\n", _)): _*
             ),
           successCount = success.get(),
           failureCount = failure.get(),
