@@ -8,8 +8,8 @@
 
 ![Splash.png](docs/Splash.png)
 
-uTest (pronounced micro-test) is an intuitive, simple testing library for Scala. Its key
-features are:
+uTest (pronounced micro-test) is a simple, intuitive testing library for Scala.
+Its key features are:
 
 - Nicely formatted, colored, easy-to-read command-line test output
 - [Single uniform syntax for defining tests and grouping them together](#nesting-tests)
@@ -20,8 +20,21 @@ features are:
 - Supports every version of Scala under the sun:
   [Scala.js and Scala-Native](#scalajs-and-scala-native), Scala 2.13.0-M2,
   projects using [SBT](#getting-started) or
-  [running tests standalone](#running-utest-standalone) (e.g. via a `main`
-  method, or in Ammonite scripts.
+  [standalone](#running-utest-standalone) (e.g. via a `main` method, or in
+  Ammonite Scripts)
+
+Unlike traditional testing libraries for Scala (like
+[Scalatest](http://www.scalatest.org/) or
+[Specs2](https://etorreborre.github.io/specs2/)) uTest aims to be simple enough
+you will never "get lost" in its codebase and functionality, so you can focus on
+what's most important: your tests.
+
+While uTest has many fewer features than other libraries,
+the features that it does provide are polished and are enough to build
+and maintain test suites of any size. uTest is used for countless projects, from
+the 1-file test suite for
+[Fansi](https://github.com/lihaoyi/fansi/blob/master/fansi/shared/src/test/scala/fansi/FansiTests.scala)
+to the 50-file 9,000-line test suite for [Ammonite](https://github.com/lihaoyi/Ammonite)
 
 Contents
 --------
@@ -253,12 +266,11 @@ sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer2.inner2'
 sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer2.inner3'
 ```
 
-You can also wrap a test path segment in double quotes `"outer2"`, which is
-useful if that segment of the test name contains spaces or other special
-characters:
+You can also wrap the test selector in double quotes, which lets you run test
+whose path segments contain spaces or other special characters:
 
 ```sh
-sbt 'myproject/test-only -- test.utest.examples.NestedTests."outer2".inner3'
+sbt 'myproject/test-only -- "test.utest.examples.NestedTests.segment with spaces.inner"'
 ```
 
 You can run groups of tests by providing the path to the block enclosing all of
@@ -365,22 +377,22 @@ import utest._
 object SharedFixturesTests extends TestSuite{
   var x = 0
   val tests = Tests{
-    'outer1{
+    'outer1 - {
       x += 1
-      'inner1{
+      'inner1 - {
         x += 2
         assert(x == 3)
         x
       }
-      'inner2{
+      'inner2 - {
         x += 3
         assert(x == 7)
         x
       }
     }
-    'outer2{
+    'outer2 - {
       x += 4
-      'inner3{
+      'inner3 - {
         x += 5
         assert(x == 16)
         x
@@ -421,24 +433,28 @@ to a separate helper method to do the real testing:
 
 The `"string" - {...}` and `'symbol - ...` syntaxes are equivalent.
 
-The last way of defining tests is with the `utest.*` symbol, e.g.
+The last way of defining tests is with the `utest.*` symbol, e.g. these tests
+from the [Fansi](https://github.com/lihaoyi/fansi/blob/master/fansi/shared/src/test/scala/fansi/FansiTests.scala)
+project:
 
 ```scala
-import utest._
+'parsing - {
+  def check(frag: fansi.Str) = {
+    val parsed = fansi.Str(frag.render)
+    assert(parsed == frag)
+    parsed
+  }
+  * - check(fansi.Color.True(255, 0, 0)("lol"))
+  * - check(fansi.Color.True(1, 234, 56)("lol"))
+  * - check(fansi.Color.True(255, 255, 255)("lol"))
+  * - {
+    (for(i <- 0 to 255) yield check(fansi.Color.True(i,i,i)("x"))).mkString
+  }
+  * - check(
+    "#" + fansi.Color.True(127, 126, 0)("lol") + "omg" + fansi.Color.True(127, 126, 0)("wtf")
+  )
 
-val test = Tests{
-  'test1 - {
-    throw new Exception("test1")
-  }
-  'test2 - {
-    * - processFileAndCheckOutput("input1.txt", "expected1.txt")
-    * - processFileAndCheckOutput("input2.txt", "expected2.txt")
-    * - processFileAndCheckOutput("input3.txt", "expected3.txt")
-  }
-  'test3 - {
-    val a = List[Byte](1, 2)
-    a(10)
-  }
+  * - check(square(for(i <- 0 to 255) yield fansi.Color.True(i,i,i)))
 }
 ```
 
@@ -470,7 +486,7 @@ val tests = Tests {
   }
 }
 
-tests.runAsync().map {    results =>
+tests.runAsync().map { results =>
   assert(results.toSeq(0).value.isSuccess) // root
   assert(results.toSeq(1).value.isSuccess) // testSuccess
   assert(results.toSeq(2).value.isFailure) // testFail
@@ -668,13 +684,13 @@ zero-or-more messages which are expected to be part of the final error message.
 This is used as follows:
 
 ```scala
-    compileError("true * false").check(
-      """
-    compileError("true * false").check(
-                       ^
-      """,
-      "value * is not a member of Boolean"
-    )
+compileError("true * false").check(
+  """
+compileError("true * false").check(
+                   ^
+  """,
+  "value * is not a member of Boolean"
+)
 ```
 
 Note that the position-string needs to exactly match the line of code the
@@ -710,7 +726,7 @@ object TestPathTests extends TestSuite{
 
 uTest exposes the path to the current test to the body of the test via the
 `utest.framework.TestPath` implicit. This can be used to print debugging
-information while the test is running ("test foo.bar.baz 50% done") or to make
+information while the test is running ("test foo.bar.baz 50% done") or to
 avoid repetition between the test name and test body.
 
 One example is the Fastparse test suite, which uses the name of the test to
@@ -1074,10 +1090,12 @@ elsewhere.
 Why uTest
 =========
 
-uTest aims to give you the things that everyone needs to run tests, avoiding
-redundant/confusing bloat, while leaving you to easily build your own tools on
-top of it to satisfy your own specific testing requirements. Hence uTest
-provides:
+uTest aims to give you the things that everyone needs to run tests, giving you
+one obvious way to do common tasks while testing. uTest is simple and compact,
+letting you avoid thinking about it so you can focus on what's most important:
+you tests.
+
+Hence uTest provides:
 
 - A simple, uniform syntax for
   [delimiting tests and grouping tests together as blocks](#nesting-tests):
@@ -1093,24 +1111,19 @@ provides:
 - [Isolation of tests within the same suite](#sharing-setup-code-and-sharing-setup-objects),
   to avoid inter-test interference due to mutable state
 
-uTest tries to provide the things that every developer needs, in their minimal,
-essential form. If you need more than that, uTest is simple enough it is clear
-where it's responsibilities end, and equally simple for you to write your own
-test helpers and tools that run on top of it.
-
-It intentionally avoids redundant/unnecessary features or redundant/unnecessary
+uTest tries to provide things that every developer needs, in their minimal,
+essential form. It intentionally avoids redundant/unnecessary features or
 syntaxes that bloat the library and make it harder to developers to pick up,
-which I find to be common in other libraries like
+which I find to be common in other popular testing libraries like
 [Scalatest](http://www.scalatest.org/) or
 [Specs2](https://etorreborre.github.io/specs2/):
 
 - Fluent English-like code: matchers like [`shouldBe` or `should not
-    be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness)
-  or
-  [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html)
+  be`](http://www.scalatest.org/user_guide/using_matchers#checkingForEmptiness)
+  or [`mustbe_==`](http://etorreborre.github.io/specs2/guide/org.specs2.guide.Matchers.html)
   don't really add anything, and it doesn't really matter whether you name each
   test block using [`should`, `when`, `can`,
-    `must`](http://doc.scalatest.org/2.0/#org.scalatest.Spec),
+  `must`](http://doc.scalatest.org/2.0/#org.scalatest.Spec),
   [`feature("...")`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec) or
   [`it should "..."`](http://doc.scalatest.org/2.0/#org.scalatest.FlatSpec)
 
@@ -1118,9 +1131,13 @@ which I find to be common in other libraries like
   of defining test suites, individual tests and blocks of related tests
 
 - Legacy code, like ScalaTests [time
-    package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now
+  package](http://doc.scalatest.org/2.0/#org.scalatest.time.package), now
   obsolete with the introduction of
   [scala.concurrent.duration](http://www.scala-lang.org/api/current/index.html#scala.concurrent.duration.package).
+
+While uTest has and will continue to slowly grow and add more features, it is
+unlikely that it will ever reach the same level of complexity that other testing
+libraries are currently at.
 
 Changelog
 =========
