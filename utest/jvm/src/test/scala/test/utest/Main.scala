@@ -53,7 +53,7 @@ object Main {
         }
         'test2 - {
           'inner - {
-            1
+            null.toString
           }
         }
         'test3 - {

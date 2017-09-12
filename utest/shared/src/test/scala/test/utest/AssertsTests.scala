@@ -176,6 +176,8 @@ object AssertsTests extends utest.TestSuite{
           )
           Predef.assert(e.getMessage.contains("assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}"))
 
+
+          Predef.assert(e.getCause().getMessage.contains("List(1, List(2.0), 3)"))
           e.getMessage
         }
       }

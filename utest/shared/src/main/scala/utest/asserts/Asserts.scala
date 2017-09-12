@@ -167,7 +167,14 @@ object Asserts {
     val (res, logged, src) = Util.runAssertionEntry(entry)
     res match{
       case Success(value) =>
-        if (!pf.isDefinedAt(value)) throw Util.makeAssertError(src, logged, null)
+        if (!pf.isDefinedAt(value)) throw Util.makeAssertError(
+          src,
+          logged,
+          // Get the match error that would have been thrown by evaluating
+          // the partial function, and wrap it in an AssertionError that would
+          // capture any `val`s involved
+          try{pf(value);???}catch{case e: Throwable => e}
+        )
       case Failure(e) => throw Util.makeAssertError(src, logged, e)
     }
   }

@@ -38,14 +38,14 @@ trait Formatter {
     val output = mutable.Buffer.empty[fansi.Str]
     var current = x
     while(current != null){
+      val exCls = exceptionClassColor(current.getClass.getName)
       output.append(
         joinLineStr(
           lineWrapInput(
-            fansi.Str.join(
-              exceptionClassColor(current.getClass.getName),
-              ": ",
-              exceptionMsgColor(current.getMessage)
-            ),
+            current.getMessage match{
+              case null => exCls
+              case nonNull => fansi.Str.join(exCls, ": ", exceptionMsgColor(nonNull))
+            },
             leftIndent
           ),
           leftIndent
