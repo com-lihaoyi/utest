@@ -1,5 +1,6 @@
 package utest.asserts
 
+import utest.framework.StackMarker
 import utest.{AssertionError, TestValue}
 
 import scala.collection.mutable.ArrayBuffer
@@ -16,25 +17,15 @@ object Util {
     * macro-debugging goodness
     */
   def assertError(msgPrefix: String, logged: Seq[TestValue], cause: Throwable = null) = {
-    throw AssertionError(
-      msgPrefix + Option(cause).fold("")(e => s"\ncaused by: $e") + logged.map{
-        case TestValue(name, tpe, thing) => s"\n$name: $tpe = $thing"
-      }.mkString,
-      logged,
-      cause
-    )
+    throw makeAssertError(msgPrefix, logged, cause)
   }
-  /**
-    * Executes this AssertEntry and returns a successful result or dies in
-    * case of failure. Even on success, it returns a die() function you can
-    * call to manually throw and exception later if the result displeases you.
-    */
-  def getAssertionEntry[T](t: AssertEntry[T]): (T, Throwable => Nothing) = {
-    val (res, logged, src) = runAssertionEntry(t)
-    res match{
-      case Success(value) => (value, t => assertError(src, logged, t))
-      case Failure(e) => assertError(src, logged, e)
-    }
+
+  def makeAssertError(msgPrefix: String,
+                      logged: Seq[TestValue],
+                      cause: Throwable = null) = StackMarker.dropInside{
+    val err = AssertionError(msgPrefix, logged, cause)
+    if (cause != null) err.setStackTrace(Array.empty)
+    err
   }
 
   /**
@@ -43,7 +34,10 @@ object Util {
   def runAssertionEntry[T](t: AssertEntry[T]) = {
     val AssertEntry(src, func) = t
     val logged = ArrayBuffer.empty[TestValue]
-    val res = Try(func(logged.append(_)))
+    val res =
+      try Success(func(logged.append(_)))
+      catch{case e: Throwable => Failure(e)}
+
     (res, logged, src)
   }
 

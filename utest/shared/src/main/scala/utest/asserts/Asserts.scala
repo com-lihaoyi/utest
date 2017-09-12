@@ -4,6 +4,7 @@ package asserts
 import utest.framework.StackMarker
 
 import scala.annotation.{StaticAnnotation, tailrec}
+import scala.collection.mutable
 import scala.reflect.macros.{Context, ParseException, TypecheckException}
 import scala.util.{Failure, Random, Success, Try}
 import scala.reflect.ClassTag
@@ -97,12 +98,25 @@ object Asserts {
   }
 
 
-  def assertImpl(funcs: AssertEntry[Boolean]*) = StackMarker.dropInside{
-    val tries = for (entry <- funcs) yield Try{
-      val (value, die) = Util.getAssertionEntry(entry)
-      if (!value) die(null)
+  def assertImpl(funcs0: AssertEntry[Boolean]*) = {
+    val funcs = funcs0.toArray
+    val failures = mutable.Buffer.empty[Throwable]
+    var i = 0
+    // Avoid using `.map` here, because it makes the stack trace tall, which
+    // gets annoying to a user who is trying to look at the call stack and
+    // figure out what's going on
+    while(i < funcs.length){
+      val (res, logged, src) = Util.runAssertionEntry(funcs(i))
+
+      res match{
+        case Success(value) =>
+          if (!value) failures.append(Util.makeAssertError(src, logged, null))
+        case Failure(e) => failures.append(Util.makeAssertError(src, logged, e))
+      }
+
+      i += 1
     }
-    val failures = tries.collect{case util.Failure(thrown) => thrown}
+
     failures match{
       case Seq() => () // nothing failed, do nothing
       case Seq(failure) => throw failure
@@ -126,7 +140,7 @@ object Asserts {
    * is returned if raised, and an `AssertionError` is raised if the expected
    * exception does not appear.
    */
-  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = StackMarker.dropInside{
+  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
     val (res, logged, src) = Util.runAssertionEntry(entry)
     res match{
       case Failure(e: T) => e
@@ -150,9 +164,12 @@ object Asserts {
    */
   def assertMatchImpl(entry: AssertEntry[Any])
                      (pf: PartialFunction[Any, Unit]): Unit = StackMarker.dropInside{
-    val (value, die) = Util.getAssertionEntry(entry)
-    if (pf.isDefinedAt(value)) ()
-    else die(null)
+    val (res, logged, src) = Util.runAssertionEntry(entry)
+    res match{
+      case Success(value) =>
+        if (!pf.isDefinedAt(value)) throw Util.makeAssertError(src, logged, null)
+      case Failure(e) => throw Util.makeAssertError(src, logged, e)
+    }
   }
 }
 

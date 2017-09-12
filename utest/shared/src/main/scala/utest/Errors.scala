@@ -12,12 +12,12 @@ case class NoSuchTestException(path: Seq[String]*)
  * A special `AssertionError` thrown by utest's macro-powered asserts that 
  * contains metadata about local variables used in the assert expression.
  */
-case class AssertionError(msg: String,
-                          captured: Seq[TestValue],
-                          cause: Throwable = null)
+case class AssertionError(msgPrefix: String, captured: Seq[TestValue], cause: Throwable = null)
 // Referring to non-existent method java.lang.AssertionError.<init>(java.lang.String,java.lang.Throwable) in Scala.js 1.0.0-M1
 //                          extends java.lang.AssertionError(msg, cause) {
-                          extends java.lang.AssertionError(msg) {
+extends java.lang.AssertionError(
+  msgPrefix + captured.map(x => s"\n${x.name}: ${x.tpeName} = ${x.value}").mkString
+) {
   super.initCause(cause)
 }
 

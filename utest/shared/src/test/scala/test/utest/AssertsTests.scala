@@ -127,13 +127,13 @@ object AssertsTests extends utest.TestSuite{
           }
           Predef.assert(false) // error wasn't thrown???
         } catch { case e: utest.AssertionError =>
-          Predef.assert(e.msg.contains("(x: Any) match { case _: String => y + 1 }"))
+          Predef.assert(e.getMessage.contains("(x: Any) match { case _: String => y + 1 }"))
           // This is subtle: only `x` should be logged as an interesting value, for
           // `y` was not evaluated at all and could not have played a part in the
           // throwing of the exception
           Predef.assert(e.captured == Seq(TestValue("x", "Int", 1)))
           Predef.assert(e.cause.isInstanceOf[MatchError])
-          e.msg
+          e.getMessage
         }
       }
       'failureNoThrow - {
@@ -144,9 +144,9 @@ object AssertsTests extends utest.TestSuite{
             123 + x + y
           }
         }catch {case e: utest.AssertionError =>
-          Predef.assert(e.msg.contains("123 + x + y"))
+          Predef.assert(e.getMessage.contains("123 + x + y"))
           Predef.assert(e.captured == Seq(TestValue("x", "Int", 1), TestValue("y", "Double", 2.0)))
-          e.msg
+          e.getMessage
         }
       }
       'interceptWithAssignment - {
@@ -174,7 +174,7 @@ object AssertsTests extends utest.TestSuite{
           Predef.assert(e.captured == Seq(
             TestValue("x", "Int", 1), TestValue("iAmCow", "Seq[String]", Seq("2.0")))
           )
-          Predef.assert(e.msg.contains("assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}"))
+          Predef.assert(e.getMessage.contains("assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}"))
 
           e.getMessage
         }
@@ -189,7 +189,7 @@ object AssertsTests extends utest.TestSuite{
         } catch{ case e: utest.AssertionError =>
           Predef.assert(e.captured == Seq(TestValue("a", "Iterator[Nothing]", Iterator.empty)))
           Predef.assert(e.cause.isInstanceOf[NoSuchElementException])
-          Predef.assert(e.msg.contains("assertMatch(Seq(a.next(), 3, b)){case Seq(1, 2) =>}"))
+          Predef.assert(e.getMessage.contains("assertMatch(Seq(a.next(), 3, b)){case Seq(1, 2) =>}"))
           e.getMessage
         }
       }
