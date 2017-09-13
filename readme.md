@@ -74,7 +74,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.4.8" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.5.3" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -82,7 +82,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.4.8" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.5.3" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
