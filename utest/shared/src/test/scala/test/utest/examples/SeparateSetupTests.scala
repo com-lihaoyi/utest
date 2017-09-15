@@ -9,12 +9,12 @@ object SeparateSetupTests extends TestSuite{
       x += 1
       'inner1 - {
         x += 2
-        assert(x == 3)
+        assert(x == 3) // += 1, += 2
         x
       }
       'inner2 - {
         x += 3
-        assert(x == 4)
+        assert(x == 4) // += 1, += 3
         x
       }
     }
@@ -22,7 +22,7 @@ object SeparateSetupTests extends TestSuite{
       x += 4
       'inner3 - {
         x += 5
-        assert(x == 9)
+        assert(x == 9) // += 4, += 5
         x
       }
     }

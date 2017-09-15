@@ -159,6 +159,7 @@ can be nested arbitrarily deep:
 ```scala
 package test.utest.examples
 
+
 import utest._
 
 object NestedTests extends TestSuite{
@@ -166,24 +167,19 @@ object NestedTests extends TestSuite{
     val x = 1
     'outer1 - {
       val y = x + 1
+
       'inner1 - {
+        assert(x == 1, y == 2)
+        (x, y)
+      }
+      'inner2 - {
         val z = y + 1
-        'innerest - {
-          assert(
-            x == 1,
-            y == 2,
-            z == 3
-          )
-          (x, y, z)
-        }
+        assert(z == 3)
       }
     }
     'outer2 - {
-      'inner2 - {
-        assert(4 > 3)
-      }
       'inner3 - {
-        assert(5 > 4)
+        assert(x > 1)
       }
     }
   }
@@ -196,15 +192,15 @@ of this tree: `innerest`, `inner2` and `inner3`. When this suite is run with
 
 ```text
 ------------------------------- Running Tests -------------------------------
-+ test.utest.examples.NestedTests.outer1.inner1.innerest 14ms  (1,2,3)
-+ test.utest.examples.NestedTests.outer2.inner2 0ms
-+ test.utest.examples.NestedTests.outer2.inner3 0ms
++ test.utest.examples.NestedTests.outer1.inner1 21ms  (1,2)
++ test.utest.examples.NestedTests.outer1.inner2 0ms
++ test.utest.examples.NestedTests.outer2.inner3 0ms 
 ```
 
-You can see also that `test.utest.examples.NestedTests.outer1.inner1.innerest`
-displays the value of `(x, y, z)` returned from the test: `(1,2,3)`. Returning a
-value from a test is useful if you want to skim the test's results after a run
-to perform manual sanity-checks on some computed value.
+You can see also that `test.utest.examples.NestedTests.outer1.inner1` displays
+the value of `(x, y)` returned from the test: `(1,2)`. Returning a value from a
+test is useful if you want to skim the test's results after a run to perform
+manual sanity-checks on some computed value.
 
 If you find yourself wanting to define a test in a for, loop, e.g.
 
@@ -267,7 +263,7 @@ sbt myproject/test
 You can also run individual tests using their full path e.g.
 
 ```sh
-sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer1.inner1.innerest'
+sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer1.inner1'
 sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer2.inner2'
 sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer2.inner3'
 ```
@@ -283,8 +279,8 @@ You can run groups of tests by providing the path to the block enclosing all of
 them:
 
 ```sh
-# runs both tests `inner2` and `inner3`
-sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer2'
+# runs both tests `inner1` and `inner2`
+sbt 'myproject/test-only -- test.utest.examples.NestedTests.outer1'
 
 # runs all tests in the `NestedTests` test suite
 sbt 'myproject/test-only -- test.utest.examples.NestedTests'
@@ -298,13 +294,13 @@ like to run:
 
 ```sh
 # runs both tests `inner2` and `inner3`, explicitly
-sbt 'myproject/test-only -- test.examples.NestedTests.outer2.{inner1,inner2}'
+sbt 'myproject/test-only -- test.examples.NestedTests.outer1.{inner1,inner2}'
 
-# runs `inner1` and `innerest` but not `inner2`
-sbt 'myproject/test-only -- test.examples.NestedTests{outer2.inner1,outer1.inner1.innerest}'
+# runs `outer1.inner1` and `outer2.inner3` but not `outer1.inner2`
+sbt 'myproject/test-only -- test.examples.NestedTests.{outer1.inner1,outer2.inner3}'
 
 # also runs `inner1` and `innerest` (and any other test inside `inner1`) but not `inner2`
-sbt 'myproject/test-only -- test.examples.NestedTests{outer2.inner1,outer1.inner1}'
+sbt 'myproject/test-only -- test.examples.NestedTests.{outer1.inner1,outer2}'
 ```
 
 The same syntax can be used to pick and choose specific `TestSuite`s to run, or
@@ -314,7 +310,7 @@ tests within those test suites:
 # Run every test in `HelloTests` and `NestedTests`
 sbt 'myproject/test-only -- test.examples.{HelloTests,NestedTests}'
 
-# Runs `HelloTests.test1`, `NestedTests.outer2.inner2` and `NestedTests.outer2.inner3`
+# Runs `HelloTests.test1`, `NestedTests.outer1.inner2` and `NestedTests.outer2.inner3`
 sbt 'myproject/test-only -- test.examples.{HelloTests.test1,NestedTests.outer2}'
 sbt 'myproject/test-only -- {test.examples.HelloTests.test1,test.examples.NestedTests.outer2}'
 ```
@@ -337,8 +333,11 @@ altogether with `override def formatColor = false`.
 Sharing Setup Code, and Sharing Setup Objects
 ---------------------------------------------
 
-You can define blocks tests to group them together, and have them share common
-initialization code in the enclosing block:
+As you saw in the previous section, you can define blocks tests to group them
+together, and have them share common initialization code in the enclosing block.
+You can also define *mutable* values, or "fixtures" in the shared initialization
+code, and each nested test with a `Tests` block gets its own copy of any mutable
+variables defined within it:
 
 ```scala
 package test.utest.examples
@@ -352,12 +351,12 @@ object SeparateSetupTests extends TestSuite{
       x += 1
       'inner1 - {
         x += 2
-        assert(x == 3)
+        assert(x == 3) // += 1, += 2
         x
       }
       'inner2 - {
         x += 3
-        assert(x == 4)
+        assert(x == 4) // += 1, += 3
         x
       }
     }
@@ -365,7 +364,7 @@ object SeparateSetupTests extends TestSuite{
       x += 4
       'inner3 - {
         x += 5
-        assert(x == 9)
+        assert(x == 9) // += 4, += 5
         x
       }
     }
@@ -374,16 +373,15 @@ object SeparateSetupTests extends TestSuite{
 ```
 
 Here, you can see that the `x` available in each inner test block (`inner1`,
-`inner2`, `inner3`) is separate and independent: the `x += 1` and `x += 2` that
-take place when evaluating `inner1` do not affect the `x` that is seen by
-`inner2` or `inner3`. In general, values defined inside the suite's test block
-are not shared between tests in the same block. This helps avoid inter-test
+`inner2`, `inner3`) is separate and independent: each test gets a new copy of
+`x`, modified only by that test's enclosing blocks. This helps avoid inter-test
 interference (where a test ends up implicitly depending on some state
 initialized by another test running earlier in the block) while still making it
 convenient to share common setup code between the various tests in your suite.
 
-If you want the fixtures to really-truly be shared between individual tests,
-define it outside the `Tests{}` block in the enclosing object:
+If you want the mutable fixtures to really-truly be shared between individual
+tests (e.g. because they are expensive to repeatedly initialize) define it
+outside the `Tests{}` block in the enclosing object:
 
 ```scala
 package test.utest.examples
@@ -397,12 +395,12 @@ object SharedFixturesTests extends TestSuite{
       x += 1
       'inner1 - {
         x += 2
-        assert(x == 3)
+        assert(x == 3) // += 1, += 2
         x
       }
       'inner2 - {
         x += 3
-        assert(x == 7)
+        assert(x == 7) // += 1, += 2, += 1, += 3
         x
       }
     }
@@ -410,7 +408,7 @@ object SharedFixturesTests extends TestSuite{
       x += 4
       'inner3 - {
         x += 5
-        assert(x == 16)
+        assert(x == 16) // += 1, += 2, += 1, += 3, += 4, += 5
         x
       }
     }
@@ -418,13 +416,11 @@ object SharedFixturesTests extends TestSuite{
 }
 ```
 
-And you'll see that the changes to `x` are being shared between the invocations
-of all the tests: Running `outer1.inner1` increments it from 0 to 1 to 3,
-`outer1.inner2` from 3 to 4 to 7, and `outer2.inner3` from 7 to 11 to 16.
-
-If you are initializing something expensive to share between tests, this allows
-you to avoid paying that cost multiple times, but you need to be careful the
-tests aren't mutating shared state that could interfere!
+Here you see that the changes to `x` are being shared between the invocations of
+all the tests. If you are initializing something expensive to share between
+tests, this allows you to avoid paying that cost multiple times, but you need to
+be careful the tests aren't mutating shared state that could cause other tests
+to fail!
 
 Other Ways of Naming tests
 --------------------------
