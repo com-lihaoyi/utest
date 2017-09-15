@@ -187,7 +187,11 @@ object NestedTests extends TestSuite{
 ```
 
 Here, we have a tree of nested blocks, with three tests at the inner-most blocks
-of this tree: `innerest`, `inner2` and `inner3`. When this suite is run with
+of this tree: `innerest`, `inner2` and `inner3`. Test blocks can be nested
+arbitrary deeply to help keep things neat, and only the inner-most blocks are
+considered to be tests.
+
+When this suite is run with
 `sbt myproject/test`, it is those three tests that get executed:
 
 ```text
