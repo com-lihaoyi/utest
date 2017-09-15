@@ -209,7 +209,7 @@ manual sanity-checks on some computed value.
 If you find yourself wanting to define a test in a for, loop, e.g.
 
 ```scala
-# Doesn't work!
+// Doesn't work!
 val tests =  Tests{ 
   for(fileName <- Seq("hello", "world", "i", "am", "cow")){
     fileName - {
@@ -223,7 +223,7 @@ You can instead factor out the common code into a function, and call that from
 each distinct test case:
 
 ```scala
-# Works!
+// Works!
 val tests = Tests{
   def runTestChecks(fileName: String) = {
     // lots of code using fileName
