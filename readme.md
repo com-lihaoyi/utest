@@ -244,7 +244,7 @@ test, you can remove the duplication between the test name and the call to
 # Also works!
 val tests = Tests{
   def runTestChecks()(implicit path: utest.framework.TestPath) = {
-    val fileName = path.last
+    val fileName = path.value.last
     // lots of code using fileName
   }
   "hello" - runTestChecks()
