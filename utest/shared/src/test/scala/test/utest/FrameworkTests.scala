@@ -10,7 +10,7 @@ import scala.util.Failure
 
 
 object FrameworkTests extends utest.TestSuite{
-  override def utestBeforeEach() = {
+  override def utestBeforeEach(): Unit = {
     println("RUN before each")
   }
   override def utestAfterEach() = {

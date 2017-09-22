@@ -44,7 +44,7 @@ object SuiteManualRetryTests extends utest.TestSuite{
 object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
   var x = 0
   override val utestRetryCount = 3
-  override def utestBeforeEach() = {
+  override def utestBeforeEach(): Unit = {
     x = 0
   }
   val flaky = new FlakyThing
