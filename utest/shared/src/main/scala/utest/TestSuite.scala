@@ -29,9 +29,12 @@ object TestSuite {
     val utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
       def rec(count: Int): Future[Any] = {
+        beforeEach
         body.recoverWith { case e =>
           if (count < 5) rec(count + 1)
           else throw e
+        }.andThen {
+          case _ => afterEach
         }
       }
       val res = rec(0)
