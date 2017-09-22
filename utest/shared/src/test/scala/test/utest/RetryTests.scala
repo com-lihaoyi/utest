@@ -22,9 +22,12 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
 object SuiteManualRetryTests extends utest.TestSuite{
   override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
     def rec(count: Int): Future[Any] = {
+      utestBeforeEach()
       body.recoverWith { case e =>
         if (count < 5) rec(count + 1)
         else throw e
+      }.andThen {
+        case _ => utestAfterEach()
       }
     }
     val res = rec(0)
@@ -33,6 +36,22 @@ object SuiteManualRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
   def tests = Tests{
     'hello - {
+      flaky.run
+    }
+  }
+}
+
+object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
+  var x = 0
+  override val utestRetryCount = 3
+  override def utestBeforeEach() = {
+    x = 0
+  }
+  val flaky = new FlakyThing
+  def tests = Tests{
+    'hello - {
+      assert(x == 0)
+      x += 1
       flaky.run
     }
   }

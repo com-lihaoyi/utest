@@ -967,7 +967,8 @@ This is a flexible function that wraps every test call; you can use it to:
   e.g. `Seq("outer", "inner1", "innerest")` for the test `outer.inner1.innerest`
 
 Generally, if you want to perform messy before/after logic around every
-individual test, override `utestWrap`.
+individual test, override `utestWrap`. Please remember to call the
+`utestBeforeEach` and `utestAfterEach` methods when needed.
 
 `runBody` is a future to support asynchronous testing, which is the only way to
 test things like Ajax calls in [Scala.js](#scalajs-and-scala-native)
@@ -1120,7 +1121,10 @@ val results3 = TestRunner.runAndPrint(
     override def utestWrap(path: Seq[String], runBody: => Future[Any])
                  (implicit ec: ExecutionContext): Future[Any] = {
       println("Getting ready to run " + path.mkString("."))
-      runBody
+      utestBeforeEach()
+      runBody.andThen {
+        case _ => utestAfterEach()
+      }
     }
   },
   formatter = new utest.framework.Formatter{
