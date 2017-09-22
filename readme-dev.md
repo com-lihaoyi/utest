@@ -59,6 +59,7 @@ Contents
   - [Output Formatting](#output-formatting)
   - [Suite Retries](#suite-retries)
   - [Before and after methods for a Test Suite](#before-and-after-methods-for-a-test-suite)
+  - [Before and after all for a Test Suite](#before-and-after-all-for-a-test-suite)
   - [Test Wrapping](#test-wrapping)
   - [Per-Run Setup/Teardown, and other test-running Config](#per-run-setupteardown-and-other-test-running-config)
 - [Scala.js and Scala-Native](#scalajs-and-scala-native)
@@ -900,7 +901,7 @@ package test.utest.examples
 import utest._
 object BeforeAfterEachTest extends TestSuite {
   var x = 0
-  override def utestBeforeEach() = {
+  override def utestBeforeEach(): Unit = {
     println(s"on before each x: $x")
     x = 0
   }
@@ -946,6 +947,53 @@ on after each x: 9
 + test.utest.examples.BeforeAfterEachTest.outer2.inner3 0ms  9
 Tearing down CustomFramework
 Tests: 3, Passed: 3, Failed: 0
+```
+
+Before and after all for a Test Suite
+-------------
+
+If you're looking for something similar to before all, you can add your
+code to the object body, and you can also use lazy val to delay the
+initialization until the test suite object is created.
+
+uTest offers the `utestAfterAll` method that you can override on any
+test suite, this method is invoked after running the entire test suite.
+
+```scala
+def utestAfterAll(): Unit = ()
+```
+
+```scala
+package test.utest.examples
+
+import utest._
+object BeforeAfterAllSimpleTests extends TestSuite {
+  println("on object body, aka: before all")
+
+  override def utestAfterAll(): Unit = {
+    println("on after all")
+  }
+
+  val tests = Tests {
+    'outer1 - {
+      'inner1 - {
+        1
+      }
+      'inner2 - {
+        2
+      }
+    }
+  }
+}
+
+```
+```text
+-------------------------------- Running Tests --------------------------------
+Setting up CustomFramework
+on object body, aka: before all
++ test.utest.examples.BeforeAfterAllSimpleTests.outer1.inner1 2ms  1
++ test.utest.examples.BeforeAfterAllSimpleTests.outer1.inner2 0ms  2
+on after all
 ```
 
 Test Wrapping

@@ -51,7 +51,6 @@ object TestRunner {
     * @param ec Used to
     */
   def runAsync(tests: Tests,
-
                onComplete: (Seq[String], Result) => Unit = (_, _) => (),
                query: TestQueryParser#Trees = Nil,
                executor: Executor = Executor,
@@ -86,7 +85,9 @@ object TestRunner {
             }
         }
 
-        evaluateFutureTree(forced)
+        evaluateFutureTree(forced).andThen {
+          case _ => executor.utestAfterAll()
+        }
     }
   }
 

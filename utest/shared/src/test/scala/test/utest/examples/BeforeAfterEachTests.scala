@@ -1,9 +1,9 @@
 package test.utest.examples
 
 import utest._
-object BeforeAfterEachTest extends TestSuite {
+object BeforeAfterEachTests extends TestSuite {
   var x = 0
-  override def utestBeforeEach() = {
+  override def utestBeforeEach(): Unit = {
     println(s"on before each x: $x")
     x = 0
   }

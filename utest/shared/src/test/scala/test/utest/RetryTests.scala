@@ -44,7 +44,7 @@ object SuiteManualRetryTests extends utest.TestSuite{
 object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
   var x = 0
   override val utestRetryCount = 3
-  override def utestBeforeEach() = {
+  override def utestBeforeEach(): Unit = {
     x = 0
   }
   val flaky = new FlakyThing
@@ -53,6 +53,31 @@ object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
       assert(x == 0)
       x += 1
       flaky.run
+    }
+  }
+}
+
+object SuiteRetryBeforeAllTests extends TestSuite with TestSuite.Retries {
+  override val utestRetryCount = 3
+  var x = 100
+  val flaky = new FlakyThing
+  println(s"starting with x: $x")
+
+  override def utestAfterAll(): Unit = {
+    println(s"on after all with x: $x")
+    assert(x == 50)
+  }
+
+  def tests = Tests {
+    'hello - {
+      flaky.run
+      x += 1
+      x
+    }
+    'test2 - {
+      assert(x == 101)
+      x = 50
+      x
     }
   }
 }
