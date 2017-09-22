@@ -1,29 +1,36 @@
 package test.utest.examples
 
 import utest._
-object BeforeAfterEachTest extends TestSuite{
+object BeforeAfterEachTest extends TestSuite {
   var x = 0
-  override def beforeEach = {
-    println(s"x before: $x")
+  override def utestBeforeEach() = {
+    println(s"on before each x: $x")
     x = 0
   }
-  override def afterEach = {
-    println(s"x after: $x")
-  }
+  override def utestAfterEach() =
+    println(s"on after each x: $x")
 
   val tests = Tests{
-    'test1{
+    'outer1 - {
       x += 1
-      assert(x == 1)
-    }
-    'test2{
-      'inner{
-        assert(x == 0)
+      'inner1 - {
+        x += 2
+        assert(x == 3) // += 1, += 2
+        x
+      }
+      'inner2 - {
+        x += 3
+        assert(x == 4) // += 1, += 3
+        x
       }
     }
-    'test3{
-      x += 42
-      assert(x == 42)
+    'outer2 - {
+      x += 4
+      'inner3 - {
+        x += 5
+        assert(x == 9) // += 4, += 5
+        x
+      }
     }
   }
 }

@@ -58,6 +58,7 @@ Contents
 - [Configuring uTest](#configuring-utest)
   - [Output Formatting](#output-formatting)
   - [Suite Retries](#suite-retries)
+  - [Before and after methods for a Test Suite](#before-and-after-methods-for-a-test-suite)
   - [Test Wrapping](#test-wrapping)
   - [Per-Run Setup/Teardown, and other test-running Config](#per-run-setupteardown-and-other-test-running-config)
 - [Scala.js and Scala-Native](#scalajs-and-scala-native)
@@ -878,6 +879,74 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
 
 You can also use [Local Retries](#local-retries) if you want to only retry
 within specific tests or expressions instead of throughout the entire suite.
+
+Before and after methods for a Test Suite
+-------------
+
+uTest offers the `utestBeforeEach` and `utestAfterEach` methods that you can
+override on any test suite, these methods are invoked before and after running
+each test.
+
+```scala
+def utestBeforeEach(): Unit = ()
+def utestAfterEach(): Unit = ()
+```
+
+These are equivalent to `utestWrap` but easier to use for simple cases.
+
+```scala
+package test.utest.examples
+
+import utest._
+object BeforeAfterEachTest extends TestSuite {
+  var x = 0
+  override def utestBeforeEach() = {
+    println(s"on before each x: $x")
+    x = 0
+  }
+  override def utestAfterEach() =
+    println(s"on after each x: $x")
+
+  val tests = Tests{
+    'outer1 - {
+      x += 1
+      'inner1 - {
+        x += 2
+        assert(x == 3) // += 1, += 2
+        x
+      }
+      'inner2 - {
+        x += 3
+        assert(x == 4) // += 1, += 3
+        x
+      }
+    }
+    'outer2 - {
+      x += 4
+      'inner3 - {
+        x += 5
+        assert(x == 9) // += 4, += 5
+        x
+      }
+    }
+  }
+}
+```
+```text
+-------------------------------- Running Tests --------------------------------
+Setting up CustomFramework
+on before each x: 0
+on after each x: 3
++ test.utest.examples.BeforeAfterEachTest.outer1.inner1 22ms  3
+on before each x: 3
+on after each x: 4
++ test.utest.examples.BeforeAfterEachTest.outer1.inner2 1ms  4
+on before each x: 4
+on after each x: 9
++ test.utest.examples.BeforeAfterEachTest.outer2.inner3 0ms  9
+Tearing down CustomFramework
+Tests: 3, Passed: 3, Failed: 0
+```
 
 Test Wrapping
 -------------
