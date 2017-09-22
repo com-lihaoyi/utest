@@ -51,7 +51,6 @@ object TestRunner {
     * @param ec Used to
     */
   def runAsync(tests: Tests,
-
                onComplete: (Seq[String], Result) => Unit = (_, _) => (),
                query: TestQueryParser#Trees = Nil,
                executor: Executor = Executor,
@@ -62,6 +61,7 @@ object TestRunner {
       case Right(resolution) =>
         val thunkTree = collectQueryTerminals(tests.nameTree, resolution, Nil, Nil)
 
+        executor.utestBeforeAll()
         val forced = thunkTree.mapLeaves{case (revStringPath, revIntPath) => () =>
           val head = revStringPath.headOption.getOrElse("")
 
@@ -86,7 +86,9 @@ object TestRunner {
             }
         }
 
-        evaluateFutureTree(forced)
+        evaluateFutureTree(forced).andThen {
+          case _ => executor.utestAfterAll()
+        }
     }
   }
 
