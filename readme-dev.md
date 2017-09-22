@@ -952,12 +952,14 @@ Tests: 3, Passed: 3, Failed: 0
 Before and after all for a Test Suite
 -------------
 
-uTest offers the `utestBeforeAll` and `utestAfterAll` methods that you can
-override on any test suite, these methods are invoked before and after running
-the entire test suite.
+If you're looking for something similar to before all, you can add your
+code to the object body, and you can also use lazy val to delay the
+initialization until the test suite object is created.
+
+uTest offers the `utestAfterAll` method that you can override on any
+test suite, this method is invoked after running the entire test suite.
 
 ```scala
-def utestBeforeAll(): Unit = ()
 def utestAfterAll(): Unit = ()
 ```
 
@@ -965,13 +967,10 @@ def utestAfterAll(): Unit = ()
 package test.utest.examples
 
 import utest._
-
 object BeforeAfterAllSimpleTests extends TestSuite {
+  println("on object body, aka: before all")
 
-  override def utestBeforeAll(): Unit = {
-    println("on before all")
-  }
-  override def utestAfterAll() = {
+  override def utestAfterAll(): Unit = {
     println("on after all")
   }
 
@@ -986,12 +985,13 @@ object BeforeAfterAllSimpleTests extends TestSuite {
     }
   }
 }
+
 ```
 ```text
 -------------------------------- Running Tests --------------------------------
 Setting up CustomFramework
-on before all
-+ test.utest.examples.BeforeAfterAllSimpleTests.outer1.inner1 17ms  1
+on object body, aka: before all
++ test.utest.examples.BeforeAfterAllSimpleTests.outer1.inner1 2ms  1
 + test.utest.examples.BeforeAfterAllSimpleTests.outer1.inner2 0ms  2
 on after all
 ```

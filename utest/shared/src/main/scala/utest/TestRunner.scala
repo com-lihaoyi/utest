@@ -61,7 +61,6 @@ object TestRunner {
       case Right(resolution) =>
         val thunkTree = collectQueryTerminals(tests.nameTree, resolution, Nil, Nil)
 
-        executor.utestBeforeAll()
         val forced = thunkTree.mapLeaves{case (revStringPath, revIntPath) => () =>
           val head = revStringPath.headOption.getOrElse("")
 

@@ -4,11 +4,9 @@ import utest._
 import scala.concurrent.Future
 
 object BeforeAfterAllSimpleTests extends TestSuite {
+  println("on object body, aka: before all")
 
-  override def utestBeforeAll(): Unit = {
-    println("on before all")
-  }
-  override def utestAfterAll() = {
+  override def utestAfterAll(): Unit = {
     println("on after all")
   }
 
@@ -25,12 +23,10 @@ object BeforeAfterAllSimpleTests extends TestSuite {
 }
 
 object BeforeAfterAllTests extends TestSuite {
-  var x = 0
-  override def utestBeforeAll(): Unit = {
-    println(s"on before all x: $x")
-    x = 100
-  }
-  override def utestAfterAll() = {
+  var x = 100
+  println(s"starting with x: $x")
+
+  override def utestAfterAll(): Unit = {
     println(s"on after all x: $x")
     assert(x == 116)
   }
