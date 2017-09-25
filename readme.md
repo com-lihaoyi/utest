@@ -953,8 +953,8 @@ Both `utestBeforeEach` and `utestAfterEach` runs inside `utestWrap`'s `body`
 callback.
 
 If you need something fancier than what `utestBeforeEach` or `utestAfterEach`
-provide feel, e.g. passing initialized objects into the main test case or
-tearing them down after the test case has completed, free to define your test
+provide, e.g. passing initialized objects into the main test case or tearing
+them down after the test case has completed, feel free to define your test
 wrapper/initialization function and use it for each test case:
 
 
@@ -977,9 +977,9 @@ wants access to the current test's path.
 Running code before and after test suites
 -----------------------------------------
 
-If you're looking for something similar to before all, you can add your
-code to the object body, and you can also use lazy val to delay the
-initialization until the test suite object is created.
+If you're looking for something like `utestBeforeAll`, you can add your code to
+the object body, and you can also use lazy val to delay the initialization until
+the test suite object is created.
 
 uTest offers the `utestAfterAll` method that you can override on any
 test suite, this method is invoked after running the entire test suite.
