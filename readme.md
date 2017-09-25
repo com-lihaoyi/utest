@@ -58,6 +58,8 @@ Contents
 - [Configuring uTest](#configuring-utest)
   - [Output Formatting](#output-formatting)
   - [Suite Retries](#suite-retries)
+  - [Running code before and after test cases](#running-code-before-and-after-test-cases)
+  - [Running code before and after test suites](#running-code-before-and-after-test-suites)
   - [Test Wrapping](#test-wrapping)
   - [Per-Run Setup/Teardown, and other test-running Config](#per-run-setupteardown-and-other-test-running-config)
 - [Scala.js and Scala-Native](#scalajs-and-scala-native)
@@ -879,6 +881,146 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
 You can also use [Local Retries](#local-retries) if you want to only retry
 within specific tests or expressions instead of throughout the entire suite.
 
+Running code before and after test cases
+----------------------------------------
+
+uTest offers the `utestBeforeEach` and `utestAfterEach` methods that you can
+override on any test suite, these methods are invoked before and after running
+each test.
+
+```scala
+def utestBeforeEach(path: Seq[String]): Unit = ()
+def utestAfterEach(path: Seq[String]): Unit = ()
+```
+
+These are equivalent to `utestWrap` but easier to use for simple cases.
+
+```scala
+package test.utest.examples
+
+import utest._
+object BeforeAfterEachTest extends TestSuite {
+  var x = 0
+  override def utestBeforeEach(): Unit = {
+    println(s"on before each x: $x")
+    x = 0
+  }
+  override def utestAfterEach(): Unit =
+    println(s"on after each x: $x")
+
+  val tests = Tests{
+    'outer1 - {
+      x += 1
+      'inner1 - {
+        x += 2
+        assert(x == 3) // += 1, += 2
+        x
+      }
+      'inner2 - {
+        x += 3
+        assert(x == 4) // += 1, += 3
+        x
+      }
+    }
+    'outer2 - {
+      x += 4
+      'inner3 - {
+        x += 5
+        assert(x == 9) // += 4, += 5
+        x
+      }
+    }
+  }
+}
+```
+```text
+-------------------------------- Running Tests --------------------------------
+Setting up CustomFramework
+on before each x: 0
+on after each x: 3
++ test.utest.examples.BeforeAfterEachTest.outer1.inner1 22ms  3
+on before each x: 3
+on after each x: 4
++ test.utest.examples.BeforeAfterEachTest.outer1.inner2 1ms  4
+on before each x: 4
+on after each x: 9
++ test.utest.examples.BeforeAfterEachTest.outer2.inner3 0ms  9
+Tearing down CustomFramework
+Tests: 3, Passed: 3, Failed: 0
+```
+
+Both `utestBeforeEach` and `utestAfterEach` runs inside `utestWrap`'s `body`
+callback.
+
+If you need something fancier than what `utestBeforeEach` or `utestAfterEach`
+provide feel, e.g. passing initialized objects into the main test case or
+tearing them down after the test case has completed, free to define your test
+wrapper/initialization function and use it for each test case:
+
+
+```scala
+def myTest[T](func: Int => T) = {
+  val fixture = 1337 // initialize some value 
+  val res = func(fixture) // make the value available in the test case
+  assert(fixture == 1337) // properly teardown the value later
+  res
+}
+
+'test - myTest{ fixture =>
+  // do stuff with fixture
+}
+```
+
+The above `myTest` function can also take a [TestPath](#testpath) implicit if it
+wants access to the current test's path.
+
+Running code before and after test suites
+-----------------------------------------
+
+If you're looking for something similar to before all, you can add your
+code to the object body, and you can also use lazy val to delay the
+initialization until the test suite object is created.
+
+uTest offers the `utestAfterAll` method that you can override on any
+test suite, this method is invoked after running the entire test suite.
+
+```scala
+def utestAfterAll(): Unit = ()
+```
+
+```scala
+package test.utest.examples
+
+import utest._
+object BeforeAfterAllSimpleTests extends TestSuite {
+  println("on object body, aka: before all")
+
+  override def utestAfterAll(): Unit = {
+    println("on after all")
+  }
+
+  val tests = Tests {
+    'outer1 - {
+      'inner1 - {
+        1
+      }
+      'inner2 - {
+        2
+      }
+    }
+  }
+}
+
+```
+```text
+-------------------------------- Running Tests --------------------------------
+Setting up CustomFramework
+on object body, aka: before all
++ test.utest.examples.BeforeAfterAllSimpleTests.outer1.inner1 2ms  1
++ test.utest.examples.BeforeAfterAllSimpleTests.outer1.inner2 0ms  2
+on after all
+```
+
 Test Wrapping
 -------------
 
@@ -898,7 +1040,8 @@ This is a flexible function that wraps every test call; you can use it to:
   e.g. `Seq("outer", "inner1", "innerest")` for the test `outer.inner1.innerest`
 
 Generally, if you want to perform messy before/after logic around every
-individual test, override `utestWrap`.
+individual test, override `utestWrap`. Please remember to call the
+`utestBeforeEach` and `utestAfterEach` methods when needed.
 
 `runBody` is a future to support asynchronous testing, which is the only way to
 test things like Ajax calls in [Scala.js](#scalajs-and-scala-native)
@@ -1051,7 +1194,10 @@ val results3 = TestRunner.runAndPrint(
     override def utestWrap(path: Seq[String], runBody: => Future[Any])
                  (implicit ec: ExecutionContext): Future[Any] = {
       println("Getting ready to run " + path.mkString("."))
-      runBody
+      utestBeforeEach()
+      runBody.andThen {
+        case _ => utestAfterEach()
+      }
     }
   },
   formatter = new utest.framework.Formatter{
@@ -1166,6 +1312,15 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.5.4
+-----
+
+- Added hooks for
+  [Running code before and after test cases](#running-code-before-and-after-test-cases)
+  and
+  [Running code before and after test suites](#running-code-before-and-after-test-suites),
+  thanks to [Diego Alvarez](https://github.com/d1egoaz)
 
 0.5.3
 -----
