@@ -22,12 +22,12 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
 object SuiteManualRetryTests extends utest.TestSuite{
   override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
     def rec(count: Int): Future[Any] = {
-      utestBeforeEach()
+      utestBeforeEach(path)
       body.recoverWith { case e =>
         if (count < 5) rec(count + 1)
         else throw e
       }.andThen {
-        case _ => utestAfterEach()
+        case _ => utestAfterEach(path)
       }
     }
     val res = rec(0)
@@ -44,7 +44,7 @@ object SuiteManualRetryTests extends utest.TestSuite{
 object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
   private var x = 0
   override val utestRetryCount = 3
-  override def utestBeforeEach(): Unit = {
+  override def utestBeforeEach(path: Seq[String]): Unit = {
     x = 0
   }
   val flaky = new FlakyThing
@@ -93,7 +93,7 @@ object LocalRetryTests extends utest.TestSuite{
 
 object SuiteRetryBeforeEachFailedTests extends TestSuite with TestSuite.Retries {
   override val utestRetryCount = 3
-  override def utestBeforeEach(): Unit = {
+  override def utestBeforeEach(path: Seq[String]): Unit = {
     flaky.run()
   }
   val flaky = new FlakyThing
@@ -107,7 +107,7 @@ object SuiteRetryBeforeEachFailedTests extends TestSuite with TestSuite.Retries 
 object SuiteRetryAfterEachFailedTests extends TestSuite with TestSuite.Retries {
   val flaky = new FlakyThing
   override val utestRetryCount = 1
-  override def utestAfterEach(): Unit = {
+  override def utestAfterEach(path: Seq[String]): Unit = {
     flaky.run()
   }
   def tests = Tests {

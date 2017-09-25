@@ -17,7 +17,7 @@ class Task(val taskDef: TaskDef,
   def tags(): Array[String] = Array()
 
   def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[testing.Task] = {
-    Await.result(executeInternal(eventHandler, loggers), Duration.Inf)
+    Await.result(runUTestTask(loggers, eventHandler), Duration.Inf)
     Array()
   }
 
@@ -27,15 +27,10 @@ class Task(val taskDef: TaskDef,
 
     implicit val ec = ExecutionContext.RunNow
 
-    executeInternal(eventHandler, loggers).recover { case t =>
+    runUTestTask(loggers, eventHandler).recover { case t =>
       loggers.foreach(_.trace(t))
     }.onComplete{_ =>
       continuation(Array())
     }
-  }
-
-  private def executeInternal(eventHandler: EventHandler, loggers: Array[Logger]) = {
-    runUTestTask(loggers, eventHandler)
-
   }
 }

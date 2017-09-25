@@ -8,7 +8,7 @@ object BeforeAfterEachTests extends TestSuite {
     println(s"on before each [${path.mkString("=>")}] x: $x")
     x = 0
   }
-  override def utestAfterEach(): Unit =
+  override def utestAfterEach(path: Seq[String]): Unit =
     println(s"on after each x: $x")
 
   override val tests = Tests {

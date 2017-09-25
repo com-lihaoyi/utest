@@ -881,19 +881,13 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
 You can also use [Local Retries](#local-retries) if you want to only retry
 within specific tests or expressions instead of throughout the entire suite.
 
-Before and after methods for a Test Suite
--------------
+Running code before and after test cases
+----------------------------------------
 
 uTest offers the `utestBeforeEach` and `utestAfterEach` methods that you can
 override on any test suite, these methods are invoked before and after running
 each test.
 
-```scala
-def utestBeforeEach(): Unit = ()
-def utestAfterEach(): Unit = ()
-```
-If you want to identify the individual test being executed, you can override
-the following methods which expose the test path:
 ```scala
 def utestBeforeEach(path: Seq[String]): Unit = ()
 def utestAfterEach(path: Seq[String]): Unit = ()
@@ -955,8 +949,33 @@ Tearing down CustomFramework
 Tests: 3, Passed: 3, Failed: 0
 ```
 
-Before and after all for a Test Suite
--------------
+Both `utestBeforeEach` and `utestAfterEach` runs inside `utestWrap`'s `body`
+callback.
+
+If you need something fancier than what `utestBeforeEach` or `utestAfterEach`
+provide feel, e.g. passing initialized objects into the main test case or
+tearing them down after the test case has completed, free to define your test
+wrapper/initialization function and use it for each test case:
+
+
+```scala
+def myTest[T](func: Int => T) = {
+  val fixture = 1337 // initialize some value 
+  val res = func(fixture) // make the value available in the test case
+  assert(fixture == 1337) // properly teardown the value later
+  res
+}
+
+'test - myTest{ fixture =>
+  // do stuff with fixture
+}
+```
+
+The above `myTest` function can also take a [TestPath](#testpath) implicit if it
+wants access to the current test's path.
+
+Running code before and after test suites
+-----------------------------------------
 
 If you're looking for something similar to before all, you can add your
 code to the object body, and you can also use lazy val to delay the
@@ -1293,6 +1312,15 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.5.4
+-----
+
+- Added hooks for
+  [Running code before and after test cases](#running-code-before-and-after-test-cases)
+  and
+  [Running code before and after test suites](#running-code-before-and-after-test-suites),
+  thanks to [Diego Alvarez](https://github.com/d1egoaz)
 
 0.5.3
 -----

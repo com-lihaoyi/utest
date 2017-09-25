@@ -5,7 +5,7 @@ import sbt.testing._
 
 import scala.util.Failure
 import org.scalajs.testinterface.TestUtils
-import utest.framework.Tree
+import utest.framework.{StackMarker, Tree}
 object BaseRunner{
   /**
     * Checks whether the given query needs the TestSuite at testSuitePath
@@ -71,7 +71,6 @@ abstract class BaseRunner(val args: Array[String],
                suiteName: String,
                eventHandler: EventHandler,
                taskDef: TaskDef) = {
-    val suite = TestUtils.loadModule(suiteName, testClassLoader).asInstanceOf[TestSuite]
 
     def handleEvent(op: OptionalThrowable,
                     st: Status,
@@ -90,54 +89,80 @@ abstract class BaseRunner(val args: Array[String],
       })
     }
 
-    val innerQuery = {
-      def rec(currentQuery: TestQueryParser#Trees, segments: List[String]): TestQueryParser#Trees = {
-        segments match{
-          case head :: tail =>
-            currentQuery.find(_.value == head) match{
-              case None => Nil
-              case Some(sub) => rec(sub.children, tail)
+    val suiteEither =
+      try {
+        Right(
+          StackMarker.dropOutside(
+            TestUtils.loadModule(suiteName, testClassLoader).asInstanceOf[TestSuite]
+          )
+        )
+      } catch{case e: Throwable => Left(e)}
+
+    def log(msg: String) = {
+      if (useSbtLoggers) loggers.foreach(_.info(msg.split('\n').mkString("\n")))
+      else println(msg)
+    }
+    suiteEither match{
+      case Left(e) =>
+        val dummyDuration = 0
+        handleEvent(new OptionalThrowable(e), Status.Failure, Nil, dummyDuration)
+        val result = utest.framework.Result("lols", Failure(e), dummyDuration)
+        for(fstr <- utest.framework.Formatter.formatSingle(suiteName.split('.'), result)){
+
+          addResult(fstr.render)
+          log(fstr.render)
+        }
+        scala.concurrent.Future.successful(())
+      case Right(suite) =>
+        val innerQuery = {
+          def rec(currentQuery: TestQueryParser#Trees, segments: List[String]): TestQueryParser#Trees = {
+            segments match{
+              case head :: tail =>
+                currentQuery.find(_.value == head) match{
+                  case None => Nil
+                  case Some(sub) => rec(sub.children, tail)
+                }
+              case Nil => currentQuery
             }
-          case Nil => currentQuery
+
+          }
+          rec(query, suiteName.split('.').toList)
         }
 
-      }
-      rec(query, suiteName.split('.').toList)
+        implicit val ec = utest.framework.ExecutionContext.RunNow
+
+
+        val results = TestRunner.runAsync(
+          suite.tests,
+          (subpath, result) => {
+            val str = suite.formatSingle(suiteName.split('.') ++ subpath, result)
+
+            str.foreach(s => log(s.render))
+
+            result.value match{
+              case Failure(e) =>
+                handleEvent(new OptionalThrowable(e), Status.Failure, subpath, result.milliDuration)
+                // Trim the stack trace so all the utest internals don't get shown,
+                // since the user probably doesn't care about those anyway
+                e.setStackTrace(
+                  e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
+                )
+                incFailure()
+                addFailure(str.fold("")(_.render))
+              case _ =>
+                handleEvent(new OptionalThrowable(), Status.Success, subpath, result.milliDuration)
+                incSuccess()
+            }
+          },
+          query = innerQuery,
+          executor = suite,
+          ec = ec
+        )
+
+        results.map(suite.formatSummary(suiteName, _).foreach(x => addResult(x.render)))
     }
 
-    implicit val ec = utest.framework.ExecutionContext.RunNow
 
-
-    val results = TestRunner.runAsync(
-      suite.tests,
-      (subpath, result) => {
-        val str = suite.formatSingle(suiteName.split('.') ++ subpath, result)
-
-        str.foreach{msg =>
-          if (useSbtLoggers) loggers.foreach(_.info(msg.split('\n').mkString("\n")))
-          else println(msg)
-        }
-        result.value match{
-          case Failure(e) =>
-            handleEvent(new OptionalThrowable(e), Status.Failure, subpath, result.milliDuration)
-            // Trim the stack trace so all the utest internals don't get shown,
-            // since the user probably doesn't care about those anyway
-            e.setStackTrace(
-              e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
-            )
-            incFailure()
-            addFailure(str.fold("")(_.render))
-          case _ =>
-            handleEvent(new OptionalThrowable(), Status.Success, subpath, result.milliDuration)
-            incSuccess()
-        }
-      },
-      query = innerQuery,
-      executor = suite,
-      ec = ec
-    )
-
-    results.map(suite.formatSummary(suiteName, _).foreach(x => addResult(x.render)))
   }
 
 

@@ -61,18 +61,29 @@ object TestRunner {
       case Right(resolution) =>
         val thunkTree = collectQueryTerminals(tests.nameTree, resolution, Nil, Nil)
 
-        val forced = thunkTree.mapLeaves{case (revStringPath, revIntPath) => () =>
+        val forced = thunkTree.mapLeaves { case (revStringPath, revIntPath) => () =>
           val head = revStringPath.headOption.getOrElse("")
 
           val start = Deadline.now
-          val res: Future[Any] = executor.utestWrap(revStringPath.reverse,
-            try tests.callTree.run(revIntPath.reverse) match{
-              case x: Future[_] => x
-              case notFuture => Future.successful(notFuture)
-            } catch{
-              case e: Throwable => Future.failed(e)
-            }
-          )
+          val path = revStringPath.reverse
+
+          val res: Future[Any] = try StackMarker.dropOutside {
+            executor.utestWrap(revStringPath.reverse,
+              try {
+                StackMarker.dropOutside{executor.utestBeforeEach(path)}
+                val res = tests.callTree.run(revIntPath.reverse) match {
+                  case x: Future[_] => x
+                  case notFuture => Future.successful(notFuture)
+                }
+                StackMarker.dropOutside{executor.utestAfterEach(path)}
+                res
+              } catch {
+                case e: Throwable => Future.failed(e)
+              }
+            )
+          } catch{
+            case e: Throwable => Future.failed(e)
+          }
 
           def millis = (Deadline.now-start).toMillis
           res.map(v => Result(head, Success(v), millis))
@@ -84,9 +95,21 @@ object TestRunner {
               r
             }
         }
-
-        evaluateFutureTree(forced).andThen {
-          case _ => executor.utestAfterAll()
+        evaluateFutureTree(forced).map{ res =>
+          val start = System.currentTimeMillis()
+          try {
+            StackMarker.dropOutside{executor.utestAfterAll()}
+            res
+          } catch{case e: Throwable =>
+            val path = "#utestAfterAll"
+            val result = Result(
+              path,
+              Failure(unbox(e)),
+              System.currentTimeMillis() - start
+            )
+            onComplete(Seq(path), result)
+            HTree.Leaf(result)
+          }
         }
     }
   }
