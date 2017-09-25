@@ -18,7 +18,7 @@ matrix:
 #      - curl https://raw.githubusercontent.com/scala-native/scala-native/v0.3.0/bin/travis_setup.sh | bash -x
       sudo: required
       env: SCALAJS_VERSION="0.6.19"
-      script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test //utestNative/test
+      script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test #utestNative/test
 
     - scala: 2.12.2
       env: SCALAJS_VERSION="0.6.19"
