@@ -892,8 +892,8 @@ each test.
 def utestBeforeEach(): Unit = ()
 def utestAfterEach(): Unit = ()
 ```
-You can also override the methods that expose the test path, if you want to
-identify the individual test being executed.
+If you want to identify the individual test being executed, you can override
+the following methods which expose the test path:
 ```scala
 def utestBeforeEach(path: Seq[String]): Unit = ()
 def utestAfterEach(path: Seq[String]): Unit = ()
