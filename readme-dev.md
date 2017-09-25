@@ -892,6 +892,12 @@ each test.
 def utestBeforeEach(): Unit = ()
 def utestAfterEach(): Unit = ()
 ```
+You can also override the methods that expose the test path, if you want to
+identify the individual test being executed.
+```scala
+def utestBeforeEach(path: Seq[String]): Unit = ()
+def utestAfterEach(path: Seq[String]): Unit = ()
+```
 
 These are equivalent to `utestWrap` but easier to use for simple cases.
 
@@ -905,7 +911,7 @@ object BeforeAfterEachTest extends TestSuite {
     println(s"on before each x: $x")
     x = 0
   }
-  override def utestAfterEach() =
+  override def utestAfterEach(): Unit =
     println(s"on after each x: $x")
 
   val tests = Tests{

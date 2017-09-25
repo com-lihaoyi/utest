@@ -10,22 +10,10 @@ import scala.util.Failure
 
 
 object FrameworkTests extends utest.TestSuite{
-  override def utestBeforeEach(): Unit = {
-    println("RUN before each")
-  }
-  override def utestAfterEach() = {
-    println("END after each")
-  }
 
-  override def utestWrap(path: Seq[String], runBody: => concurrent.Future[Any])
-                        (implicit ec: ExecutionContext): concurrent.Future[Any] = {
-    println("RUN " + path.mkString("."))
+  override def utestBeforeEach(path: Seq[String]): Unit = println("RUN " + path.mkString("."))
+  override def utestAfterEach(path: Seq[String]): Unit = println("END " + path.mkString("."))
 
-    runBody.map{x =>
-      println("END " + path.mkString("."))
-      x
-    }
-  }
   implicit val ec = utest.framework.ExecutionContext.RunNow
   def tests = Tests{
     def testHelloWorld(tests: Tests) = {

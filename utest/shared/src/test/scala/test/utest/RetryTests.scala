@@ -14,7 +14,7 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
   val flaky = new FlakyThing
   def tests = Tests{
     'hello - {
-      flaky.run
+      flaky.run()
     }
   }
 }
@@ -36,13 +36,13 @@ object SuiteManualRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
   def tests = Tests{
     'hello - {
-      flaky.run
+      flaky.run()
     }
   }
 }
 
 object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
-  var x = 0
+  private var x = 0
   override val utestRetryCount = 3
   override def utestBeforeEach(): Unit = {
     x = 0
@@ -52,7 +52,7 @@ object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
     'hello - {
       assert(x == 0)
       x += 1
-      flaky.run
+      flaky.run()
     }
   }
 }
@@ -70,7 +70,7 @@ object SuiteRetryBeforeAllTests extends TestSuite with TestSuite.Retries {
 
   def tests = Tests {
     'hello - {
-      flaky.run
+      flaky.run()
       x += 1
       x
     }
@@ -86,8 +86,33 @@ object LocalRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
   def tests = Tests{
     'hello - retry(3){
-      flaky.run
+      flaky.run()
     }
   }
 }
 
+object SuiteRetryBeforeEachFailedTests extends TestSuite with TestSuite.Retries {
+  override val utestRetryCount = 3
+  override def utestBeforeEach(): Unit = {
+    flaky.run()
+  }
+  val flaky = new FlakyThing
+  def tests = Tests{
+    'hello - {
+      1
+    }
+  }
+}
+
+object SuiteRetryAfterEachFailedTests extends TestSuite with TestSuite.Retries {
+  val flaky = new FlakyThing
+  override val utestRetryCount = 1
+  override def utestAfterEach(): Unit = {
+    flaky.run()
+  }
+  def tests = Tests {
+    'hello - {
+      1
+    }
+  }
+}

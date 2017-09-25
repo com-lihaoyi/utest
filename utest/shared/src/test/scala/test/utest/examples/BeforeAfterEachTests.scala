@@ -1,16 +1,17 @@
 package test.utest.examples
 
 import utest._
+
 object BeforeAfterEachTests extends TestSuite {
   var x = 0
-  override def utestBeforeEach(): Unit = {
-    println(s"on before each x: $x")
+  override def utestBeforeEach(path: Seq[String]): Unit = {
+    println(s"on before each [${path.mkString("=>")}] x: $x")
     x = 0
   }
-  override def utestAfterEach() =
+  override def utestAfterEach(): Unit =
     println(s"on after each x: $x")
 
-  val tests = Tests{
+  override val tests = Tests {
     'outer1 - {
       x += 1
       'inner1 - {
