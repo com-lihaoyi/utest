@@ -26,7 +26,7 @@ object TestSuite {
   @deprecated("Use `utest.Tests{...}` instead")
   def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl
   trait Retries extends utest.TestSuite{
-    val utestRetryCount: Int
+    def utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
       def rec(count: Int): Future[Any] = {
         val result = for {
@@ -35,8 +35,8 @@ object TestSuite {
           _      <- Future { utestAfterEach(path) }
         } yield result
         result.recoverWith { case e =>
-          if (count < 5) rec(count + 1)
-          else throw e
+          if (count < utestRetryCount) rec(count + 1)
+          else Future.failed(e)
         }
       }
       val res = rec(0)
