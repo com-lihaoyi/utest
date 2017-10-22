@@ -1,4 +1,4 @@
-µTest 0.5.4 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.6.0 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -76,7 +76,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.5.4" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.0" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -84,7 +84,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.5.4" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.0" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -814,11 +814,103 @@ retries more globally across your test suite.
 Configuring uTest
 =================
 
+Per-Run Setup/Teardown, and other test-running Config
+-----------------------------------------------------
+
+To configure things which affect an entire test run, and not any individual
+`TestSuite` object, you can create your own subclass of `utest.runner.Framework`
+and override the relevant methods.
+
+For example, if you need to perform some action (initialize a database, cleanup
+the filesystem, etc.) not just per-test but per-run, you can do that by defining
+a custom `utest.runner.Framework` and overriding the `setup` and `teardown`
+methods:
+
+```scala
+class CustomFramework extends utest.runner.Framework{
+  override def setup() = {
+    println("Setting up CustomFramework")
+  }
+  override def teardown() = {
+    println("Tearing down CustomFramework")
+  }
+}
+```
+
+And then telling SBT to run tests using the custom framework:
+
+```scala
+testFrameworks += new TestFramework("test.utest.CustomFramework"),
+```
+
+This is handy for setup/teardown that is necessary but too expensive to do
+before/after every single test, which would be the case if you used
+[Test Wrapping](#test-wrapping) to do it.
+
+Apart from setup and teardown, there are other methods on
+`utest.runner.Framework` that you can override to customize:
+
+```scala
+  /**
+    * Override to run code before tests start running. Useful for setting up
+    * global databases, initializing caches, etc.
+    */
+  def setup() = ()
+
+  /**
+    * Override to run code after tests finish running. Useful for shutting
+    * down daemon processes, closing network connections, etc.
+    */
+  def teardown() = ()
+
+  /**
+    * How many tests need to run before uTest starts printing out the test
+    * results summary and test failure summary at the end of a test run. For
+    * small sets of tests, these aren't necessary since all the output fits
+    * nicely on one screen; only when the number of tests gets large and their
+    * output gets noisy does it become valuable to show the clean summaries at
+    * the end of the test run.
+    */
+  def showSummaryThreshold = 30
+
+  /**
+    * Whether to use SBT's test-logging infrastructure, or just println.
+    *
+    * Defaults to println because SBT's test logging doesn't seem to give us
+    * anything that we want, and does annoying things like making a left-hand
+    * gutter and buffering input by default
+    */
+  def useSbtLoggers = false
+
+  def resultsHeader = BaseRunner.renderBanner("Results")
+  def failureHeader = BaseRunner.renderBanner("Failures")
+
+
+  def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)
+```
+
 Output Formatting
 -----------------
 
 You can control how the output of tests gets printed via overriding methods on
-the `TestSuite` object:
+the `Framework` class, described above. For example, this snippet overrides the
+`exceptionStackFrameHighlighter` method to select which stack frames in a stack
+trace are more relevant to you, so they can be rendered more brightly:
+
+```scala
+class CustomFramework extends utest.runner.Framework{
+  override def exceptionStackFrameHighlighter(s: StackTraceElement) = {
+    s.getClassName.contains("utest.")
+  }
+}
+```
+
+This results in stack traces being rendered as such:
+
+![docs/StackHighlight.png](docs/StackHighlight.png)
+
+the `utest.runner.Framework` provides a wide range of hooks you can use to
+customize how the uTest output is colored, wrapped, truncated or formatted:
 
 ```scala
 def formatColor: Boolean = true
@@ -835,6 +927,7 @@ def exceptionPrefixColor = toggledColor(ufansi.Color.Red)
 def exceptionMethodColor = toggledColor(ufansi.Color.LightRed)
 def exceptionPunctuationColor = toggledColor(ufansi.Color.Red)
 def exceptionLineNumberColor = toggledColor(ufansi.Color.LightRed)
+def exceptionStackFrameHighlighter(s: StackTraceElement) = true
 
 def formatResultColor(success: Boolean) = toggledColor(
   if (success) ufansi.Color.Green
@@ -844,25 +937,23 @@ def formatResultColor(success: Boolean) = toggledColor(
 def formatMillisColor = toggledColor(ufansi.Bold.Faint)
 ```
 
-You can override these configuration methods on every `TestSuite` individually,
-to configure them differently for each set of tests if you want. If you want to
-share your configuration across every test, pull these into a custom
-`MyTestSuite` class extending `TestSuite` that customizes any defaults you want
-to change, and have your test suites extend from `MyTestSuite` instead.
+Any methods overriden on your own custom `Framework` apply to every `TestSuite`
+that is run. If you want to further customize how a single `TestSuite`'s output
+is formatted, you can override `utestFormatter` on that test suite.
 
 Note that uTest uses an internal copy of the
 [Fansi](https://www.github.com/lihaoyi/fansi) library, vendored at
 `utest.ufansi`, in order to avoid any compatibility problems with any of your
-other dependencies. You can use `ufansi` to construct the colored
-`ufansi.Str`s that these methods require, or you could just return colored
-`java.lang.String` objects containing ANSI escapes, created however you like,
-and they will be automatically parsed into the correct format.
+other dependencies. You can use `ufansi` to construct the colored `ufansi.Str`s
+that these methods require, or you could just return colored `java.lang.String`
+objects containing ANSI escapes, created however you like, and they will be
+automatically parsed into the correct format.
 
 Suite Retries
 -------------
 
-You can mix in the `TestSuite.Retries` trait and define the `utestRetryCount`
-int to enable test-level retries for all tests within a suite:
+You can mix in the `TestSuite.Retries` trait to any `TestSuite` and define the
+`utestRetryCount` int to enable test-level retries for all tests within a suite:
 
 ```scala
 
@@ -885,7 +976,7 @@ Running code before and after test cases
 ----------------------------------------
 
 uTest offers the `utestBeforeEach` and `utestAfterEach` methods that you can
-override on any test suite, these methods are invoked before and after running
+override on any `TestSuite`, these methods are invoked before and after running
 each test.
 
 ```scala
@@ -1046,80 +1137,7 @@ individual test, override `utestWrap`. Please remember to call the
 `runBody` is a future to support asynchronous testing, which is the only way to
 test things like Ajax calls in [Scala.js](#scalajs-and-scala-native)
 
-Per-Run Setup/Teardown, and other test-running Config
------------------------------------------------------
 
-To configure things which affect an entire test run, and not any individual
-`TestSuite` object, you can create your own subclass of `utest.runner.Framework`
-and override the relevant methods.
-
-For example, if you need to perform some action (initialize a database, cleanup
-the filesystem, etc.) not just per-test but per-run, you can do that by defining
-a custom `utest.runner.Framework` and overriding the `setup` and `teardown`
-methods:
-
-```scala
-class CustomFramework extends utest.runner.Framework{
-  override def setup() = {
-    println("Setting up CustomFramework")
-  }
-  override def teardown() = {
-    println("Tearing down CustomFramework")
-  }
-}
-```
-
-And then telling SBT to run tests using the custom framework:
-
-```scala
-testFrameworks += new TestFramework("test.utest.CustomFramework"),
-```
-
-This is handy for setup/teardown that is necessary but too expensive to do
-before/after every single test, which would be the case if you used
-[Test Wrapping](#test-wrapping) to do it.
-
-Apart from setup and teardown, there are other methods on
-`utest.runner.Framework` that you can override to customize:
-
-```scala
-  /**
-    * Override to run code before tests start running. Useful for setting up
-    * global databases, initializing caches, etc.
-    */
-  def setup() = ()
-
-  /**
-    * Override to run code after tests finish running. Useful for shutting
-    * down daemon processes, closing network connections, etc.
-    */
-  def teardown() = ()
-
-  /**
-    * How many tests need to run before uTest starts printing out the test
-    * results summary and test failure summary at the end of a test run. For
-    * small sets of tests, these aren't necessary since all the output fits
-    * nicely on one screen; only when the number of tests gets large and their
-    * output gets noisy does it become valuable to show the clean summaries at
-    * the end of the test run.
-    */
-  def showSummaryThreshold = 30
-
-  /**
-    * Whether to use SBT's test-logging infrastructure, or just println.
-    *
-    * Defaults to println because SBT's test logging doesn't seem to give us
-    * anything that we want, and does annoying things like making a left-hand
-    * gutter and buffering input by default
-    */
-  def useSbtLoggers = false
-
-  def resultsHeader = BaseRunner.renderBanner("Results")
-  def failureHeader = BaseRunner.renderBanner("Failures")
-
-
-  def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)
-```
 
 Scala.js and Scala-Native
 =========================
@@ -1312,6 +1330,16 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.6.0
+-----
+
+- Migrate formatting-related configuration options from `utest.TestSuite` onto
+  the `utest.runner.Framework`, as described [here](#output-formatting).
+
+- Added the `exceptionStackFrameHighlighter` formatting hook, letting you choose
+  which stack frames in an exception are of interest to you so they can be
+  rendered more brightly.
 
 0.5.4
 -----
