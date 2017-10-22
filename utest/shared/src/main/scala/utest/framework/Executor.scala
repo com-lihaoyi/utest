@@ -2,7 +2,7 @@ package utest.framework
 
 object Executor extends Executor
 
-trait Executor extends Formatter {
+trait Executor {
   def utestBeforeEach(path: Seq[String]): Unit = ()
   def utestAfterEach(path: Seq[String]): Unit = ()
   def utestAfterAll(): Unit = ()

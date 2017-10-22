@@ -3,6 +3,8 @@ package utest
 //import acyclic.file
 
 
+import utest.framework.Formatter
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
@@ -14,8 +16,8 @@ import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
  */
 @EnableReflectiveInstantiation
 abstract class TestSuite
-  extends framework.Formatter
-  with framework.Executor{
+  extends framework.Executor{
+  def utestFormatter: Formatter = null
   def tests: Tests
   @deprecated("Use `utest.Tests{...}` instead")
   def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl

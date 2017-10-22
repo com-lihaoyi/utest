@@ -7,4 +7,7 @@ class CustomFramework extends utest.runner.Framework{
   override def teardown() = {
     println("Tearing down CustomFramework")
   }
+  override def exceptionStackFrameHighlighter(s: StackTraceElement) = {
+    s.getClassName.contains("utest.")
+  }
 }

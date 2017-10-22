@@ -37,7 +37,8 @@ object BaseRunner{
 abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader,
-                          useSbtLoggers: Boolean)
+                          useSbtLoggers: Boolean,
+                          formatter: utest.framework.Formatter)
                           extends sbt.testing.Runner{
 
   lazy val path = args.headOption.filter(_(0) != '-')
@@ -107,7 +108,7 @@ abstract class BaseRunner(val args: Array[String],
         val dummyDuration = 0
         handleEvent(new OptionalThrowable(e), Status.Failure, Nil, dummyDuration)
         val result = utest.framework.Result("lols", Failure(e), dummyDuration)
-        for(fstr <- utest.framework.Formatter.formatSingle(suiteName.split('.'), result)){
+        for(fstr <- formatter.formatSingle(suiteName.split('.'), result)){
 
           addResult(fstr.render)
           log(fstr.render)
@@ -131,11 +132,11 @@ abstract class BaseRunner(val args: Array[String],
 
         implicit val ec = utest.framework.ExecutionContext.RunNow
 
-
+        val suiteFormatter = Option(suite.utestFormatter).getOrElse(formatter)
         val results = TestRunner.runAsync(
           suite.tests,
           (subpath, result) => {
-            val str = suite.formatSingle(suiteName.split('.') ++ subpath, result)
+            val str = suiteFormatter.formatSingle(suiteName.split('.') ++ subpath, result)
 
             str.foreach(s => log(s.render))
 
@@ -159,7 +160,7 @@ abstract class BaseRunner(val args: Array[String],
           ec = ec
         )
 
-        results.map(suite.formatSummary(suiteName, _).foreach(x => addResult(x.render)))
+        results.map(suiteFormatter.formatSummary(suiteName, _).foreach(x => addResult(x.render)))
     }
 
 

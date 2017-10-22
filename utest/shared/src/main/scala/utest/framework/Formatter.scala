@@ -34,6 +34,8 @@ trait Formatter {
 
   def formatMillisColor = toggledColor(ufansi.Bold.Faint)
 
+  def exceptionStackFrameHighlighter(s: StackTraceElement): Boolean = true
+
   def formatException(x: Throwable, leftIndent: String) = {
     val output = mutable.Buffer.empty[ufansi.Str]
     var current = x
@@ -79,17 +81,22 @@ trait Formatter {
           }
 
           val frameIndent = leftIndent + "  "
+          val wrapper =
+            if(exceptionStackFrameHighlighter(e)) ufansi.Attrs.Empty
+            else ufansi.Bold.Faint
+
           output.append(
             "\n", frameIndent,
             joinLineStr(
               lineWrapInput(
-
-                ufansi.Str.join(
-                  exceptionPrefixColor(e.getClassName + "."),
-                  exceptionMethodColor(e.getMethodName),
-                  exceptionPunctuationColor("("),
-                  filenameFrag,
-                  exceptionPunctuationColor(")")
+                wrapper(
+                  ufansi.Str.join(
+                    exceptionPrefixColor(e.getClassName + "."),
+                    exceptionMethodColor(e.getMethodName),
+                    exceptionPunctuationColor("("),
+                    filenameFrag,
+                    exceptionPunctuationColor(")")
+                  )
                 ),
                 frameIndent
               ),

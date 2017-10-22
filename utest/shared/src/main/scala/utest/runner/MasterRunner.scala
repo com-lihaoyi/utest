@@ -16,8 +16,9 @@ final class MasterRunner(args: Array[String],
                          startHeader: String => String,
                          resultsHeader: String,
                          failureHeader: String,
-                         useSbtLoggers: Boolean)
-                         extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers){
+                         useSbtLoggers: Boolean,
+                         formatter: utest.framework.Formatter)
+                         extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers, formatter){
 
   println(startHeader(path.fold("")(" " + _)))
   setup()

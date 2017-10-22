@@ -7,7 +7,7 @@ object Framework{
 
 }
 
-class Framework extends sbt.testing.Framework{
+class Framework extends sbt.testing.Framework with framework.Formatter {
 
   def name(): String = "utest"
 
@@ -64,7 +64,8 @@ class Framework extends sbt.testing.Framework{
       startHeader,
       resultsHeader,
       failureHeader,
-      useSbtLoggers
+      useSbtLoggers,
+      this
     )
   }
 
@@ -72,6 +73,15 @@ class Framework extends sbt.testing.Framework{
                   remoteArgs: Array[String],
                   testClassLoader: ClassLoader,
                   send: String => Unit) = {
-    new ScalaJsSlaveRunner(args, remoteArgs, testClassLoader, send, setup, teardown, useSbtLoggers)
+    new ScalaJsSlaveRunner(
+      args,
+      remoteArgs,
+      testClassLoader,
+      send,
+      setup,
+      teardown,
+      useSbtLoggers,
+      this
+    )
   }
 }

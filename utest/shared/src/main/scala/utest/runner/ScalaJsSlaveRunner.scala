@@ -12,8 +12,9 @@ final class ScalaJsSlaveRunner(args: Array[String],
                                send: String => Unit,
                                setup: () => Unit,
                                teardown: () => Unit,
-                               useSbtLoggers: Boolean)
-                        extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers){
+                               useSbtLoggers: Boolean,
+                               formatter: utest.framework.Formatter)
+                        extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers, formatter){
   setup()
   def addResult(r: String): Unit = send(s"r$r")
   def addFailure(r: String): Unit = send(s"f$r")
