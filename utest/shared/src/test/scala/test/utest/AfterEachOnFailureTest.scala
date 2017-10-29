@@ -19,15 +19,7 @@ object AfterEachOnFailureTest extends TestSuite {
     res.close()
   }
 
-  override def utestAfterAll(): Unit = {
-    println(s"Resource closed? ${res.isClosed}")
-    assert(res.isClosed)
-  }
-
   val tests = Tests{
-    'hello{
-      Future(0)
-    }
     'testFails {
       val innerTests = Tests{
         throw new java.lang.AssertionError("Fail")
@@ -35,6 +27,7 @@ object AfterEachOnFailureTest extends TestSuite {
       TestRunner.runAsync(innerTests, executor = this).map { results =>
         val leafResults = results.leaves.toSeq
         assert(leafResults(0).value.isFailure)
+        assert(res.isClosed)
         leafResults
       }
     }
