@@ -75,10 +75,11 @@ object TestRunner {
                   case x: Future[_] => x
                   case notFuture => Future.successful(notFuture)
                 }
-                StackMarker.dropOutside{executor.utestAfterEach(path)}
                 res
               } catch {
                 case e: Throwable => Future.failed(e)
+              }finally {
+                StackMarker.dropOutside{executor.utestAfterEach(path)}
               }
             )
           } catch{
