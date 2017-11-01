@@ -3,7 +3,6 @@ package test.utest
 import utest._
 import utest.framework.ExecutionContext.RunNow
 
-import scala.concurrent.Future
 /**
  * Put executor.utestAfterEach(path) into finally block to make sure it will be executed regardless of the test failing.
  */
@@ -32,11 +31,9 @@ object AfterEachOnFailureTest extends TestSuite {
       }
     }
   }
-
-
-
-  private class SomeResource extends AutoCloseable{
+  
+  private class SomeResource{
     var isClosed:Boolean = false
-    override def close(): Unit = isClosed = true
+    def close(): Unit = isClosed = true
   }
 }
