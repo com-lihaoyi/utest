@@ -18,9 +18,8 @@ final class MasterRunner(args: Array[String],
                          failureHeader: String,
                          useSbtLoggers: Boolean,
                          formatter: utest.framework.Formatter)
-                         extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers, formatter){
+                         extends BaseRunner(args, remoteArgs, testClassLoader, useSbtLoggers, formatter, Some(startHeader)){
 
-  println(startHeader(path.fold("")(" " + _)))
   setup()
   val summaryOutputLines = new AtomicReference[List[String]](Nil)
   val success = new AtomicInteger(0)
