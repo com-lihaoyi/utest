@@ -1331,6 +1331,12 @@ libraries are currently at.
 Changelog
 =========
 
+0.6.2
+-----
+
+- Fix cross-publishing for Scala.js, which was borked in 0.6.0
+- Ensure utestAfterEach be executed regardless of a test failure 
+
 0.6.0
 -----
 
