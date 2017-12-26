@@ -11,10 +11,10 @@ matrix:
   include:
     - scala: 2.10.6
       jdk: openjdk7
-      env: CI_PUBLISH="true"
       script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test
 
     - scala: 2.11.12
+      env: CI_PUBLISH="true"
       before_script:
       - git fetch --tags
       - curl https://raw.githubusercontent.com/scala-native/scala-native/master/bin/travis_setup.sh | bash -x
