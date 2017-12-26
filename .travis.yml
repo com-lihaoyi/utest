@@ -2,6 +2,8 @@ language: scala
 sudo: required
 dist: trusty
 
+before_script:
+  - git fetch --tags
 jdk:
   - oraclejdk8
 
@@ -9,11 +11,14 @@ matrix:
   include:
     - scala: 2.10.6
       jdk: openjdk7
-      env: SCALAJS_VERSION="0.6.19"
+      env:
+        - CI_PUBLISH: true
+        - SCALAJS_VERSION: "0.6.19"
       script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test
 
     - scala: 2.11.12
       before_script:
+      - git fetch --tags
       - curl https://raw.githubusercontent.com/scala-native/scala-native/master/bin/travis_setup.sh | bash -x
       sudo: required
       env: SCALAJS_VERSION="0.6.19"
@@ -71,3 +76,5 @@ cache:
   - $HOME/.sbt/boot/scala*
   - $HOME/.sbt/launchers
   - $HOME/.ivy2/cache
+after_success:
+- "./publishSigned-CI.sh"
