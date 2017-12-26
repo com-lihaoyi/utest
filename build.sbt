@@ -5,13 +5,11 @@ import sbt.addCompilerPlugin
 
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
-scalaVersion       in ThisBuild := "2.12.2"
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M2")
+scalaVersion       in ThisBuild := "2.12.4"
+crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.12", "2.12.4", "2.13.0-M2")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
 //triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
-releaseTagComment  in ThisBuild := s"v${(version in ThisBuild).value}"
-releaseVcsSign     in ThisBuild := true
 
 lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
@@ -33,7 +31,6 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     testFrameworks += new TestFramework("test.utest.CustomFramework"),
 
     // Release settings
-    releasePublishArtifactsAction := publishSigned.value,
     publishArtifact in Test := false,
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
@@ -102,3 +99,13 @@ lazy val root = project.in(file("."))
     publishSigned := (),            // doesn't work
     packagedArtifacts := Map.empty) // doesn't work - https://github.com/sbt/sbt-pgp/issues/42
 
+// Settings for release from Travis on tag push
+inScope(Global)(
+  Seq(
+    credentials ++= (for {
+      username <- sys.env.get("SONATYPE_USERNAME")
+      password <- sys.env.get("SONATYPE_PASSWORD")
+    } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toList,
+    PgpKeys.pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray())
+  )
+)
