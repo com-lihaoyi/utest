@@ -1,4 +1,4 @@
-µTest 0.6.2 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.6.3 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -1330,6 +1330,10 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.6.3
+-----
+- Added support for Scala.js 1.0.0-M2.
 
 0.6.2
 -----
