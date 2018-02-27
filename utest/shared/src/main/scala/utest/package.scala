@@ -25,7 +25,7 @@ package object utest extends utest.asserts.Asserts{
     def -(x: => Any) = ()
   }
 
-  @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a TestSuite{} macro")
+  @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a TestSuite{} macro")
   implicit class TestableSymbol(s: Symbol){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
