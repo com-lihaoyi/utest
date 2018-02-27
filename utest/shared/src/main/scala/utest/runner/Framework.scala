@@ -58,8 +58,8 @@ class Framework extends sbt.testing.Framework with framework.Formatter {
       args,
       remoteArgs,
       testClassLoader,
-      setup,
-      teardown,
+      setup _,
+      teardown _,
       showSummaryThreshold,
       startHeader,
       resultsHeader,
@@ -78,8 +78,8 @@ class Framework extends sbt.testing.Framework with framework.Formatter {
       remoteArgs,
       testClassLoader,
       send,
-      setup,
-      teardown,
+      setup _,
+      teardown _,
       useSbtLoggers,
       this
     )
