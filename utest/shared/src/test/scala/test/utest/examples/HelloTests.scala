@@ -15,5 +15,9 @@ object HelloTests extends TestSuite{
       val a = List[Byte](1, 2)
 //      a(10)
     }
+    'test4{
+      val a = null
+      a
+    }
   }
 }

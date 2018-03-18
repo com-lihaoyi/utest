@@ -38,8 +38,16 @@ abstract class BaseRunner(val args: Array[String],
                           val remoteArgs: Array[String],
                           testClassLoader: ClassLoader,
                           useSbtLoggers: Boolean,
-                          formatter: utest.framework.Formatter)
+                          formatter: utest.framework.Formatter,
+                          startHeader: Option[String => String])
                           extends sbt.testing.Runner{
+
+  def this(args: Array[String],
+    remoteArgs: Array[String],
+    testClassLoader: ClassLoader,
+    useSbtLoggers: Boolean,
+    formatter: utest.framework.Formatter) =
+      this(args, remoteArgs, testClassLoader, useSbtLoggers, formatter, None)
 
   lazy val path = args.headOption.filter(_(0) != '-')
   lazy val query = path
@@ -72,6 +80,8 @@ abstract class BaseRunner(val args: Array[String],
                suiteName: String,
                eventHandler: EventHandler,
                taskDef: TaskDef) = {
+
+    startHeader.foreach(h => println(h(path.fold("")(" " + _))))
 
     def handleEvent(op: OptionalThrowable,
                     st: Status,

@@ -16,7 +16,7 @@ trait Formatter {
   def formatTruncateHeight: Int = 15
   def formatWrapWidth: Int = 100
 
-  def formatValue(x: Any) = testValueColor(x.toString)
+  def formatValue(x: Any) = testValueColor("" + x)
 
   def toggledColor(t: ufansi.Attrs) = if(formatColor) t else ufansi.Attrs.Empty
   def testValueColor = toggledColor(ufansi.Color.Blue)
