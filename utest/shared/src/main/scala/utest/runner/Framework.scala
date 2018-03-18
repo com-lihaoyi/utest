@@ -6,6 +6,11 @@ import utest.framework.DefaultFormatters
 object Framework{
 
 }
+
+/**
+  * `MillFramework` this default to `true` since Mill's test-interface
+  * support isn't buggy and doesn't need utest to rely on `println`
+  */
 class MillFramework extends Framework{
   override def useSbtLoggers = true
 }

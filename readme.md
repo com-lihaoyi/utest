@@ -1331,6 +1331,11 @@ libraries are currently at.
 Changelog
 =========
 
+0.6.4
+-----
+- Returning `null` from a test case no longer blows up
+- Added `utest.runner.MillFramework
+
 0.6.3
 -----
 - Added support for Scala.js 1.0.0-M2.
