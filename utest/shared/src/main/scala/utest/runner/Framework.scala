@@ -6,7 +6,9 @@ import utest.framework.DefaultFormatters
 object Framework{
 
 }
-
+class MillFramework extends Framework{
+  override def useSbtLoggers = true
+}
 class Framework extends sbt.testing.Framework with framework.Formatter {
 
   def name(): String = "utest"

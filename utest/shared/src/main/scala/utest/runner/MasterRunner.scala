@@ -46,31 +46,38 @@ final class MasterRunner(args: Array[String],
   def done(): String = {
     teardown()
     val total = success.get() + failure.get()
-    /**
-      * Print out the results summary ourselves rather than returning it from
-      * `done`, to work around https://github.com/sbt/sbt/issues/3510
-      */
+
     if (total > 0) {
-      println(
-        DefaultFormatters.formatSummary(
-          resultsHeader = resultsHeader,
-          body = summaryOutputLines.get.mkString("\n"),
-          failureMsg =
-            if (failureOutputLines.get() == Nil) ""
-            else ufansi.Str(failureHeader) ++ ufansi.Str.join(
-              // reverse, because the list gets accumulated backwards
-              failureOutputLines.get().reverse.flatMap(Seq[ufansi.Str]("\n", _)): _*
-            ),
-          successCount = success.get(),
-          failureCount = failure.get(),
-          showSummaryThreshold = showSummaryThreshold
-        )
+      val summary = DefaultFormatters.formatSummary(
+        resultsHeader = resultsHeader,
+        body = summaryOutputLines.get.mkString("\n"),
+        failureMsg =
+          if (failureOutputLines.get() == Nil) ""
+          else ufansi.Str(failureHeader) ++ ufansi.Str.join(
+            // reverse, because the list gets accumulated backwards
+            failureOutputLines.get().reverse.flatMap(Seq[ufansi.Str]("\n", _)): _*
+          ),
+        successCount = success.get(),
+        failureCount = failure.get(),
+        showSummaryThreshold = showSummaryThreshold
       )
+      if (useSbtLoggers) {
+        /**
+          * Print out the results summary ourselves rather than returning it from
+          * `done`, to work around https://github.com/sbt/sbt/issues/3510
+          */
+        println(summary)
+        // Don't print anything, but also don't print the default message it
+        // normally prints if you return an empty string, and don't print the
+        // [info] gutter it prints if you return " "
+        "\n"
+      }else{
+        summary.toString
+      }
+    }else{
+      "\n"
     }
-    // Don't print anything, but also don't print the default message it
-    // normally prints if you return an empty string, and don't print the
-    // [info] gutter it prints if you return " "
-    "\n"
+
   }
 
   def receiveMessage(msg: String): Option[String] = {
