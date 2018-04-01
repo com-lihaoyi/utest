@@ -5,12 +5,12 @@ VERSION=$1
 coursier fetch com.lihaoyi:utest_2.10:$VERSION
 coursier fetch com.lihaoyi:utest_2.11:$VERSION
 coursier fetch com.lihaoyi:utest_2.12:$VERSION
-coursier fetch com.lihaoyi:utest_2.13.0-M2:$VERSION
+coursier fetch com.lihaoyi:utest_2.13.0-M3:$VERSION
 coursier fetch com.lihaoyi:utest_native0.3_2.11:$VERSION
 coursier fetch com.lihaoyi:utest_sjs0.6_2.10:$VERSION
 coursier fetch com.lihaoyi:utest_sjs0.6_2.11:$VERSION
 coursier fetch com.lihaoyi:utest_sjs0.6_2.12:$VERSION
-coursier fetch com.lihaoyi:utest_sjs0.6_2.13.0-M2:$VERSION
+coursier fetch com.lihaoyi:utest_sjs0.6_2.13.0-M3:$VERSION
 coursier fetch com.lihaoyi:utest_sjs1.0.0-M3_2.11:$VERSION
 coursier fetch com.lihaoyi:utest_sjs1.0.0-M3_2.12:$VERSION
-coursier fetch com.lihaoyi:utest_sjs1.0.0-M3_2.13.0-M2:$VERSION
+coursier fetch com.lihaoyi:utest_sjs1.0.0-M3_2.13.0-M3:$VERSION
