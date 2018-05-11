@@ -1,6 +1,9 @@
 language: scala
 sudo: required
 dist: trusty
+addons:
+  apt:
+    update: true
 
 before_script:
   - git fetch --tags
