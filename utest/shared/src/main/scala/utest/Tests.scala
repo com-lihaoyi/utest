@@ -118,7 +118,7 @@ object Tests{
         })
       """
 
-        (callTree, nameTree)
+        (callTree, nameTree.toSeq)
       }
 
       val (callTree, nameTree) = recurse(expr.tree, Vector())
