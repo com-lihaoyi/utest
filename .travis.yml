@@ -13,8 +13,8 @@ jdk:
 matrix:
   include:
     - scala: 2.10.6
-      jdk: openjdk7
-      script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test
+      jdk: openjdk8
+      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
     - scala: 2.11.12
       env: CI_PUBLISH="true"
@@ -22,16 +22,16 @@ matrix:
       - git fetch --tags
       - curl https://raw.githubusercontent.com/scala-native/scala-native/master/scripts/travis_setup.sh | bash -x
       sudo: required
-      script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test utestNative/test
+      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test utestNative/test
 
     - scala: 2.12.4
-      script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test
+      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
     - scala: 2.13.0-M2
-      script: sbt ++$TRAVIS_SCALA_VERSION utestJVM/test utestJS/test
+      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
     - env: SCALAJS_VERSION="1.0.0-M3"
-      script: sbt "very utestJS/test"
+      script: sbt "+ utestJS/test"
 
 # Taken from https://github.com/typelevel/cats/blob/master/.travis.yml
 before_cache:
