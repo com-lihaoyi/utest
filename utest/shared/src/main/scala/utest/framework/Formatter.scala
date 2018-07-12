@@ -14,7 +14,7 @@ trait Formatter {
 
   def formatColor: Boolean = true
   def formatTruncateHeight: Int = 15
-  def formatWrapWidth: Int = 100
+  def formatWrapWidth: Int = Int.MaxValue
 
   def formatValue(x: Any) = testValueColor("" + x)
 
