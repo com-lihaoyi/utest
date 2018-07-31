@@ -992,11 +992,11 @@ package test.utest.examples
 import utest._
 object BeforeAfterEachTest extends TestSuite {
   var x = 0
-  override def utestBeforeEach(): Unit = {
+  override def utestBeforeEach(path: Seq[String]): Unit = {
     println(s"on before each x: $x")
     x = 0
   }
-  override def utestAfterEach(): Unit =
+  override def utestAfterEach(path: Seq[String]): Unit =
     println(s"on after each x: $x")
 
   val tests = Tests{
