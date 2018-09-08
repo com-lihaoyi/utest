@@ -200,7 +200,7 @@ When this suite is run with
 ------------------------------- Running Tests -------------------------------
 + test.utest.examples.NestedTests.outer1.inner1 21ms  (1,2)
 + test.utest.examples.NestedTests.outer1.inner2 0ms
-+ test.utest.examples.NestedTests.outer2.inner3 0ms 
++ test.utest.examples.NestedTests.outer2.inner3 0ms
 ```
 
 You can see also that `test.utest.examples.NestedTests.outer1.inner1` displays
@@ -212,7 +212,7 @@ If you find yourself wanting to define a test in a for, loop, e.g.
 
 ```scala
 // Doesn't work!
-val tests =  Tests{ 
+val tests =  Tests{
   for(fileName <- Seq("hello", "world", "i", "am", "cow")){
     fileName - {
       // lots of code using fileName
@@ -1051,7 +1051,7 @@ wrapper/initialization function and use it for each test case:
 
 ```scala
 def myTest[T](func: Int => T) = {
-  val fixture = 1337 // initialize some value 
+  val fixture = 1337 // initialize some value
   val res = func(fixture) // make the value available in the test case
   assert(fixture == 1337) // properly teardown the value later
   res
@@ -1227,7 +1227,7 @@ val results3 = TestRunner.runAndPrint(
 Lastly, you can also run `TestSuite` objects in the same way:
 
 ```scala
-// Run `TestSuite` object directly without using SBT, and use 
+// Run `TestSuite` object directly without using SBT, and use
 // its configuration for execution and output formatting
 object MyTestSuite extends TestSuite{
   val tests = Tests{
@@ -1331,6 +1331,10 @@ libraries are currently at.
 Changelog
 =========
 
+unreleased
+----------
+- Bugfix where sometimes all tests would pass but report as failed (thanks @eatkins)
+
 0.6.4
 -----
 - Returning `null` from a test case no longer blows up
@@ -1342,9 +1346,8 @@ Changelog
 
 0.6.2
 -----
-
 - Fix cross-publishing for Scala.js, which was borked in 0.6.0
-- Ensure utestAfterEach be executed regardless of a test failure 
+- Ensure utestAfterEach be executed regardless of a test failure
 
 0.6.0
 -----
