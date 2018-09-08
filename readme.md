@@ -1334,6 +1334,7 @@ Changelog
 unreleased
 ----------
 - Bugfix where sometimes all tests would pass but report as failed (thanks @eatkins)
+- By default, don't cut-off and wrap output
 
 0.6.4
 -----
