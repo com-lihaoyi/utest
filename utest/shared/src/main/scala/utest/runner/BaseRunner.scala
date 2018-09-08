@@ -88,16 +88,18 @@ abstract class BaseRunner(val args: Array[String],
                     subpath: Seq[String],
                     millis: Long) = {
 
-      eventHandler.handle(new Event {
-        def fullyQualifiedName() = suiteName
-        def throwable() = op
-        def status() = st
-        def selector() = {
-          new NestedTestSelector(suiteName, subpath.mkString("."))
-        }
-        def fingerprint() = taskDef.fingerprint()
-        def duration() = millis
-      })
+      eventHandler.synchronized {
+        eventHandler.handle(new Event {
+          def fullyQualifiedName() = suiteName
+          def throwable() = op
+          def status() = st
+          def selector() = {
+            new NestedTestSelector(suiteName, subpath.mkString("."))
+          }
+          def fingerprint() = taskDef.fingerprint()
+          def duration() = millis
+        })
+      }
     }
 
     val suiteEither =
