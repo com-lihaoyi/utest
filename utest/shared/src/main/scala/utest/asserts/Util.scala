@@ -16,12 +16,12 @@ object Util {
     * Shorthand to quickly throw a utest.AssertionError, together with all the
     * macro-debugging goodness
     */
-  def assertError(msgPrefix: String, logged: Seq[TestValue], cause: Throwable = null) = {
+  def assertError(msgPrefix: String, logged: collection.Seq[TestValue], cause: Throwable = null) = {
     throw makeAssertError(msgPrefix, logged, cause)
   }
 
   def makeAssertError(msgPrefix: String,
-                      logged: Seq[TestValue],
+                      logged: collection.Seq[TestValue],
                       cause: Throwable = null) = StackMarker.dropInside{
     val err = AssertionError(msgPrefix, logged, cause)
     if (cause != null) err.setStackTrace(Array.empty)
