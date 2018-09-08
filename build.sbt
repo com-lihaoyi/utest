@@ -5,8 +5,8 @@ import sbt.addCompilerPlugin
 
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
-scalaVersion       in ThisBuild := "2.12.4"
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.12", "2.12.4", "2.13.0-M2")
+scalaVersion       in ThisBuild := "2.12.6"
+crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.12", "2.12.6", "2.13.0-M2")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withLogRecompileOnMacro(false)
 //triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
@@ -69,8 +69,8 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
   .nativeSettings(
-    scalaVersion := "2.11.11",
-    crossScalaVersions := Seq("2.11.11"),
+    scalaVersion := "2.11.12",
+    crossScalaVersions := Seq("2.11.12"),
     libraryDependencies ++= Seq(
       "org.scala-native" %%% "test-interface" % "0.3.0"
     ),
