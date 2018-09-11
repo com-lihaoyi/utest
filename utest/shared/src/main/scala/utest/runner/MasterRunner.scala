@@ -93,8 +93,9 @@ final class MasterRunner(args: Array[String],
       case _ => badMessage
     }
 
-    val countMsg = s"$successCount,$failureCount"
-    Some(countMsg)
+    // We have nothing to send back to the sender slave
+    // It is important not to send back anything because of #176
+    None
   }
 
 }
