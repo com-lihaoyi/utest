@@ -1331,10 +1331,11 @@ libraries are currently at.
 Changelog
 =========
 
-unreleased
-----------
+0.6.5 (unreleased)
+-----
 - Bugfix where sometimes all tests would pass but report as failed (thanks @eatkins)
 - By default, don't cut-off and wrap output
+- (Hopefully) fix intermittent `IllegalStateException: Unknown opcode 5` exceptions occuring with Scala.JS.
 
 0.6.4
 -----
