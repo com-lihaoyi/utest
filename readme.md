@@ -1,4 +1,4 @@
-µTest 0.6.3 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.6.5 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -76,7 +76,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.3" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.5" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -84,7 +84,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.3" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.5" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1331,7 +1331,7 @@ libraries are currently at.
 Changelog
 =========
 
-0.6.5 (unreleased)
+0.6.5
 -----
 - Bugfix where sometimes all tests would pass but report as failed (thanks @eatkins)
 - By default, don't cut-off and wrap output
@@ -1340,7 +1340,7 @@ Changelog
 0.6.4
 -----
 - Returning `null` from a test case no longer blows up
-- Added `utest.runner.MillFramework
+- Added `utest.runner.MillFramework`
 
 0.6.3
 -----
