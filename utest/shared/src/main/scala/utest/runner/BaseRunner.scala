@@ -4,7 +4,6 @@ package runner
 import sbt.testing._
 
 import scala.util.Failure
-import org.scalajs.testinterface.TestUtils
 import utest.framework.{StackMarker, Tree}
 object BaseRunner{
   /**
@@ -106,7 +105,7 @@ abstract class BaseRunner(val args: Array[String],
       try {
         Right(
           StackMarker.dropOutside(
-            TestUtils.loadModule(suiteName, testClassLoader).asInstanceOf[TestSuite]
+            PlatformShims.loadModule(suiteName, testClassLoader).asInstanceOf[TestSuite]
           )
         )
       } catch{case e: Throwable => Left(e)}
