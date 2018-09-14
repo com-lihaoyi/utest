@@ -30,10 +30,11 @@ object Tests{
     def applyImpl(c: Context)(expr: c.Expr[Unit]): c.Expr[Tests] = {
       import c.universe._
 
-      def literalValue(t: c.Tree) = {
+      def literalValue(t: c.Tree): String = {
         t match{
           case q"scala.Symbol.apply(${Literal(Constant(foo))})" => foo.toString
-          case Literal(Constant(foo)) => foo.toString
+          case Literal(Constant(foo: String)) => foo
+          case Literal(Constant(foo: scala.Symbol)) => foo.name
         }
       }
 

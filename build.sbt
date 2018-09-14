@@ -6,7 +6,7 @@ import sbt.addCompilerPlugin
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
 scalaVersion       in ThisBuild := "2.12.6"
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.12", "2.12.6", "2.13.0-M2")
+crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.6", "2.13.0-M3")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withLogRecompileOnMacro(false)
 //triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
@@ -85,12 +85,8 @@ def macroDependencies(version: String) =
    else
      Seq())
 
-lazy val utestJS = utest.js
-lazy val utestJVM = utest.jvm
-lazy val utestNative = utest.native
-
 lazy val root = project.in(file("."))
-  .aggregate(utestJS, utestJVM, utestNative)
+  .aggregate(utest.js, utest.jvm, utest.native)
   .settings(
     publishTo := Some(Resolver.file("Unused transient repository", target.value / "fakepublish")),
     skip in publish := true)
