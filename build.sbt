@@ -85,12 +85,8 @@ def macroDependencies(version: String) =
    else
      Seq())
 
-lazy val utestJS = utest.js
-lazy val utestJVM = utest.jvm
-lazy val utestNative = utest.native
-
 lazy val root = project.in(file("."))
-  .aggregate(utestJS, utestJVM, utestNative)
+  .aggregate(utest.js, utest.jvm, utest.native)
   .settings(
     publishTo := Some(Resolver.file("Unused transient repository", target.value / "fakepublish")),
     skip in publish := true)
