@@ -1331,6 +1331,10 @@ libraries are currently at.
 Changelog
 =========
 
+0.6.6 (in progress)
+-------------------
+- Replace support for Scala 2.13.0-M2 by 2.13.0-M3.
+
 0.6.5
 -----
 - Bugfix where sometimes all tests would pass but report as failed (thanks @eatkins)
