@@ -23,7 +23,7 @@ object Util {
   def makeAssertError(msgPrefix: String,
                       logged: collection.Seq[TestValue],
                       cause: Throwable = null) = StackMarker.dropInside{
-    val err = AssertionError(msgPrefix, logged, cause)
+    val err = AssertionError(msgPrefix, logged.toSeq, cause)
     if (cause != null) err.setStackTrace(Array.empty)
     err
   }

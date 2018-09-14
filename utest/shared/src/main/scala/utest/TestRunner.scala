@@ -203,12 +203,12 @@ object TestRunner {
     val left = collection.mutable.Buffer.empty[Seq[String]]
     val right = collection.mutable.Buffer.empty[Tree[Int]]
     childResults.foreach{
-      case Left(l) => left.appendAll(l)
+      case Left(l) => left ++= l
       case Right(r) => right.append(r)
     }
 
-    if (left.nonEmpty) Left(left)
-    else Right(right)
+    if (left.nonEmpty) Left(left.toSeq)
+    else Right(right.toSeq)
   }
 
   /**

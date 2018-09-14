@@ -85,30 +85,32 @@ trait Formatter {
             if(exceptionStackFrameHighlighter(e)) ufansi.Attrs.Empty
             else ufansi.Bold.Faint
 
-          output.append(
-            "\n", frameIndent,
-            joinLineStr(
-              lineWrapInput(
-                wrapper(
-                  ufansi.Str.join(
-                    exceptionPrefixColor(e.getClassName + "."),
-                    exceptionMethodColor(e.getMethodName),
-                    exceptionPunctuationColor("("),
-                    filenameFrag,
-                    exceptionPunctuationColor(")")
-                  )
-                ),
-                frameIndent
+          output += "\n"
+          output += frameIndent
+          output += joinLineStr(
+            lineWrapInput(
+              wrapper(
+                ufansi.Str.join(
+                  exceptionPrefixColor(e.getClassName + "."),
+                  exceptionMethodColor(e.getMethodName),
+                  exceptionPunctuationColor("("),
+                  filenameFrag,
+                  exceptionPunctuationColor(")")
+                )
               ),
               frameIndent
-            )
+            ),
+            frameIndent
           )
         }
       current = current.getCause
-      if (current != null) output.append("\n", leftIndent)
+      if (current != null) {
+        output += "\n"
+        output += leftIndent
+      }
     }
 
-    ufansi.Str.join(output:_*)
+    ufansi.Str.join(output.toSeq:_*)
   }
 
   def lineWrapInput(input: ufansi.Str, leftIndent: String): Seq[ufansi.Str] = {
@@ -130,7 +132,7 @@ trait Formatter {
       if (skipOne) index = nextIndex + 1
       else index = nextIndex
     }
-    output
+    output.toSeq
   }
 
   def joinLineStr(lines: Seq[ufansi.Str], leftIndent: String) = {

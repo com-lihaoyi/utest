@@ -126,7 +126,7 @@ object TestQueryParser{
           ordered(i) = subtree :: ordered(i)
       }
     }
-    for (grouping <- ordered) yield {
+    for (grouping <- ordered.toSeq) yield {
       Tree(grouping.head.value,
         collapse(grouping.reverse.flatMap(_.children)):_*
       )
