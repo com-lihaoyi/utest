@@ -126,11 +126,11 @@ object TestQueryParser{
           ordered(i) = subtree :: ordered(i)
       }
     }
-    for (grouping <- ordered) yield {
+    (for (grouping <- ordered) yield {
       Tree(grouping.head.value,
         collapse(grouping.reverse.flatMap(_.children)):_*
       )
-    }
+    }).toSeq
   }
 }
 case class QueryParseError(input: String, msg: String)

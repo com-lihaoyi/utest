@@ -159,7 +159,7 @@ object TestRunner {
     */
   def unbox(res: Throwable) = res match{
     case e: java.util.concurrent.ExecutionException
-      if e.getMessage == "Boxed Error" =>
+      if e.getMessage == "Boxed Error" || e.getMessage == "Boxed Exception" =>
       e.getCause
     case r => r
   }
@@ -207,8 +207,8 @@ object TestRunner {
       case Right(r) => right.append(r)
     }
 
-    if (left.nonEmpty) Left(left)
-    else Right(right)
+    if (left.nonEmpty) Left(left.toSeq)
+    else Right(right.toSeq)
   }
 
   /**

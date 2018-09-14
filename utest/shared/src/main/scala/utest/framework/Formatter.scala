@@ -108,7 +108,7 @@ trait Formatter {
       if (current != null) output.append("\n", leftIndent)
     }
 
-    ufansi.Str.join(output:_*)
+    ufansi.Str.join(output.toSeq:_*)
   }
 
   def lineWrapInput(input: ufansi.Str, leftIndent: String): Seq[ufansi.Str] = {
@@ -130,7 +130,7 @@ trait Formatter {
       if (skipOne) index = nextIndex + 1
       else index = nextIndex
     }
-    output
+    output.toSeq
   }
 
   def joinLineStr(lines: Seq[ufansi.Str], leftIndent: String) = {

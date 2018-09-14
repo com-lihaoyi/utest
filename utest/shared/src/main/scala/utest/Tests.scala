@@ -53,7 +53,7 @@ object Tests{
         case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
       }
 
-      def recurse(t: c.Tree, path: Seq[String]): (c.Tree, Seq[c.Tree]) = {
+      def recurse(t: c.Tree, path: Seq[String]): (c.Tree, collection.Seq[c.Tree]) = {
         val b = t match{
           case b: Block => b
           case t => Block(Nil, t)

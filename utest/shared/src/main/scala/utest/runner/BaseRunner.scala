@@ -179,7 +179,7 @@ abstract class BaseRunner(val args: Array[String],
 
 
   private def makeTask(taskDef: TaskDef): sbt.testing.Task = {
-    new Task(taskDef, runSuite(_, taskDef.fullyQualifiedName(), _, taskDef))
+    new runner.Task(taskDef, runSuite(_, taskDef.fullyQualifiedName(), _, taskDef))
   }
   // Scala.js test interface specific methods
   def deserializeTask(task: String, deserializer: String => TaskDef): sbt.testing.Task =
