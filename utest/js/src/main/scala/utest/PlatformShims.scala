@@ -1,6 +1,7 @@
 package utest
 
 import scala.concurrent.Future
+import org.portablescala.reflect.Reflect
 
 /**
  * Platform specific stuff that differs between JVM and JS
@@ -13,5 +14,15 @@ object PlatformShims {
         "Test that returns Future must be run asynchronously in Scala.js, see TestTreeSeq::runAsync"
       )
     }
+  }
+
+  type EnableReflectiveInstantiation =
+    org.portablescala.reflect.annotation.EnableReflectiveInstantiation
+
+  def loadModule(name: String, loader: ClassLoader): Any = {
+    Reflect
+      .lookupLoadableModuleClass(name + "$", loader)
+      .getOrElse(throw new ClassNotFoundException(name))
+      .loadModule()
   }
 }

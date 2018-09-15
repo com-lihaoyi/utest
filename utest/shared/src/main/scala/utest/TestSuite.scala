@@ -8,7 +8,8 @@ import utest.framework.Formatter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
-import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
+
+import PlatformShims.EnableReflectiveInstantiation
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
