@@ -1333,7 +1333,12 @@ Changelog
 
 0.6.6 (in progress)
 -------------------
-- Replace support for Scala 2.13.0-M2 by 2.13.0-M3.
+- Add support for Scala 2.13.0-M5
+- Upgrade Scala 2.13.0-M2 to 2.13.0-M3
+- Upgrade Scala.JS 0.6.22 to 0.6.25
+- Upgrade Scala.JS 1.0.0-M3 to 1.0.0-M5
+- Upgrade Scala Native 0.3.6 to 0.3.7
+- Replace Scala.JS' deprecated `TestUtils` with portable-scala-reflect
 
 0.6.5
 -----
