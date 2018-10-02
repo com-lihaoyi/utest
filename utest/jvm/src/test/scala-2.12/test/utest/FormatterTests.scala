@@ -8,7 +8,8 @@ import concurrent.ExecutionContext.Implicits.global
   */
 object FormatterTests extends utest.TestSuite {
   def trim(s: String): String = {
-    s.trim.lines.map(_.reverse.dropWhile(_ == ' ').reverse).mkString("\n").replaceAll(" \\d+ms", "")
+    // Predef.augmentString = work around scala/bug#11125
+    Predef.augmentString(s.trim).lines.map(_.reverse.dropWhile(_ == ' ').reverse).mkString("\n").replaceAll(" \\d+ms", "")
   }
   val tests = Tests{
     val tests = Tests {
@@ -46,37 +47,37 @@ object FormatterTests extends utest.TestSuite {
       val expected = trim(
         """X MyTestSuite.test1 0ms
           |  java.lang.Exception: wrapper
-          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:19)
-          |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
+          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:20)
+          |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:18)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
           |    utest.asserts.Asserts$.assertImpl(Asserts.scala:114)
-          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:17)
-          |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
+          |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:18)
+          |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:18)
           |+ MyTestSuite.test2 0ms  1
           |X MyTestSuite.test3 0ms
           |  java.lang.IndexOutOfBoundsException: 10
           |    scala.collection.LinearSeqOptimized.apply(LinearSeqOptimized.scala:63)
           |    scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
           |    scala.collection.immutable.List.apply(List.scala:86)
-          |    test.utest.FormatterTests$.$anonfun$tests$6(FormatterTests.scala:26)
+          |    test.utest.FormatterTests$.$anonfun$tests$6(FormatterTests.scala:27)
           |- MyTestSuite 0ms
           |  X test1 0ms
           |    java.lang.Exception: wrapper
-          |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:19)
-          |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
+          |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:20)
+          |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:18)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
           |      utest.asserts.Asserts$.assertImpl(Asserts.scala:114)
-          |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:17)
-          |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:17)
+          |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:18)
+          |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:18)
           |  + test2 0ms  1
           |  X test3 0ms
           |    java.lang.IndexOutOfBoundsException: 10
           |      scala.collection.LinearSeqOptimized.apply(LinearSeqOptimized.scala:63)
           |      scala.collection.LinearSeqOptimized.apply$(LinearSeqOptimized.scala:61)
           |      scala.collection.immutable.List.apply(List.scala:86)
-          |      test.utest.FormatterTests$.$anonfun$tests$6(FormatterTests.scala:26)
+          |      test.utest.FormatterTests$.$anonfun$tests$6(FormatterTests.scala:27)
         """.stripMargin
       )
 
@@ -106,17 +107,17 @@ object FormatterTests extends utest.TestSuite {
         """X MyTestSuite.test1 0ms
           |  java.lang.Exception: wrapper
           |    test.utest.FormatterTests$.liftedTree1$1(Forma
-          |    tterTests.scala:19)
+          |    tterTests.scala:20)
           |    test.utest.FormatterTests$.$anonfun$tests$3(Fo
-          |    rmatterTests.scala:17)
+          |    rmatterTests.scala:18)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
           |    utest.asserts.Asserts$.assertImpl(Asserts.scal
           |    a:114)
           |    test.utest.FormatterTests$.liftedTree1$1(Forma
-          |    tterTests.scala:17)
+          |    tterTests.scala:18)
           |    test.utest.FormatterTests$.$anonfun$tests$3(Fo
-          |    rmatterTests.scala:17)
+          |    rmatterTests.scala:18)
           |+ MyTestSuite.test2 0ms  1
           |X MyTestSuite.test3 0ms
           |  java.lang.IndexOutOfBoundsException: 10
@@ -127,22 +128,22 @@ object FormatterTests extends utest.TestSuite {
           |    scala.collection.immutable.List.apply(List.sca
           |    la:86)
           |    test.utest.FormatterTests$.$anonfun$tests$6(Fo
-          |    rmatterTests.scala:26)
+          |    rmatterTests.scala:27)
           |- MyTestSuite 0ms
           |  X test1 0ms
           |    java.lang.Exception: wrapper
           |      test.utest.FormatterTests$.liftedTree1$1(For
-          |      matterTests.scala:19)
+          |      matterTests.scala:20)
           |      test.utest.FormatterTests$.$anonfun$tests$3(
-          |      FormatterTests.scala:17)
+          |      FormatterTests.scala:18)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
           |      utest.asserts.Asserts$.assertImpl(Asserts.sc
           |      ala:114)
           |      test.utest.FormatterTests$.liftedTree1$1(For
-          |      matterTests.scala:17)
+          |      matterTests.scala:18)
           |      test.utest.FormatterTests$.$anonfun$tests$3(
-          |      FormatterTests.scala:17)
+          |      FormatterTests.scala:18)
           |  + test2 0ms  1
           |  X test3 0ms
           |    java.lang.IndexOutOfBoundsException: 10
@@ -153,7 +154,7 @@ object FormatterTests extends utest.TestSuite {
           |      scala.collection.immutable.List.apply(List.s
           |      cala:86)
           |      test.utest.FormatterTests$.$anonfun$tests$6(
-          |      FormatterTests.scala:26)
+          |      FormatterTests.scala:27)
         """.stripMargin
       )
 
