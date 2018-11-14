@@ -14,7 +14,7 @@ incOptions         in ThisBuild := (incOptions in ThisBuild).value.withLogRecomp
 lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     name                  := "utest",
-    scalacOptions         := Seq("-Ywarn-dead-code"),
+    scalacOptions         := Seq("-Ywarn-dead-code", "-feature"),
     scalacOptions in Test -= "-Ywarn-dead-code",
     libraryDependencies  ++= macroDependencies(scalaVersion.value),
     scalacOptions        ++= (scalaVersion.value match {

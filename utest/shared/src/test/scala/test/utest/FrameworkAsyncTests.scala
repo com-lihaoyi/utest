@@ -17,7 +17,7 @@ object FrameworkAsyncTests extends TestSuite {
       val tests = Tests {
         "testSuccessAsync" - {
           val p = concurrent.Promise[Int]
-          test.utest.Scheduler.scheduleOnce(2 seconds)(p.success(123))
+          test.utest.Scheduler.scheduleOnce(2.seconds)(p.success(123))
 
           // Not supported by Scala Native at the moment.
           // Futures are completed either at the end of the `main` function or immediately.
@@ -28,7 +28,7 @@ object FrameworkAsyncTests extends TestSuite {
         }
         "testFailAsync" - {
           val p = concurrent.Promise[Int]
-          test.utest.Scheduler.scheduleOnce(2 seconds)(p.failure(new Exception("Boom")))
+          test.utest.Scheduler.scheduleOnce(2.seconds)(p.failure(new Exception("Boom")))
 
           // Not supported by Scala Native at the moment.
           // Futures are completed either at the end of the `main` function or immediately.
