@@ -114,7 +114,7 @@ object Tests{
           ..$normal2
           ${
           if (childCallTrees.isEmpty) q"_root_.scala.Left($last)"
-          else q"$last; _root_.scala.Right(Array(..$childCallTrees))"
+          else q"$last; _root_.scala.Right(_root_.scala.collection.immutable.IndexedSeq(..$childCallTrees))"
         }
         })
       """
