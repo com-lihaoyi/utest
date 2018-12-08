@@ -1,4 +1,4 @@
-µTest 0.6.5 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.6.6 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -76,7 +76,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.5" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.6" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -84,7 +84,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.5" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.6" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1340,7 +1340,7 @@ Changelog
 - Upgrade Scala Native 0.3.6 to 0.3.7
 - Replace Scala.JS' deprecated `TestUtils` with portable-scala-reflect
 
-0.6.5
+0.6.6
 -----
 - Bugfix where sometimes all tests would pass but report as failed (thanks @eatkins)
 - By default, don't cut-off and wrap output
