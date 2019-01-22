@@ -36,6 +36,10 @@ the 1-file test suite for
 [Fansi](https://github.com/lihaoyi/fansi/blob/master/fansi/shared/src/test/scala/fansi/FansiTests.scala)
 to the 50-file 9,000-line test suite for [Ammonite](https://github.com/lihaoyi/Ammonite)
 
+If you use uTest and like it, please support it by donating to our Patreon:
+
+- [https://www.patreon.com/lihaoyi](https://www.patreon.com/lihaoyi)
+
 Contents
 --------
 
