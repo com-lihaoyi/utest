@@ -27,7 +27,7 @@ matrix:
     - scala: 2.12.6
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
-    - scala: 2.13.0-M5
+    - scala: 2.13.0-RC1
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
     - env: SCALAJS_VERSION="1.0.0-M5"

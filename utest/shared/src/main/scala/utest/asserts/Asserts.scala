@@ -40,10 +40,13 @@ object Asserts {
           val tree = c.parse(s)
           for(x <- tree if x.pos != NoPosition){
             import compat._
-            x.pos = new OffsetPosition(
-              expr.tree.pos.source,
-              x.pos.point + expr.tree.pos.point + quoteOffset
-            ).asInstanceOf[c.universe.Position]
+            internal.setPos(
+              x,
+              new OffsetPosition(
+                expr.tree.pos.source,
+                x.pos.point + expr.tree.pos.point + quoteOffset
+              ).asInstanceOf[c.universe.Position]
+            )
           }
 
           val tree2 = c.typeCheck(tree)
