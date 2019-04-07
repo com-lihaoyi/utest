@@ -2,6 +2,7 @@ import sbtcrossproject.{crossProject, CrossType}
 import com.typesafe.sbt.pgp.PgpKeys._
 import sbt.Keys.scalacOptions
 import sbt.addCompilerPlugin
+import sbt.librarymanagement.{SemanticSelector, VersionNumber}
 
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
@@ -25,8 +26,15 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     }),
 
     unmanagedSourceDirectories in Compile += {
-      val v = if (scalaVersion.value startsWith "2.10.") "scala-2.10" else "scala-2.11"
+      val v = "scala-" + scalaVersion.value.split("\\.").take(2).mkString(".")
       baseDirectory.value/".."/"shared"/"src"/"main"/v
+    },
+    unmanagedSourceDirectories in Compile ++= {
+      if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector("<2.13.0-RC1"))) {
+        baseDirectory.value/".."/"shared"/"src"/"main"/"scala-pre-2.13" :: Nil
+      } else {
+        Nil
+      }
     },
     testFrameworks += new TestFramework("test.utest.CustomFramework"),
 

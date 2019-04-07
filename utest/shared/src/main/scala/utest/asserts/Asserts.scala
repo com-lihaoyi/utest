@@ -20,6 +20,8 @@ import scala.language.experimental.macros
 object Asserts {
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
+    val macrocompat = new MacroCompat(c)
+    import macrocompat._
     def calcPosMsg(pos: scala.reflect.api.Position) = {
       if (pos == NoPosition) ""
       else pos.lineContent + "\n" + (" " * pos.column) + "^"
@@ -40,13 +42,10 @@ object Asserts {
           val tree = c.parse(s)
           for(x <- tree if x.pos != NoPosition){
             import compat._
-            internal.setPos(
-              x,
-              new OffsetPosition(
-                expr.tree.pos.source,
-                x.pos.point + expr.tree.pos.point + quoteOffset
-              ).asInstanceOf[c.universe.Position]
-            )
+            x.pos = new OffsetPosition(
+              expr.tree.pos.source,
+              x.pos.point + expr.tree.pos.point + quoteOffset
+            ).asInstanceOf[c.universe.Position]
           }
 
           val tree2 = c.typeCheck(tree)

@@ -9,7 +9,10 @@ import concurrent.ExecutionContext.Implicits.global
 object FormatterTests extends utest.TestSuite {
   def trim(s: String): String = {
     // Predef.augmentString = work around scala/bug#11125
-    Predef.augmentString(s.trim).lines.map(_.reverse.dropWhile(_ == ' ').reverse).mkString("\n").replaceAll(" \\d+ms", "")
+    Predef.augmentString(s.trim).lines.map(_.reverse.dropWhile(_ == ' ').reverse)
+      .mkString("\n")
+      .replaceAll(" \\d+ms", "")
+      .replaceAll(":\\d+\\)", ":\\)")
   }
   val tests = Tests{
     val tests = Tests {

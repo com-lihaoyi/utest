@@ -24,7 +24,7 @@ matrix:
       sudo: required
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test utestNative/test
 
-    - scala: 2.12.6
+    - scala: 2.12.8
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
     - scala: 2.13.0-RC1
