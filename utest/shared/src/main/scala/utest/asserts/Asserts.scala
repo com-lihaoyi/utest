@@ -20,6 +20,8 @@ import scala.language.experimental.macros
 object Asserts {
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
+    val macrocompat = new MacroCompat(c)
+    import macrocompat._
     def calcPosMsg(pos: scala.reflect.api.Position) = {
       if (pos == NoPosition) ""
       else pos.lineContent + "\n" + (" " * pos.column) + "^"
