@@ -17,4 +17,4 @@ coursier fetch \
   com.lihaoyi:utest_sjs1.0.0-M7_2.11:$VERSION \
   com.lihaoyi:utest_sjs1.0.0-M7_2.12:$VERSION \
   com.lihaoyi:utest_sjs1.0.0-M7_2.13.0-RC1:$VERSION \
-  -r sonatype:releases
+  -r sonatype:public
