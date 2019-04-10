@@ -1,4 +1,4 @@
-µTest 0.6.6 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.6.7 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -80,7 +80,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.6" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.7" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -88,7 +88,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.6" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.7" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1335,7 +1335,12 @@ libraries are currently at.
 Changelog
 =========
 
-0.6.6 (in progress)
+0.6.7
+-------------------
+- Add support for Scala 2.13.0-RC1
+- Use IndexedSeq instead of Array in `Tests` macro
+
+0.6.6
 -------------------
 - Add support for Scala 2.13.0-M5
 - Upgrade Scala 2.13.0-M2 to 2.13.0-M3
