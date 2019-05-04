@@ -508,11 +508,12 @@ val tests = Tests {
   }
 }
 
-tests.runAsync().map { results =>
-  assert(results.toSeq(0).value.isSuccess) // root
-  assert(results.toSeq(1).value.isSuccess) // testSuccess
-  assert(results.toSeq(2).value.isFailure) // testFail
-  assert(results.toSeq(3).value.isSuccess) // normalSuccess
+TestRunner.runAsync(tests).map { results =>
+ val leafResults = results.leaves.toSeq
+ assert(leafResults(0).value.isSuccess) // root
+ assert(leafResults(1).value.isSuccess) // testSuccess
+ assert(leafResults(2).value.isFailure) // testFail
+ assert(leafResults(3).value.isSuccess) // normalSuccess
 }
 ```
 
