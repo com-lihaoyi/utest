@@ -4,10 +4,15 @@ import sbt.Keys.scalacOptions
 import sbt.addCompilerPlugin
 import sbt.librarymanagement.{SemanticSelector, VersionNumber}
 
+val scala210 = "2.10.7"
+val scala211 = "2.11.12"
+val scala212 = "2.12.8"
+val scala213 = "2.13.0-RC2"
+
 name               in ThisBuild := "utest"
 organization       in ThisBuild := "com.lihaoyi"
-scalaVersion       in ThisBuild := "2.12.8"
-crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.8", "2.13.0-RC2")
+scalaVersion       in ThisBuild := scala212
+crossScalaVersions in ThisBuild := Seq(scala210, scala211, scala212, scala213)
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withLogRecompileOnMacro(false)
 //triggeredMessage   in ThisBuild := Watched.clearWhenTriggered
@@ -30,7 +35,7 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       baseDirectory.value/".."/"shared"/"src"/"main"/v
     },
     unmanagedSourceDirectories in Compile ++= {
-      if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector("<2.13.0-RC2"))) {
+      if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector(s"<$scala213"))) {
         baseDirectory.value/".."/"shared"/"src"/"main"/"scala-pre-2.13" :: Nil
       } else {
         Nil
@@ -80,10 +85,10 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
   .nativeSettings(
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12"),
+    scalaVersion := scala211,
+    crossScalaVersions := Seq(scala211),
     libraryDependencies ++= Seq(
-      "org.scala-native" %%% "test-interface" % "0.3.0"
+      "org.scala-native" %%% "test-interface" % nativeVersion
     ),
     nativeLinkStubs := true
   )
@@ -91,8 +96,8 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
 def macroDependencies(version: String) =
   ("org.scala-lang" % "scala-reflect" % version) +:
   (if (version startsWith "2.10.")
-     Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full),
-         "org.scalamacros" %% s"quasiquotes" % "2.1.0")
+     Seq(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+         "org.scalamacros" %% "quasiquotes" % "2.1.0")
    else
      Seq())
 
