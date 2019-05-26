@@ -24,6 +24,14 @@ matrix:
       sudo: required
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test utestNative/test
 
+    - scala: 2.11.12
+      env: CI_PUBLISH="true" SCALANATIVE_VERSION="0.4.0-M2"
+      before_script:
+      - git fetch --tags
+      - curl https://raw.githubusercontent.com/scala-native/scala-native/master/scripts/travis_setup.sh | bash -x
+      sudo: required
+      script: sbt ++$TRAVIS_SCALA_VERSION! utestNative/test
+
     - scala: 2.12.8
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
