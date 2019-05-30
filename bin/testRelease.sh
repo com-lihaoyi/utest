@@ -15,7 +15,7 @@ coursier fetch \
   com.lihaoyi:utest_sjs0.6_2.12:$VERSION \
   com.lihaoyi:utest_sjs0.6_2.13.0-RC2:$VERSION \
   com.lihaoyi:utest_sjs0.6_2.13.0-RC2:$VERSION \
-  com.lihaoyi:utest_sjs1.0.0-M7_2.11:$VERSION \
-  com.lihaoyi:utest_sjs1.0.0-M7_2.12:$VERSION \
-  com.lihaoyi:utest_sjs1.0.0-M7_2.13.0-RC2:$VERSION \
+  com.lihaoyi:utest_sjs1.0.0-M8_2.11:$VERSION \
+  com.lihaoyi:utest_sjs1.0.0-M8_2.12:$VERSION \
+  com.lihaoyi:utest_sjs1.0.0-M8_2.13.0-RC2:$VERSION \
   -r sonatype:public
