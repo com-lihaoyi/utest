@@ -124,13 +124,13 @@ object Asserts {
 
   def interceptProxy[T: c.WeakTypeTag]
                     (c: Context)
-                    (exprs: c.Expr[Unit])
+                    (exprs: c.Expr[Any])
                     (t: c.Expr[ClassTag[T]]): c.Expr[T] = {
     import c.universe._
     val typeTree = implicitly[c.WeakTypeTag[T]]
 
     val x = Tracer[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
-    c.Expr[T](q"$x($t)")
+    c.Expr[T](q"$x({$t;()})")
   }
 
   /**
@@ -138,7 +138,7 @@ object Asserts {
    * is returned if raised, and an `AssertionError` is raised if the expected
    * exception does not appear.
    */
-  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
+  def interceptImpl[T: ClassTag](entry: AssertEntry[Any]): T = {
     val (res, logged, src) = Util.runAssertionEntry(entry)
     res match{
       case Failure(e: T) => e
@@ -231,7 +231,7 @@ trait Asserts{
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
+  def intercept[T: ClassTag](exprs: Any): T = macro Asserts.interceptProxy[T]
 
   @tailrec final def retry[T](n: Int)(body: => T): T = {
     try body
