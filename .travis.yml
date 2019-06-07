@@ -35,19 +35,19 @@ matrix:
     - scala: 2.12.8
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
-    - scala: 2.13.0-RC2
+    - scala: 2.13.0
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
 
-    - env: SCALAJS_VERSION="1.0.0-M7"
+    - env: SCALAJS_VERSION="1.0.0-M8"
       scala: 2.11.12
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJS/test
 
-    - env: SCALAJS_VERSION="1.0.0-M7"
+    - env: SCALAJS_VERSION="1.0.0-M8"
       scala: 2.12.8
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJS/test
 
-    - env: SCALAJS_VERSION="1.0.0-M7"
-      scala: 2.13.0-RC2
+    - env: SCALAJS_VERSION="1.0.0-M8"
+      scala: 2.13.0
       script: sbt ++$TRAVIS_SCALA_VERSION! utestJS/test
 
 # Taken from https://github.com/typelevel/cats/blob/master/.travis.yml
