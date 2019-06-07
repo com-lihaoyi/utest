@@ -9,12 +9,12 @@ sbt ++2.11.12 \
 sbt ++2.12.8 \
     utestJS/publishSigned \
     utestJVM/publishSigned
-sbt ++2.13.0-RC2 \
+sbt ++2.13.0 \
     utestJS/publishSigned \
     utestJVM/publishSigned
 
-SCALAJS_VERSION=1.0.0-M7 sbt ++2.11.12 utestJS/publishSigned
-SCALAJS_VERSION=1.0.0-M7 sbt ++2.12.8 utestJS/publishSigned
-SCALAJS_VERSION=1.0.0-M7 sbt ++2.13.0-RC2 utestJS/publishSigned
+SCALAJS_VERSION=1.0.0-M8 sbt ++2.11.12 utestJS/publishSigned
+SCALAJS_VERSION=1.0.0-M8 sbt ++2.12.8 utestJS/publishSigned
+SCALAJS_VERSION=1.0.0-M8 sbt ++2.13.0 utestJS/publishSigned
 
 SCALANATIVE_VERSION=0.4.0-M2 sbt ++2.11.12 utestNative/publishSigned
