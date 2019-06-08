@@ -18,8 +18,7 @@ matrix:
       jdk: oraclejdk8
 
 script:
-  - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.4.0/0.4.0-12-102ddf
- && chmod +x ~/bin/mill
+  - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.4.0/0.4.0-12-102ddf && chmod +x ~/bin/mill
   - export PATH=~/bin/mill:$PATH
   - curl https://raw.githubusercontent.com/scala-native/scala-native/b7851c4dc2a22c9fd9202aea3d97e2a68910b918/scripts/travis_setup.sh | bash -x
   - "$CI_SCRIPT"
