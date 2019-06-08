@@ -91,12 +91,18 @@ object utest extends Module {
   class NativeUtestModule(val crossScalaVersion: String, crossScalaNativeVersion: String)
     extends UtestMainModule with ScalaNativeModule with UtestModule {
     def offset = os.up
-    def ivyDeps = Agg(
+    def ivyDeps = super.ivyDeps() ++ Agg(
       ivy"org.scala-native::test-interface::$crossScalaNativeVersion",
-      ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
+      ivy"org.scala-lang:scala-reflect:$crossScalaVersion",
     )
+
     def scalaNativeVersion = crossScalaNativeVersion
     object test extends Tests with UtestTestModule{
+
+      def testFrameworksJvmClasspath =
+        super.testFrameworksJvmClasspath() ++
+        resolveDeps(scalaLibraryIvyDeps)()
+
       def offset = os.up
       val crossScalaVersion = NativeUtestModule.this.crossScalaVersion
     }
