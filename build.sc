@@ -70,10 +70,10 @@ object utest extends Module {
   }
 
   object js extends Cross[JsUtestModule](
-    ("2.12.8", "0.6.26"), ("2.13.0", "0.6.28"), ("2.12.8", "1.0.0-M8"), ("2.13.0", "1.0.0-M8")
+    ("2.12.8", "0.6.26"), ("2.13.0", "0.6.28")/*, ("2.12.8", "1.0.0-M8"), ("2.13.0", "1.0.0-M8")*/
   )
   class JsUtestModule(val crossScalaVersion: String, crossJSVersion: String)
-    extends UtestMainModule with ScalaJSModule with UtestModule with ScalaJSCompat {
+    extends UtestMainModule with ScalaJSModule with UtestModule {
     def offset = os.up
     def ivyDeps = Agg(
       ivy"org.scala-js::scalajs-test-interface:$crossJSVersion",
@@ -81,35 +81,13 @@ object utest extends Module {
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
     )
     def scalaJSVersion = crossJSVersion
-    object test extends Tests with UtestTestModule with ScalaJSCompat{
+    object test extends Tests with UtestTestModule{
       def offset = os.up
       val crossScalaVersion = JsUtestModule.this.crossScalaVersion
     }
   }
-  trait ScalaJSCompat extends ScalaJSModule{
-    def scalaJSLinkerClasspath = T{
-      val commonDeps = Seq(
 
-        ivy"org.scala-js::scalajs-sbt-test-adapter:${scalaJSVersion()}"
-      )
-      val envDep = scalaJSBinaryVersion() match {
-        case v if v.startsWith("0.6") =>
-          Seq(
-            ivy"org.scala-js::scalajs-js-envs:${scalaJSVersion()}",
-            ivy"org.scala-js::scalajs-tools:${scalaJSVersion()}",
-          )
-        case v if v.startsWith("1.0") => Seq(ivy"org.scala-js::scalajs-env-nodejs:${scalaJSVersion()}")
-      }
-      mill.scalalib.Lib.resolveDependencies(
-        repositories,
-        mill.scalalib.Lib.depToDependency(_, "2.12.4", ""),
-        commonDeps ++ envDep,
-        ctx = Some(implicitly[mill.util.Ctx.Log])
-      )
-    }
-  }
-
-  object native extends Cross[NativeUtestModule](("2.11.12", "0.3.8"))
+  object native extends Cross[NativeUtestModule](("2.11.12", "0.3.8")/*, ("2.11.12", "0.4.0-M2")*/)
   class NativeUtestModule(val crossScalaVersion: String, crossScalaNativeVersion: String)
     extends UtestMainModule with ScalaNativeModule with UtestModule {
     def offset = os.up

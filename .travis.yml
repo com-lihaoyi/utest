@@ -14,7 +14,7 @@ jdk:
 matrix:
   include:
     - stage: build
-      env: CI_SCRIPT="mill __.__.test"
+      env: CI_SCRIPT="mill -i __.__.test"
       jdk: oraclejdk8
 
 script:
