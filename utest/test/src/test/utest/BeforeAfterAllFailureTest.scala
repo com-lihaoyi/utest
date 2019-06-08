@@ -53,7 +53,7 @@ object BeforeAfterAllFailureTest extends TestSuite {
         failures.map(_.getMessage) == Seq("Failed After!"),
         // Make sure we return stack traces that get truncated to reasonably
         // small values, without all the external uninteresting stack frames
-        filteredStackLengths.forall(_ < 10)
+        filteredStackLengths.forall(_ < 15)
       )
 
 

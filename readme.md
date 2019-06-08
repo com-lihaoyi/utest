@@ -1,4 +1,4 @@
-µTest 0.6.7 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.6.9 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -80,7 +80,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.7" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.9" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -88,7 +88,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.7" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.9" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1335,6 +1335,13 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.6.9
+-----
+
+- Added support for Scala 2.13.0 Final
+- Dropped support for Scala 2.10.x, 2.11.x
+- Temporarily dropped support for Scala.js 1.0.0-M8, Scala-native 0.4.0-M2
 
 0.6.7
 -------------------
