@@ -99,9 +99,7 @@ object utest extends Module {
     def scalaNativeVersion = crossScalaNativeVersion
     object test extends Tests with UtestTestModule{
 
-      def testFrameworksJvmClasspath =
-        super.testFrameworksJvmClasspath() ++
-        resolveDeps(scalaLibraryIvyDeps)()
+      def testClasspathJvm = T{ runClasspath().toSeq }
 
       def offset = os.up
       val crossScalaVersion = NativeUtestModule.this.crossScalaVersion
