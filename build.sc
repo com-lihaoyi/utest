@@ -4,7 +4,7 @@ import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
 trait UtestModule extends PublishModule {
   def artifactName = "utest"
 
-  def publishVersion = "0.6.8"
+  def publishVersion = "0.6.9"
 
   def pomSettings = PomSettings(
     description = artifactName(),
