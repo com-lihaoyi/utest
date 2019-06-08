@@ -7,58 +7,19 @@ addons:
 
 before_script:
   - git fetch --tags
+
 jdk:
   - oraclejdk8
 
 matrix:
   include:
-    - scala: 2.10.7
-      jdk: openjdk8
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
+    - stage: build
+      env: CI_SCRIPT="mill __.__.test"
+      jdk: oraclejdk8
 
-    - scala: 2.11.12
-      env: CI_PUBLISH="true"
-      before_script:
-      - git fetch --tags
-      - curl https://raw.githubusercontent.com/scala-native/scala-native/master/scripts/travis_setup.sh | bash -x
-      sudo: required
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test utestNative/test
+script:
+  - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.4.0/0.4.0-11-26a18d
+    37 MB && chmod +x ~/bin/mill
+  - export PATH=~/bin/mill:$PATH
+  - "$CI_SCRIPT"
 
-    - scala: 2.11.12
-      env: CI_PUBLISH="true" SCALANATIVE_VERSION="0.4.0-M2"
-      before_script:
-      - git fetch --tags
-      - curl https://raw.githubusercontent.com/scala-native/scala-native/master/scripts/travis_setup.sh | bash -x
-      sudo: required
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestNative/test
-
-    - scala: 2.12.8
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
-
-    - scala: 2.13.0
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestJVM/test utestJS/test
-
-    - env: SCALAJS_VERSION="1.0.0-M8"
-      scala: 2.11.12
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestJS/test
-
-    - env: SCALAJS_VERSION="1.0.0-M8"
-      scala: 2.12.8
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestJS/test
-
-    - env: SCALAJS_VERSION="1.0.0-M8"
-      scala: 2.13.0
-      script: sbt ++$TRAVIS_SCALA_VERSION! utestJS/test
-
-# Taken from https://github.com/typelevel/cats/blob/master/.travis.yml
-before_cache:
-  - find $HOME/.sbt -name "*.lock" -type f -delete
-  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete
-cache:
-  directories:
-  - $HOME/.sbt/0.13/dependency
-  - $HOME/.sbt/boot/scala*
-  - $HOME/.sbt/launchers
-  - $HOME/.ivy2/cache
-after_success:
-- "./bin/publishSigned-CI.sh"
