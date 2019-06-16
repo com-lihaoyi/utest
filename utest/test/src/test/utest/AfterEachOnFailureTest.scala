@@ -19,7 +19,7 @@ object AfterEachOnFailureTest extends TestSuite {
   }
 
   val tests = Tests{
-    'testFails {
+    test("testFails") {
       val innerTests = Tests{
         throw new java.lang.AssertionError("Fail")
       }

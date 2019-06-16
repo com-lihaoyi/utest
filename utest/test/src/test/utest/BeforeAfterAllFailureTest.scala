@@ -15,10 +15,10 @@ object BeforeAfterAllFailureTest extends TestSuite {
     }
 
     val tests = Tests {
-      'test1 - {
+      test("test1"){
         "win"
       }
-      'test2 - {
+      test("test2"){
         "win"
       }
     }
@@ -29,7 +29,7 @@ object BeforeAfterAllFailureTest extends TestSuite {
   object BeforeAllFailureTest extends TestSuite {
     throw new Exception("Failed Before!")
     val tests = Tests {
-      'test - {
+      test("test"){
         "win"
       }
     }
@@ -37,7 +37,7 @@ object BeforeAfterAllFailureTest extends TestSuite {
 
 
   val tests = Tests {
-    'afterAll - {
+    test("afterAll"){
       val res = TestRunner.run(
         AfterAllFailureTest.tests,
         executor = AfterAllFailureTest

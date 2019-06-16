@@ -111,13 +111,13 @@ import utest._
 
 object HelloTests extends TestSuite{
   val tests = Tests{
-    'test1 - {
+    test("test1"){
       throw new Exception("test1")
     }
-    'test2 - {
+    test("test2"){
       1
     }
-    'test3 - {
+    test("test3"){
       val a = List[Byte](1, 2)
       a(10)
     }
@@ -171,20 +171,20 @@ import utest._
 object NestedTests extends TestSuite{
   val tests =  Tests{
     val x = 1
-    'outer1 - {
+    test("outer1"){
       val y = x + 1
 
-      'inner1 - {
+      test("inner1"){
         assert(x == 1, y == 2)
         (x, y)
       }
-      'inner2 - {
+      test("inner2"){
         val z = y + 1
         assert(z == 3)
       }
     }
-    'outer2 - {
-      'inner3 - {
+    test("outer2"){
+      test("inner3"){
         assert(x > 1)
       }
     }
@@ -234,11 +234,11 @@ val tests = Tests{
   def runTestChecks(fileName: String) = {
     // lots of code using fileName
   }
-  "hello" - runTestChecks("hello")
-  "world" - runTestChecks("world")
-  "i" - runTestChecks("i")
-  "am" - runTestChecks("am")
-  "cow" - runTestChecks("cow")
+  test("hello"){ runTestChecks("hello") }
+  test("world"){ runTestChecks("world") }
+  test("i"){ runTestChecks("i") }
+  test("am"){ runTestChecks("am") }
+  test("cow"){ runTestChecks("cow") }
 }
 ```
 
@@ -253,11 +253,11 @@ val tests = Tests{
     val fileName = path.value.last
     // lots of code using fileName
   }
-  "hello" - runTestChecks()
-  "world" - runTestChecks()
-  "i" - runTestChecks()
-  "am" - runTestChecks()
-  "cow" - runTestChecks()
+  test("hello"){ runTestChecks() }
+  test("world"){ runTestChecks() }
+  test("i"){ runTestChecks() }
+  test("am"){ runTestChecks() }
+  test("cow"){ runTestChecks() }
 }
 ```
 
@@ -336,7 +336,7 @@ in your SBT config to make the tests execute sequentially, so the output from
 each suite will be grouped together in the terminal.
 
 uTest defaults to emitting ANSI-colored terminal output describing the test run.
-You canconfigure the colors by
+You can configure the colors by
 [overriding methods on your test suite](#output-formatting), or disable it
 altogether with `override def formatColor = false`.
 
@@ -357,22 +357,22 @@ import utest._
 object SeparateSetupTests extends TestSuite{
   val tests = Tests{
     var x = 0
-    'outer1 - {
+    test("outer1"){
       x += 1
-      'inner1 - {
+      test("inner1"){
         x += 2
         assert(x == 3) // += 1, += 2
         x
       }
-      'inner2 - {
+      test("inner2"){
         x += 3
         assert(x == 4) // += 1, += 3
         x
       }
     }
-    'outer2 - {
+    test("outer2"){
       x += 4
-      'inner3 - {
+      test("inner3"){
         x += 5
         assert(x == 9) // += 4, += 5
         x
@@ -401,22 +401,22 @@ import utest._
 object SharedFixturesTests extends TestSuite{
   var x = 0
   val tests = Tests{
-    'outer1 - {
+    test("outer1"){
       x += 1
-      'inner1 - {
+      test("inner1"){
         x += 2
         assert(x == 3) // += 1, += 2
         x
       }
-      'inner2 - {
+      test("inner2"){
         x += 3
         assert(x == 7) // += 1, += 2, += 1, += 3
         x
       }
     }
-    'outer2 - {
+    test("outer2"){
       x += 4
-      'inner3 - {
+      test("inner3"){
         x += 5
         assert(x == 16) // += 1, += 2, += 1, += 3, += 4, += 5
         x
@@ -444,39 +444,41 @@ your test names longer and more descriptive:
 }
 ```
 
-You can also use the `'symbol - ...` syntax, if your tests are simply forwarding
+You can also use the `test("symbol")...` syntax, if your tests are simply forwarding
 to a separate helper method to do the real testing:
 
 ```scala
-'test1 - processFileAndCheckOutput("input1.txt", "expected1.txt")
-'test2 - processFileAndCheckOutput("input2.txt", "expected2.txt")
-'test3 - processFileAndCheckOutput("input3.txt", "expected3.txt")
+test("test1")processFileAndCheckOutput("input1.txt", "expected1.txt")
+test("test2")processFileAndCheckOutput("input2.txt", "expected2.txt")
+test("test3")processFileAndCheckOutput("input3.txt", "expected3.txt")
 ```
 
-The `"string" - {...}` and `'symbol - ...` syntaxes are equivalent.
+The `test("string"){...}` and `test("symbol")...` syntaxes are equivalent.
 
 The last way of defining tests is with the `utest.*` symbol, e.g. these tests
 from the [Fansi](https://github.com/lihaoyi/fansi/blob/master/fansi/shared/src/test/scala/fansi/FansiTests.scala)
 project:
 
 ```scala
-'parsing - {
+test("parsing"){
   def check(frag: fansi.Str) = {
     val parsed = fansi.Str(frag.render)
     assert(parsed == frag)
     parsed
   }
-  * - check(fansi.Color.True(255, 0, 0)("lol"))
-  * - check(fansi.Color.True(1, 234, 56)("lol"))
-  * - check(fansi.Color.True(255, 255, 255)("lol"))
-  * - {
+  test - check(fansi.Color.True(255, 0, 0)("lol"))
+  test - check(fansi.Color.True(1, 234, 56)("lol"))
+  test - check(fansi.Color.True(255, 255, 255)("lol"))
+  test - {
     (for(i <- 0 to 255) yield check(fansi.Color.True(i,i,i)("x"))).mkString
   }
-  * - check(
-    "#" + fansi.Color.True(127, 126, 0)("lol") + "omg" + fansi.Color.True(127, 126, 0)("wtf")
-  )
+  test - {
+    check(
+      "#" + fansi.Color.True(127, 126, 0)("lol") + "omg" + fansi.Color.True(127, 126, 0)("wtf")
+    )
+  }
 
-  * - check(square(for(i <- 0 to 255) yield fansi.Color.True(i,i,i)))
+  test - check(square(for(i <- 0 to 255) yield fansi.Color.True(i,i,i)))
 }
 ```
 
@@ -490,20 +492,20 @@ Asynchronous Tests
 
 ```scala
 val tests = Tests {
-  "testSuccess" - {
+  test("testSuccess"){
     Future {
       assert(true)
     }
   }
-  "testFail" - {
+  test("testFail"){
     Future {
       assert(false)
     }
   }
-  "normalSuccess" - {
+  test("normalSuccess"){
     assert(true)
   }
-  "normalFail" - {
+  test("normalFail"){
     assert(false)
   }
 }
@@ -800,7 +802,7 @@ Local Retries
 object LocalRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
   def tests = Tests{
-    'hello - retry(3){
+    test("hello") - retry(3){
       flaky.run
     }
   }
@@ -1005,22 +1007,22 @@ object BeforeAfterEachTest extends TestSuite {
     println(s"on after each x: $x")
 
   val tests = Tests{
-    'outer1 - {
+    test("outer1"){
       x += 1
-      'inner1 - {
+      test("inner1"){
         x += 2
         assert(x == 3) // += 1, += 2
         x
       }
-      'inner2 - {
+      test("inner2"){
         x += 3
         assert(x == 4) // += 1, += 3
         x
       }
     }
-    'outer2 - {
+    test("outer2"){
       x += 4
-      'inner3 - {
+      test("inner3"){
         x += 5
         assert(x == 9) // += 4, += 5
         x
@@ -1062,7 +1064,7 @@ def myTest[T](func: Int => T) = {
   res
 }
 
-'test - myTest{ fixture =>
+test("test") - myTest{ fixture =>
   // do stuff with fixture
 }
 ```
@@ -1096,11 +1098,11 @@ object BeforeAfterAllSimpleTests extends TestSuite {
   }
 
   val tests = Tests {
-    'outer1 - {
-      'inner1 - {
+    test("outer1"){
+      test("inner1"){
         1
       }
-      'inner2 - {
+      test("inner2"){
         2
       }
     }
@@ -1179,15 +1181,15 @@ and run them directly:
 ```scala
 import utest._
 val tests = Tests{
-  'test1 - {
+  test("test1"){
     // throw new Exception("test1")
   }
-  'test2 - {
-    'inner - {
+  test("test2"){
+    test("inner"){
       1
     }
   }
-  'test3 - {
+  test("test3"){
     val a = List[Byte](1, 2)
     // a(10)
   }
@@ -1236,15 +1238,15 @@ Lastly, you can also run `TestSuite` objects in the same way:
 // its configuration for execution and output formatting
 object MyTestSuite extends TestSuite{
   val tests = Tests{
-    'test1 - {
+    test("test1"){
       // throw new Exception("test1")
     }
-    'test2 - {
-      'inner - {
+    test("test2"){
+      test("inner"){
         1
       }
     }
-    'test3 - {
+    test("test3"){
       val a = List[Byte](1, 2)
       // a(10)
     }
@@ -1293,7 +1295,7 @@ Hence uTest provides:
 
 - A simple, uniform syntax for
   [delimiting tests and grouping tests together as blocks](#nesting-tests):
-  `"test" - { ... }`
+  `test("test"){ ... }`
 
 - A simple, uniform syntax for [running tests](#running-tests): `foo.BarTests`,
   `foo.BarTests.baz.qux`, `foo.BarTests.{baz,qux}` or `foo.{BarTests,BazTests}`
@@ -1447,7 +1449,7 @@ Changelog
   fixed on 2.12.3, and not on Scala 2.10.x or 2.11.x.
 
 - Deprecated the `'foo{...}` syntax for defining tests. We should standardize on
-  `"foo" - {...}` or `'foo - {...}`
+  `test("foo"){...}` or `test("foo"){...}`
 
 - The `TestSuite{...}` for defining a block of tests is now deprecated; it never
   actually defined a `TestSuite` object, so the name was pretty misleading. The

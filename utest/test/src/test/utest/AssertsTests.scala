@@ -11,13 +11,13 @@ object AssertsTests extends utest.TestSuite{
 
 
   def tests = Tests{
-    'assert - {
-      'success - {
+    test("assert"){
+      test("success"){
         def f(x: Boolean) = x
         assert(f(true))
         "success!"
       }
-      'failure - {
+      test("failure"){
         val (e, logged, cause) = try {
           val x = 1
           val y = "2"
@@ -52,7 +52,7 @@ object AssertsTests extends utest.TestSuite{
           "Message didnt contain source text " + e.toString
         )
       }
-      'failureWithException - {
+      test("failureWithException"){
         try {
           assert(Iterator.empty.next() == 10)
           Predef.assert(false)
@@ -63,7 +63,7 @@ object AssertsTests extends utest.TestSuite{
         }
       }
 
-      'tracingOnFailure - {
+      test("tracingOnFailure"){
         try {
           val a = "i am cow"
           val b = 31337
@@ -75,7 +75,7 @@ object AssertsTests extends utest.TestSuite{
           e.getMessage.contains("98")
         }
       }
-      'multiple - {
+      test("multiple"){
         def die = throw new IllegalArgumentException("foo")
         val msg1 = try {
           assert(
@@ -100,7 +100,7 @@ object AssertsTests extends utest.TestSuite{
         Predef.assert(msg2.contains("foo"))
         Predef.assert(msg2.contains("#2: die"))
       }
-      'show - {
+      test("show"){
         try assert((math.max(1 + 1, 2): @Show) == 3) catch{
           case utest.AssertionError(
             _,
@@ -111,7 +111,7 @@ object AssertsTests extends utest.TestSuite{
         }
       }
     }
-    'arrowAssert - {
+    test("arrowAssert"){
       1 ==> 1 // passes
       Array(1, 2, 3) ==> Array(1, 2, 3) // passes
       try{
@@ -120,15 +120,15 @@ object AssertsTests extends utest.TestSuite{
         e
       }
     }
-    'intercept - {
-      'success - {
+    test("intercept"){
+      test("success"){
         val e = intercept[MatchError]{
           (0: Any) match { case _: String => }
         }
         Predef.assert(e.toString.contains("MatchError"))
         e.toString
       }
-      'failureWrongException - {
+      test("failureWrongException"){
         try {
           val x = 1
           val y = 2.0
@@ -146,7 +146,7 @@ object AssertsTests extends utest.TestSuite{
           e.getMessage
         }
       }
-      'failureNoThrow - {
+      test("failureNoThrow"){
         try{
           val x = 1
           val y = 2.0
@@ -159,21 +159,21 @@ object AssertsTests extends utest.TestSuite{
           e.getMessage
         }
       }
-      'interceptWithAssignment - {
+      test("interceptWithAssignment"){
         var W = 1
         try utest.intercept[Exception] { W = 2 }
         catch{case e: utest.AssertionError => e.getMessage}
       }
     }
 
-    'assertMatch - {
-      'success - {
+    test("assertMatch"){
+      test("success"){
         val thing = Seq(1, 2, 3)
         assertMatch(thing){case Seq(1, _, 3) =>}
         ()
       }
 
-      'failure - {
+      test("failure"){
         try {
           val x = 1
           val iAmCow = Seq("2.0")
@@ -192,7 +192,7 @@ object AssertsTests extends utest.TestSuite{
         }
       }
 
-      'failureWithException - {
+      test("failureWithException"){
         try {
           val a = Iterator.empty
           val b = 2
@@ -206,8 +206,8 @@ object AssertsTests extends utest.TestSuite{
         }
       }
     }
-    'compileError - {
-      'success - {
+    test("compileError"){
+      test("success"){
         // Make sure that on successfully catching a compilation
         // error, the error it reports is in the correct place for
         // a variety of inputs
@@ -272,7 +272,7 @@ object AssertsTests extends utest.TestSuite{
         )
       }
 
-      'failure - {
+      test("failure"){
         // Use compileError to check itself to verify that when it
         // doesn't throw an error, it actually does (super meta!)
         * - compileError("""
@@ -311,7 +311,7 @@ object AssertsTests extends utest.TestSuite{
         )
 
       }
-      'compileTimeOnly - {
+      test("compileTimeOnly"){
         // Make sure that when the body contains a `@compileTimeOnly`, it
         // gets counted as a valid compile error and `compileError` passes
         compileError("compileTimeOnlyVal").check(

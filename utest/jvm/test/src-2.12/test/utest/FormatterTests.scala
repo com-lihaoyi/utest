@@ -16,22 +16,22 @@ object FormatterTests extends utest.TestSuite {
   }
   val tests = Tests{
     val tests = Tests {
-      'test1 - {
+      test("test1"){
         val x = 1
         try assert(x == 2)
         catch{case e: Throwable =>
           throw new Exception("wrapper", e)
         }
       }
-      'test2 - 1
+      test("test2"){ 1 }
 
-      'test3 - {
+      test("test3"){
         val a = List[Byte](1, 2)
         a(10)
       }
     }
 
-    "simple" - {
+    test("simple"){
       val boa = new java.io.ByteArrayOutputStream()
       val printStream = new java.io.PrintStream(boa)
 
@@ -88,7 +88,7 @@ object FormatterTests extends utest.TestSuite {
       trimmedOutput
     }
 
-    "wrapped" - {
+    test("wrapped"){
       val boa = new java.io.ByteArrayOutputStream()
       val printStream = new java.io.PrintStream(boa)
       val wrappingFormatter = new utest.framework.Formatter{

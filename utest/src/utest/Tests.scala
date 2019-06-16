@@ -49,8 +49,18 @@ object Tests{
         // Special case for *
         case q"""utest.this.`package`.*.-($body)""" => (None, body)
         case q"""utest.`package`.*.-($body)""" => (None, body)
+
         case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
         case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
+
+        case q"""utest.this.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
+        case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
+
+        case q"""utest.this.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
+        case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
+
+        case q"""utest.this.`package`.test.-($body)""" => (None, body)
+        case q"""utest.`package`.test.-($body)""" => (None, body)
       }
 
       def recurse(t: c.Tree, path: Seq[String]): (c.Tree, collection.Seq[c.Tree]) = {
