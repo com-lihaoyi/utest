@@ -18,7 +18,7 @@ object DefaultParamsTests extends TestSuite{
   def obj = ImplementationWithDefaultParams.asInstanceOf[WithDefaultParams]
 
   val tests = Tests{
-    'usedToCrashScalajsCompiler - {
+    test("usedToCrashScalajsCompiler"){
       utest.assert(obj.cmp(10))
       obj.cmp(10)
     }

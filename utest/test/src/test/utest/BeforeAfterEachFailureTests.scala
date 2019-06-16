@@ -30,35 +30,35 @@ object BeforeAfterEachFailureTests extends TestSuite {
 
     'beforeAfterEachFailures {
       def tests = Tests {
-        "testSuccess" - {
+        test("testSuccess"){
           Future {
             assert(true)
           }
         }
-        "testFail" - {
+        test("testFail"){
           Future {
             assert(false)
           }
         }
-        "normalSuccess" - {
+        test("normalSuccess"){
           assert(true)
         }
-        "normalFail" - {
+        test("normalFail"){
           assert(false)
         }
-        "testFailUnexpected" - {
+        test("testFailUnexpected"){
           Future {
             throw new Exception("Lols boom")
           }
         }
-        'succeed - {
+        test("succeed"){
           failNextBeforeEach = true
           1
         }
-        'failBecauseBeforeEachFailed - {
+        test("failBecauseBeforeEachFailed"){
           ???
         }
-        'passedButAfterEachFailed - {
+        test("passedButAfterEachFailed"){
           failAfterEach = true
           3
         }

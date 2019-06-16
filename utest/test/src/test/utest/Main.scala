@@ -5,11 +5,11 @@ import scala.concurrent.{ExecutionContext, Future}
 object Main {
   def main(args: Array[String]): Unit = {
     val tests = Tests{
-      'test1 - {
+      test("test1"){
         // throw new Exception("test1")
       }
-      'test2 - {
-        'inner - {
+      test("test2"){
+        test("inner"){
           val a = 1
           val b = 2
           val c = 3
@@ -21,7 +21,7 @@ object Main {
           )
         }
       }
-      'test3 - {
+      test("test3"){
         val a = List[Byte](1, 2)
         // a(10)
       }

@@ -11,11 +11,11 @@ object BeforeAfterAllSimpleTests extends TestSuite {
   }
 
   val tests = Tests {
-    'outer1 - {
-      'inner1 - {
+    test("outer1"){
+      test("inner1"){
         1
       }
-      'inner2 - {
+      test("inner2"){
         2
       }
     }
@@ -32,14 +32,14 @@ object BeforeAfterAllTests extends TestSuite {
   }
 
   val tests = Tests {
-    'outer1 - {
+    test("outer1"){
       x += 1
-      'inner1 - {
+      test("inner1"){
         x += 2
         assert(x == 103) // += 100, += 1, += 2
         x
       }
-      'inner2 - {
+      test("inner2"){
         Future.successful {
           x += 3
           assert(x == 107) // += 103, += 1, += 3
@@ -47,9 +47,9 @@ object BeforeAfterAllTests extends TestSuite {
         }
       }
     }
-    'outer2 - {
+    test("outer2"){
       x += 4
-      'inner3 - {
+      test("inner3"){
         x += 5
         assert(x == 116) // += 107, += 4, += 5
         x

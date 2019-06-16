@@ -21,6 +21,7 @@ package object utest extends utest.asserts.Asserts{
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @deprecated("Use the test(\"foo\") - {...} syntax instead")
     @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a Tests{} macro")
     def -(x: => Any) = ()
   }
@@ -31,13 +32,14 @@ package object utest extends utest.asserts.Asserts{
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
-    @deprecated("Use the 'foo - {...} syntax instead")
+    @deprecated("Use the test(\"foo\"){...} syntax instead")
     @reflect.internal.annotations.compileTimeOnly("Symbol#apply method should only be used directly inside a Tests{} macro")
     def apply(x: => Any) = ()
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
+    @deprecated("Use the test(\"foo\") - {...} syntax instead")
     @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a Tests{} macro")
     def -(x: => Any) = ()
   }
@@ -51,7 +53,26 @@ package object utest extends utest.asserts.Asserts{
     /**
      * Declares a numbered test-case
      */
+    @deprecated("Use the test - {...} syntax instead")
     def -(x: => Any) = ()
+  }
+
+  object test{
+    @reflect.internal.annotations.compileTimeOnly("test - method should only be used directly inside a Tests{} macro")
+    def -(x: => Any) = ()
+
+    def apply(name: String) = Apply(name)
+    case class Apply(name: String){
+      @reflect.internal.annotations.compileTimeOnly("test() -  method should only be used directly inside a Tests{} macro")
+      def -(x: => Any) = ()
+
+      @reflect.internal.annotations.compileTimeOnly("test()() method should only be used directly inside a Tests{} macro")
+      def apply(x: => Any) = ()
+    }
+
+
+//    @reflect.internal.annotations.compileTimeOnly("test()() method should only be used directly inside a Tests{} macro")
+//    def apply(x: => Any) = ()
   }
 
 

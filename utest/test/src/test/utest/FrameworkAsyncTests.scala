@@ -15,9 +15,9 @@ object FrameworkAsyncTests extends TestSuite {
 
     'asyncFailures {
       val tests = Tests {
-        "testSuccessAsync" - {
+        test("testSuccessAsync"){
           val p = concurrent.Promise[Int]
-          test.utest.Scheduler.scheduleOnce(2.seconds)(p.success(123))
+          _root_.test.utest.Scheduler.scheduleOnce(2.seconds)(p.success(123))
 
           // Not supported by Scala Native at the moment.
           // Futures are completed either at the end of the `main` function or immediately.
@@ -26,9 +26,9 @@ object FrameworkAsyncTests extends TestSuite {
 
           p.future
         }
-        "testFailAsync" - {
+        test("testFailAsync"){
           val p = concurrent.Promise[Int]
-          test.utest.Scheduler.scheduleOnce(2.seconds)(p.failure(new Exception("Boom")))
+          _root_.test.utest.Scheduler.scheduleOnce(2.seconds)(p.failure(new Exception("Boom")))
 
           // Not supported by Scala Native at the moment.
           // Futures are completed either at the end of the `main` function or immediately.
@@ -37,28 +37,28 @@ object FrameworkAsyncTests extends TestSuite {
 
           p.future
         }
-        "testSuccess" - {
+        test("testSuccess"){
           Future {
             assert(true)
           }
         }
-        "testFail" - {
+        test("testFail"){
           Future {
             assert(false)
           }
         }
-        "normalSuccess" - {
+        test("normalSuccess"){
           assert(true)
         }
-        "normalFail" - {
+        test("normalFail"){
           assert(false)
         }
-        "testFailUnexpected" - {
+        test("testFailUnexpected"){
           Future {
             throw new Exception("Lols boom")
           }
         }
-        "testCastError" - {
+        test("testCastError"){
           // These are Fatal in Scala.JS. Ensure they're handled else they freeze SBT.
           Future {
             // This test is disabled until scala-native/scala-native#858 is not fixed.

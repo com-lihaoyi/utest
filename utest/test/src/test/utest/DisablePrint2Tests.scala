@@ -8,7 +8,7 @@ object DisablePrint2Tests extends utest.TestSuite{
     override def formatColor = false
   }
   def tests = Tests{
-    'hello - {
+    test("hello"){
       123
     }
   }
