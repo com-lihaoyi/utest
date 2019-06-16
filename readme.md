@@ -1,4 +1,4 @@
-µTest 0.6.9 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.7.1 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -80,7 +80,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.6.9" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.1" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -88,7 +88,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.6.9" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.7.1" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -466,19 +466,19 @@ test("parsing"){
     assert(parsed == frag)
     parsed
   }
-  test - check(fansi.Color.True(255, 0, 0)("lol"))
-  test - check(fansi.Color.True(1, 234, 56)("lol"))
-  test - check(fansi.Color.True(255, 255, 255)("lol"))
-  test - {
+  test{ check(fansi.Color.True(255, 0, 0)("lol")) }
+  test{ check(fansi.Color.True(1, 234, 56)("lol")) }
+  test{ check(fansi.Color.True(255, 255, 255)("lol")) }
+  test{
     (for(i <- 0 to 255) yield check(fansi.Color.True(i,i,i)("x"))).mkString
   }
-  test - {
+  test{
     check(
       "#" + fansi.Color.True(127, 126, 0)("lol") + "omg" + fansi.Color.True(127, 126, 0)("wtf")
     )
   }
 
-  test - check(square(for(i <- 0 to 255) yield fansi.Color.True(i,i,i)))
+  test{ check(square(for(i <- 0 to 255) yield fansi.Color.True(i,i,i))) }
 }
 ```
 
@@ -1337,6 +1337,12 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.7.1
+-----
+
+- Changed test syntax to `test("foo"){...}`, `test{...}`. Old syntax is now
+  deprecated.
 
 0.6.9
 -----

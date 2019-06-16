@@ -32,25 +32,34 @@ object AssertsTests extends utest.TestSuite{
           (e, logged, cause)
         }
         val expected = Seq(utest.TestValue("x", "Int", 1), TestValue("y", "String", "2"))
-        * - Predef.assert(
-          cause == null,
-          "cause should be null for boolean failure"
-        )
+        test{
+          Predef.assert(
+            cause == null,
+            "cause should be null for boolean failure"
+          )
+        }
 
-        * - Predef.assert(
-          logged == expected,
-          "Logging didn't capture the locals properly " + logged
-        )
+        test{
+          Predef.assert(
+            logged == expected,
+            "Logging didn't capture the locals properly " + logged
+          )
+          "hello" // make sure this works
+        }
 
-        * - Predef.assert(
-          e.toString.contains("y: String = 2") && e.toString.contains("x: Int = 1"),
-          "Logging doesn't display local values properly " + e.toString
-        )
+        test{
+          Predef.assert(
+            e.toString.contains("y: String = 2") && e.toString.contains("x: Int = 1"),
+            "Logging doesn't display local values properly " + e.toString
+          )
+        }
 
-        * - Predef.assert(
-          e.toString.contains("x.toString == y"),
-          "Message didnt contain source text " + e.toString
-        )
+        test{
+          Predef.assert(
+            e.toString.contains("x.toString == y"),
+            "Message didnt contain source text " + e.toString
+          )
+        }
       }
       test("failureWithException"){
         try {

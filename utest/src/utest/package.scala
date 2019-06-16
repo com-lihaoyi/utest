@@ -61,6 +61,9 @@ package object utest extends utest.asserts.Asserts{
     @reflect.internal.annotations.compileTimeOnly("test - method should only be used directly inside a Tests{} macro")
     def -(x: => Any) = ()
 
+    @reflect.internal.annotations.compileTimeOnly("test{} method should only be used directly inside a Tests{} macro")
+    def apply(x: => Any) = ()
+
     def apply(name: String) = Apply(name)
     case class Apply(name: String){
       @reflect.internal.annotations.compileTimeOnly("test() -  method should only be used directly inside a Tests{} macro")

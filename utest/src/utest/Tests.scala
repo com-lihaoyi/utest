@@ -61,6 +61,9 @@ object Tests{
 
         case q"""utest.this.`package`.test.-($body)""" => (None, body)
         case q"""utest.`package`.test.-($body)""" => (None, body)
+
+        case q"""utest.this.`package`.test.apply($body)""" => (None, body)
+        case q"""utest.`package`.test.apply($body)""" => (None, body)
       }
 
       def recurse(t: c.Tree, path: Seq[String]): (c.Tree, collection.Seq[c.Tree]) = {
