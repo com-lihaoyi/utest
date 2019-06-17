@@ -435,22 +435,13 @@ to fail!
 Other Ways of Naming tests
 --------------------------
 
-uTest also allows you to use strings to define test keys, if you wish to make
-your test names longer and more descriptive:
-
-```scala
-"test with spaces" - {
-  throw new Exception("test1")
-}
-```
-
-You can also use the `test("symbol")...` syntax, if your tests are simply forwarding
+You can also use the `test("symbol") -` syntax, if your tests are simply forwarding
 to a separate helper method to do the real testing:
 
 ```scala
-test("test1")processFileAndCheckOutput("input1.txt", "expected1.txt")
-test("test2")processFileAndCheckOutput("input2.txt", "expected2.txt")
-test("test3")processFileAndCheckOutput("input3.txt", "expected3.txt")
+test("test1") - processFileAndCheckOutput("input1.txt", "expected1.txt")
+test("test2") - processFileAndCheckOutput("input2.txt", "expected2.txt")
+test("test3") - processFileAndCheckOutput("input3.txt", "expected3.txt")
 ```
 
 The `test("string"){...}` and `test("symbol")...` syntaxes are equivalent.
