@@ -6,28 +6,28 @@ package utest
 import utest.framework.Formatter
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.macros.Context
-import scala.language.experimental.macros
+// import scala.reflect.macros.Context
+// import scala.language.experimental.macros
 
-import PlatformShims.EnableReflectiveInstantiation
+// import PlatformShims.EnableReflectiveInstantiation
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
  * for test-discovery by SBT.
  */
-@EnableReflectiveInstantiation
+// @EnableReflectiveInstantiation
 abstract class TestSuite
   extends framework.Executor{
   def utestFormatter: Formatter = null
   def tests: Tests
   @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl
+  def apply(expr: Unit): Tests = ???
 }
 
 object TestSuite {
 
   @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl
+  def apply(expr: Unit): Tests = ???
   trait Retries extends utest.TestSuite{
     def utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {

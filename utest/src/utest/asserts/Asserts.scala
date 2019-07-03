@@ -5,177 +5,177 @@ import utest.framework.StackMarker
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable
-import scala.reflect.macros.{Context, ParseException, TypecheckException}
-import scala.util.{Failure, Random, Success, Try}
-import scala.reflect.ClassTag
-import scala.reflect.internal.util.{OffsetPosition, Position}
-import scala.reflect.internal.util.OffsetPosition
-import scala.reflect.macros.{Context, TypecheckException}
-import scala.language.experimental.macros
+// import scala.reflect.macros.{Context, ParseException, TypecheckException}
+// import scala.util.{Failure, Random, Success, Try}
+// import scala.reflect.ClassTag
+// import scala.reflect.internal.util.{OffsetPosition, Position}
+// import scala.reflect.internal.util.OffsetPosition
+// import scala.reflect.macros.{Context, TypecheckException}
+// import scala.language.experimental.macros
 
 /**
  * Macro implementation that provides rich error
  * message for boolean expression assertion.
  */
 object Asserts {
-  def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
-    import c.universe._
-    val macrocompat = new MacroCompat(c)
-    import macrocompat._
-    def calcPosMsg(pos: scala.reflect.api.Position) = {
-      if (pos == NoPosition) ""
-      else pos.lineContent + "\n" + (" " * pos.column) + "^"
-    }
-    val stringStart =
-      expr.tree
-         .pos
-         .lineContent
-         .slice(expr.tree.pos.column, expr.tree.pos.column + 2)
+  // def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
+  //   import c.universe._
+  //   val macrocompat = new MacroCompat(c)
+  //   import macrocompat._
+  //   def calcPosMsg(pos: scala.reflect.api.Position) = {
+  //     if (pos == NoPosition) ""
+  //     else pos.lineContent + "\n" + (" " * pos.column) + "^"
+  //   }
+  //   val stringStart =
+  //     expr.tree
+  //        .pos
+  //        .lineContent
+  //        .slice(expr.tree.pos.column, expr.tree.pos.column + 2)
 
 
-    val quoteOffset = if (stringStart == "\"\"") 2 else 0
+  //   val quoteOffset = if (stringStart == "\"\"") 2 else 0
 
-    expr.tree match {
-      case Literal(Constant(s: String)) =>
-        try{
+  //   expr.tree match {
+  //     case Literal(Constant(s: String)) =>
+  //       try{
 
-          val tree = c.parse(s)
-          for(x <- tree if x.pos != NoPosition){
-            import compat._
-            x.pos = new OffsetPosition(
-              expr.tree.pos.source,
-              x.pos.point + expr.tree.pos.point + quoteOffset
-            ).asInstanceOf[c.universe.Position]
-          }
+  //         val tree = c.parse(s)
+  //         for(x <- tree if x.pos != NoPosition){
+  //           import compat._
+  //           x.pos = new OffsetPosition(
+  //             expr.tree.pos.source,
+  //             x.pos.point + expr.tree.pos.point + quoteOffset
+  //           ).asInstanceOf[c.universe.Position]
+  //         }
 
-          val tree2 = c.typeCheck(tree)
-          val compileTimeOnlyType = typeOf[scala.reflect.internal.annotations.compileTimeOnly]
+  //         val tree2 = c.typeCheck(tree)
+  //         val compileTimeOnlyType = typeOf[scala.reflect.internal.annotations.compileTimeOnly]
 
-          val compileTimeOnlyTree = tree2.collect{ case t =>
-            Option(t.symbol)
-              .map(_.annotations)
-              .toSeq
-              .flatten
-              .filter(_.tpe =:= compileTimeOnlyType)
-              .map(t -> _)
-          }.flatten
-
-
-         compileTimeOnlyTree.headOption match{
-            case Some((tree, annot)) =>
-              val msg = annot.scalaArgs.head match{
-                case Literal(Constant(s: String)) => s
-                case t => t.toString
-              }
-              c.Expr[CompileError](
-                q"""utest.CompileError.CompileTimeOnly(${calcPosMsg(tree.pos)}, $msg)"""
-              )
-            case None =>
-              c.abort(
-                c.enclosingPosition,
-                "compileError check failed to have a compilation error"
-              )
-          }
-
-        } catch{
-          case TypecheckException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
-          case ParseException(pos, msg) =>
-            c.Expr[CompileError](q"""utest.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
-          case e: Exception =>
-            println("SOMETHING WENT WRONG LOLS " + e)
-            throw e
-        }
-      case e =>
-        c.abort(
-          expr.tree.pos,
-          s"You can only have literal strings in compileError, not ${expr.tree}"
-        )
-    }
-  }
-
-  def assertProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
-    import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
-  }
+  //         val compileTimeOnlyTree = tree2.collect{ case t =>
+  //           Option(t.symbol)
+  //             .map(_.annotations)
+  //             .toSeq
+  //             .flatten
+  //             .filter(_.tpe =:= compileTimeOnlyType)
+  //             .map(t -> _)
+  //         }.flatten
 
 
-  def assertImpl(funcs0: AssertEntry[Boolean]*) = {
-    val funcs = funcs0.toArray
-    val failures = mutable.Buffer.empty[Throwable]
-    var i = 0
-    // Avoid using `.map` here, because it makes the stack trace tall, which
-    // gets annoying to a user who is trying to look at the call stack and
-    // figure out what's going on
-    while(i < funcs.length){
-      val (res, logged, src) = Util.runAssertionEntry(funcs(i))
+  //        compileTimeOnlyTree.headOption match{
+  //           case Some((tree, annot)) =>
+  //             val msg = annot.scalaArgs.head match{
+  //               case Literal(Constant(s: String)) => s
+  //               case t => t.toString
+  //             }
+  //             c.Expr[CompileError](
+  //               q"""utest.CompileError.CompileTimeOnly(${calcPosMsg(tree.pos)}, $msg)"""
+  //             )
+  //           case None =>
+  //             c.abort(
+  //               c.enclosingPosition,
+  //               "compileError check failed to have a compilation error"
+  //             )
+  //         }
 
-      def prefix = if (funcs.length == 1) "" else s"#${i+1}: "
-      res match{
-        case Success(value) =>
-          if (!value) throw Util.makeAssertError(prefix + src, logged, null)
-        case Failure(e) => throw Util.makeAssertError(prefix + src, logged, e)
-      }
+  //       } catch{
+  //         case TypecheckException(pos, msg) =>
+  //           c.Expr[CompileError](q"""utest.CompileError.Type(${calcPosMsg(pos)}, $msg)""")
+  //         case ParseException(pos, msg) =>
+  //           c.Expr[CompileError](q"""utest.CompileError.Parse(${calcPosMsg(pos)}, $msg)""")
+  //         case e: Exception =>
+  //           println("SOMETHING WENT WRONG LOLS " + e)
+  //           throw e
+  //       }
+  //     case e =>
+  //       c.abort(
+  //         expr.tree.pos,
+  //         s"You can only have literal strings in compileError, not ${expr.tree}"
+  //       )
+  //   }
+  // }
 
-      i += 1
-    }
+  // def assertProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
+  //   import c.universe._
+  //   Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
+  // }
 
-  }
 
-  def interceptProxy[T: c.WeakTypeTag]
-                    (c: Context)
-                    (exprs: c.Expr[Unit])
-                    (t: c.Expr[ClassTag[T]]): c.Expr[T] = {
-    import c.universe._
-    val typeTree = implicitly[c.WeakTypeTag[T]]
+  // def assertImpl(funcs0: AssertEntry[Boolean]*) = {
+  //   val funcs = funcs0.toArray
+  //   val failures = mutable.Buffer.empty[Throwable]
+  //   var i = 0
+  //   // Avoid using `.map` here, because it makes the stack trace tall, which
+  //   // gets annoying to a user who is trying to look at the call stack and
+  //   // figure out what's going on
+  //   while(i < funcs.length){
+  //     val (res, logged, src) = Util.runAssertionEntry(funcs(i))
 
-    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
-    c.Expr[T](q"$x($t)")
-  }
+  //     def prefix = if (funcs.length == 1) "" else s"#${i+1}: "
+  //     res match{
+  //       case Success(value) =>
+  //         if (!value) throw Util.makeAssertError(prefix + src, logged, null)
+  //       case Failure(e) => throw Util.makeAssertError(prefix + src, logged, e)
+  //     }
 
-  /**
-   * Asserts that the given block raises the expected exception. The exception
-   * is returned if raised, and an `AssertionError` is raised if the expected
-   * exception does not appear.
-   */
-  def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
-    val (res, logged, src) = Util.runAssertionEntry(entry)
-    res match{
-      case Failure(e: T) => e
-      case Failure(e: Throwable) => Util.assertError(src, logged, e)
-      case Success(v) => Util.assertError(src, logged, null)
-    }
-  }
+  //     i += 1
+  //   }
 
-  def assertMatchProxy(c: Context)
-                      (t: c.Expr[Any])
-                      (pf: c.Expr[PartialFunction[Any, Unit]]): c.Expr[Unit] = {
-    import c.universe._
-    val x = Tracer[Any](c)(q"utest.asserts.Asserts.assertMatchImpl", t)
-    c.Expr[Unit](q"$x($pf)")
-  }
+  // }
 
-  /**
-   * Asserts that the given block raises the expected exception. The exception
-   * is returned if raised, and an `AssertionError` is raised if the expected
-   * exception does not appear.
-   */
-  def assertMatchImpl(entry: AssertEntry[Any])
-                     (pf: PartialFunction[Any, Unit]): Unit = StackMarker.dropInside{
-    val (res, logged, src) = Util.runAssertionEntry(entry)
-    res match{
-      case Success(value) =>
-        if (!pf.isDefinedAt(value)) throw Util.makeAssertError(
-          src,
-          logged,
-          // Get the match error that would have been thrown by evaluating
-          // the partial function, and wrap it in an AssertionError that would
-          // capture any `val`s involved
-          try{pf(value);???}catch{case e: Throwable => e}
-        )
-      case Failure(e) => throw Util.makeAssertError(src, logged, e)
-    }
-  }
+  // def interceptProxy[T: c.WeakTypeTag]
+  //                   (c: Context)
+  //                   (exprs: c.Expr[Unit])
+  //                   (t: c.Expr[ClassTag[T]]): c.Expr[T] = {
+  //   import c.universe._
+  //   val typeTree = implicitly[c.WeakTypeTag[T]]
+
+  //   val x = Tracer[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
+  //   c.Expr[T](q"$x($t)")
+  // }
+
+  // /**
+  //  * Asserts that the given block raises the expected exception. The exception
+  //  * is returned if raised, and an `AssertionError` is raised if the expected
+  //  * exception does not appear.
+  //  */
+  // def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
+  //   val (res, logged, src) = Util.runAssertionEntry(entry)
+  //   res match{
+  //     case Failure(e: T) => e
+  //     case Failure(e: Throwable) => Util.assertError(src, logged, e)
+  //     case Success(v) => Util.assertError(src, logged, null)
+  //   }
+  // }
+
+  // def assertMatchProxy(c: Context)
+  //                     (t: c.Expr[Any])
+  //                     (pf: c.Expr[PartialFunction[Any, Unit]]): c.Expr[Unit] = {
+  //   import c.universe._
+  //   val x = Tracer[Any](c)(q"utest.asserts.Asserts.assertMatchImpl", t)
+  //   c.Expr[Unit](q"$x($pf)")
+  // }
+
+  // /**
+  //  * Asserts that the given block raises the expected exception. The exception
+  //  * is returned if raised, and an `AssertionError` is raised if the expected
+  //  * exception does not appear.
+  //  */
+  // def assertMatchImpl(entry: AssertEntry[Any])
+  //                    (pf: PartialFunction[Any, Unit]): Unit = StackMarker.dropInside{
+  //   val (res, logged, src) = Util.runAssertionEntry(entry)
+  //   res match{
+  //     case Success(value) =>
+  //       if (!pf.isDefinedAt(value)) throw Util.makeAssertError(
+  //         src,
+  //         logged,
+  //         // Get the match error that would have been thrown by evaluating
+  //         // the partial function, and wrap it in an AssertionError that would
+  //         // capture any `val`s involved
+  //         try{pf(value);???}catch{case e: Throwable => e}
+  //       )
+  //     case Failure(e) => throw Util.makeAssertError(src, logged, e)
+  //   }
+  // }
 }
 
 
@@ -202,28 +202,28 @@ trait Asserts{
     * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
-  def compileError(expr: String): CompileError = macro Asserts.compileError
+  def compileError(expr: String): CompileError = ???
   /**
     * Checks that one or more expressions are true; otherwises raises an
     * exception with some debugging info
     */
-  def assert(exprs: Boolean*): Unit = macro Asserts.assertProxy
+  def assert(exprs: Boolean*): Unit = ???
   /**
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def eventually(exprs: Boolean*): Unit = macro Parallel.eventuallyProxy
+  def eventually(exprs: Boolean*): Unit = ???
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def continually(exprs: Boolean*): Unit = macro Parallel.continuallyProxy
+  def continually(exprs: Boolean*): Unit = ???
 
   /**
     * Asserts that the given value matches the PartialFunction. Useful for using
     * pattern matching to validate the shape of a data structure.
     */
-  def assertMatch(t: Any)(pf: PartialFunction[Any, Unit]): Unit =  macro Asserts.assertMatchProxy
+  def assertMatch(t: Any)(pf: PartialFunction[Any, Unit]): Unit = ???
 
 
   /**
@@ -231,7 +231,7 @@ trait Asserts{
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
+  def intercept[T](exprs: Unit): T = ???
 
   @tailrec final def retry[T](n: Int)(body: => T): T = {
     try body
