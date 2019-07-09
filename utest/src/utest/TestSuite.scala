@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * Marker class used to mark an `object` as something containing tests. Used
  * for test-discovery by SBT.
  */
-// @EnableReflectiveInstantiation
+@EnableReflectiveInstantiation
 abstract class TestSuite
   extends framework.Executor{
   def utestFormatter: Formatter = null
