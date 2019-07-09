@@ -42,17 +42,19 @@ trait UtestTestModule extends ScalaModule with TestModule {
   def offset: os.RelPath = os.rel
   def millSourcePath = super.millSourcePath / os.up
 
-  def sources = T.sources(
-    super.sources()
+  def sources = T.sources {
+    var dirs = super.sources()
       .++(CrossModuleBase.scalaVersionPaths(crossScalaVersion, s => millSourcePath / s"src-$s" ))
-      .flatMap(source =>
-        Seq(
-          PathRef(source.path / os.up / "test" / source.path.last),
-          PathRef(source.path / os.up / os.up / "test" / source.path.last),
-        )
+    if (crossScalaVersion.startsWith("2")) dirs :+= PathRef(millSourcePath / s"src-2")
+
+    dirs.flatMap(source =>
+      Seq(
+        PathRef(source.path / os.up / "test" / source.path.last),
+        PathRef(source.path / os.up / os.up / "test" / source.path.last),
       )
-      .distinct
-  )
+    )
+    .distinct
+  }
 }
 
 object utest extends Module {
