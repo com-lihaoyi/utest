@@ -15,28 +15,28 @@ package object utest extends utest.asserts.Asserts{
    * Extension methods to allow you to create tests via the "omg"-{ ... }
    * syntax.
    */
-  erased implicit class TestableString(s: String){
+  implicit class TestableString(s: String){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\") - {...} syntax instead")
-    erased def -(x: => Any) = ()
+    def -(x: => Any) = ()
   }
 
-  erased implicit class TestableSymbol(s: Symbol){
+  implicit class TestableSymbol(s: Symbol){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\"){...} syntax instead")
-    erased def apply(x: => Any) = ()
+    def apply(x: => Any) = ()
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\") - {...} syntax instead")
-    erased def -(x: => Any) = ()
+    def -(x: => Any) = ()
   }
 
   /**
@@ -53,19 +53,19 @@ package object utest extends utest.asserts.Asserts{
   }
 
   object test{
-    erased def -(x: => Any) = ()
+    def -(x: => Any) = ()
 
-    erased def apply(x: => Any) = ()
+    def apply(x: => Any) = ()
 
     def apply(name: String) = Apply(name)
     case class Apply(name: String){
-      erased def -(x: => Any) = ()
+      def -(x: => Any) = ()
 
-      erased def apply(x: => Any) = ()
+      def apply(x: => Any) = ()
     }
 
 
-   erased def apply(x: => Any) = ()
+    // def apply(x: => Any) = ()
   }
 
 
