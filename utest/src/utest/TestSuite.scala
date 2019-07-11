@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 // import scala.reflect.macros.Context
 // import scala.language.experimental.macros
 
-// import PlatformShims.EnableReflectiveInstantiation
+import utest.EnableReflectiveInstantiation
 
 /**
  * Marker class used to mark an `object` as something containing tests. Used
