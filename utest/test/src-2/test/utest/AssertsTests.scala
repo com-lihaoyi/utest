@@ -342,9 +342,9 @@ object AssertsTests extends utest.TestSuite{
     }
   }
 
-  // @scala.reflect.internal.annotations.compileTimeOnly(
-  //   "compileTimeOnlyVal should be a compile error if used!"
-  // )
+  @scala.reflect.internal.annotations.compileTimeOnly(
+    "compileTimeOnlyVal should be a compile error if used!"
+  )
   def compileTimeOnlyVal = 1
 }
 

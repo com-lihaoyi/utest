@@ -7,40 +7,40 @@ import scala.concurrent.duration._
  */
 package object utest extends utest.asserts.Asserts{
 
-  implicit val retryInterval: RetryInterval = new RetryInterval(100.millis)
-  implicit val retryMax: RetryMax = new RetryMax(1.second)
+  implicit val retryInterval = new RetryInterval(100.millis)
+  implicit val retryMax = new RetryMax(1.second)
 
   type Show = asserts.Show
   /**
    * Extension methods to allow you to create tests via the "omg"-{ ... }
    * syntax.
    */
-  // @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a Tests{} macro")
+  @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a Tests{} macro")
   implicit class TestableString(s: String){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\") - {...} syntax instead")
-    // @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a Tests{} macro")
+    @reflect.internal.annotations.compileTimeOnly("String#- method should only be used directly inside a Tests{} macro")
     def -(x: => Any) = ()
   }
 
-  // @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a Tests{} macro")
+  @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a Tests{} macro")
   implicit class TestableSymbol(s: Symbol){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\"){...} syntax instead")
-    // @reflect.internal.annotations.compileTimeOnly("Symbol#apply method should only be used directly inside a Tests{} macro")
+    @reflect.internal.annotations.compileTimeOnly("Symbol#apply method should only be used directly inside a Tests{} macro")
     def apply(x: => Any) = ()
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\") - {...} syntax instead")
-    // @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a Tests{} macro")
+    @reflect.internal.annotations.compileTimeOnly("Symbol#- method should only be used directly inside a Tests{} macro")
     def -(x: => Any) = ()
   }
 
@@ -58,23 +58,23 @@ package object utest extends utest.asserts.Asserts{
   }
 
   object test{
-    // @reflect.internal.annotations.compileTimeOnly("test - method should only be used directly inside a Tests{} macro")
+    @reflect.internal.annotations.compileTimeOnly("test - method should only be used directly inside a Tests{} macro")
     def -(x: => Any) = ()
 
-    // @reflect.internal.annotations.compileTimeOnly("test{} method should only be used directly inside a Tests{} macro")
+    @reflect.internal.annotations.compileTimeOnly("test{} method should only be used directly inside a Tests{} macro")
     def apply(x: => Any) = ()
 
     def apply(name: String) = Apply(name)
     case class Apply(name: String){
-      // @reflect.internal.annotations.compileTimeOnly("test() -  method should only be used directly inside a Tests{} macro")
+      @reflect.internal.annotations.compileTimeOnly("test() -  method should only be used directly inside a Tests{} macro")
       def -(x: => Any) = ()
 
-      // @reflect.internal.annotations.compileTimeOnly("test()() method should only be used directly inside a Tests{} macro")
+      @reflect.internal.annotations.compileTimeOnly("test()() method should only be used directly inside a Tests{} macro")
       def apply(x: => Any) = ()
     }
 
 
-   // @reflect.internal.annotations.compileTimeOnly("test()() method should only be used directly inside a Tests{} macro")
+//    @reflect.internal.annotations.compileTimeOnly("test()() method should only be used directly inside a Tests{} macro")
 //    def apply(x: => Any) = ()
   }
 
