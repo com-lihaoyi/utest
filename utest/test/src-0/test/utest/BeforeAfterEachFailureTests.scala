@@ -3,10 +3,11 @@ package test.utest
 import utest._
 import scala.concurrent.Future
 import concurrent.duration._
+import utest.framework.ExecutionContext.RunNow
 
 
 object BeforeAfterEachFailureTests extends TestSuite {
-  implicit val ec = utest.framework.ExecutionContext.RunNow
+  implicit val ec: RunNow.type = RunNow
   private var failNextBeforeEach = false
   private var failAfterEach = false
 
@@ -24,11 +25,11 @@ object BeforeAfterEachFailureTests extends TestSuite {
     } else ()
 
   def tests = Tests {
-    'hello {
+    Symbol("hello") {
       Future(10)
     }
 
-    'beforeAfterEachFailures {
+    Symbol("beforeAfterEachFailures") {
       def tests = Tests {
         test("testSuccess"){
           Future {

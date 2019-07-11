@@ -7,6 +7,7 @@ import utest.framework.Result
 import scala.concurrent.ExecutionContext
 import scala.util.Success
 import scala.util.Failure
+import utest.framework.ExecutionContext.RunNow
 
 
 object FrameworkTests extends utest.TestSuite{
@@ -14,7 +15,7 @@ object FrameworkTests extends utest.TestSuite{
   override def utestBeforeEach(path: Seq[String]): Unit = println("RUN " + path.mkString("."))
   override def utestAfterEach(path: Seq[String]): Unit = println("END " + path.mkString("."))
 
-  implicit val ec = utest.framework.ExecutionContext.RunNow
+  implicit val ec: RunNow.type = RunNow
   def tests = Tests{
     def testHelloWorld(tests: Tests) = {
       val results = TestRunner.run(tests)
@@ -42,13 +43,13 @@ object FrameworkTests extends utest.TestSuite{
     }
     test("helloWorldSymbol"){
       val tests = Tests{
-        'test1{
+        Symbol("test1"){
           throw new Exception("test1")
         }
-        'test2{
+        Symbol("test2"){
           1
         }
-        'test3{
+        Symbol("test3"){
           val a = List[Byte](1, 2)
           a(10)
         }
@@ -57,12 +58,12 @@ object FrameworkTests extends utest.TestSuite{
     }
     test("helloWorldSymbol2"){
       val tests = Tests{
-        'test1-{
+        Symbol("test1")-{
           throw new Exception("test1")
         }
-        'test2-1
+        Symbol("test2")-1
 
-        'test3-{
+        Symbol("test3")-{
           val a = List[Byte](1, 2)
           a(10)
         }
@@ -85,7 +86,7 @@ object FrameworkTests extends utest.TestSuite{
           e.getMessage
         }
       }
-      'weirdTestName{
+      Symbol("weirdTestName"){
         val tests = Tests{
           "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
             1
@@ -132,7 +133,7 @@ object FrameworkTests extends utest.TestSuite{
             }
             999
           }
-          'test3{
+          Symbol("test3"){
             Seq('a', 'b')
           }
         }
