@@ -21,7 +21,7 @@ package object utest extends utest.asserts.Asserts{
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\") - {...} syntax instead")
-    def -(x: => Any) = ()
+    erased def -(x: => Any) = ()
   }
 
   implicit class TestableSymbol(s: Symbol){
@@ -30,13 +30,13 @@ package object utest extends utest.asserts.Asserts{
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\"){...} syntax instead")
-    def apply(x: => Any) = ()
+    erased def apply(x: => Any) = ()
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
      */
     @deprecated("Use the test(\"foo\") - {...} syntax instead")
-    def -(x: => Any) = ()
+    erased def -(x: => Any) = ()
   }
 
   /**
@@ -53,15 +53,15 @@ package object utest extends utest.asserts.Asserts{
   }
 
   object test{
-    def -(x: => Any) = ()
+    erased def -(x: => Any) = ()
 
-    def apply(x: => Any) = ()
+    erased def apply(x: => Any) = ()
 
     def apply(name: String) = Apply(name)
     case class Apply(name: String){
-      def -(x: => Any) = ()
+      erased def -(x: => Any) = ()
 
-      def apply(x: => Any) = ()
+      erased def apply(x: => Any) = ()
     }
 
 
