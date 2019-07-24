@@ -2,3 +2,4 @@ target/
 *.iml
 .idea
 out/
+/focus.sh
