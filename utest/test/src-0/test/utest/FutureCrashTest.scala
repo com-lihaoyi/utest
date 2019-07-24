@@ -8,7 +8,7 @@ object FutureCrashTest extends TestSuite {
     f
   }
 
-  def tests = TestSuite {
+  def tests = Tests {
     "Crash the compiler when I spew a future" - {
       wrapping { val fut = Future { 1 } }
       // println("This prevents the crash")

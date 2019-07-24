@@ -16,7 +16,7 @@ import scala.collection.mutable
   */
 case class Tests(nameTree: Tree[String], callTree: TestCallTree)
 object Tests{
-  inline def apply(expr: Unit): Tests = ${testsImpl('expr)}
+  inline def apply(expr: => Unit): Tests = ${testsImpl('expr)}
 
   def testsImpl(body: Expr[Unit]) given QuoteContext: Expr[Tests] =
     '{Tests(Tree[String]("root"), TestCallTree(Left(())))}
