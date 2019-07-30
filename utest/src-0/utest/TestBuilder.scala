@@ -20,7 +20,7 @@ class TestBuilder given (val qc: QuoteContext) given Toolbox extends TestBuilder
 
   def TestCallTreeExpr(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[Statement]): Expr[TestCallTree] = '{TestCallTree { ${(
     if (nestedBodyTrees.nonEmpty)
-      Block(setupStats, '{Right(${nestedBodyTrees.toExprOfList})}.unseal)
+      Block(setupStats, '{Right(${nestedBodyTrees.toExprOfList}.toIndexedSeq)}.unseal)
     else
       Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].seal})}.unseal)
     ).seal.cast[Either[Any, IndexedSeq[TestCallTree]]]

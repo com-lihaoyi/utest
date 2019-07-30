@@ -1,6 +1,10 @@
 package utest
 package asserts
 
+import scala.quoted._
+import delegate scala.quoted._
+import scala.tasty._
+
 import utest.framework.StackMarker
 
 import scala.annotation.{StaticAnnotation, tailrec}
@@ -11,10 +15,13 @@ import scala.collection.mutable
  * message for boolean expression assertion.
  */
 object Asserts {
+  def assertImpl(exprs: Expr[Seq[Boolean]]) given QuoteContext: Expr[Unit] = '{???}
 }
 
 
 trait Asserts{
+  import Asserts._
+
     /**
     * Provides a nice syntax for asserting things are equal, that is pretty
     * enough to embed in documentation and examples
@@ -38,11 +45,13 @@ trait Asserts{
     * compile successfully, this macro itself will raise a compilation error.
     */
   def compileError(expr: String): CompileError = ???
+
   /**
     * Checks that one or more expressions are true; otherwises raises an
     * exception with some debugging info
     */
-  def assert(exprs: Boolean*): Unit = ???
+  inline def assert(exprs: => Boolean*): Unit = ${assertImpl('exprs)}
+
   /**
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
