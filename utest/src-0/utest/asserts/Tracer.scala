@@ -1,79 +1,78 @@
 package utest
 package asserts
-// import scala.reflect.macros.Context
-//import acyclic.file
+
+import scala.quoted._, scala.quoted.matching._
+import delegate scala.quoted._
+import scala.tasty._
+
+
 /**
  * Macro implementation to take a block of code and trace through it,
  * converting it into an [[AssertEntry]] and inserting debug loggers.
  */
 object Tracer{
-  // def wrapWithLoggedValue(c: Context)(tree: c.Tree,
-  //                                     loggerName: c.TermName,
-  //                                     tpe: c.Type) = {
-  //   import c.universe._
-  //   val tempName = c.fresh(newTermName("$temp"))
-  //   q"""{
-  //     val $tempName = $tree
-  //     $loggerName(utest.TestValue(
-  //       ${tree.toString()},
-  //       ${show(tpe)},
-  //       $tempName
-  //     ))
-  //     $tempName
-  //   }"""
-  // }
-  // def apply[T](c: Context)(func: c.Tree, exprs: c.Expr[T]*): c.Expr[Unit] = {
-  //   import c.universe._
-  //   val loggerName = c.fresh(newTermName("$log"))
+  val wrapWithLoggedValue = given (ctx: QuoteContext) => (tree: ctx.tasty.Term, logger: Expr[TestValue => Unit], tpe: ctx.tasty.Type) => {
+    import ctx.tasty._
+    '{
+      val tmp = ${TermToQuotedAPI(tree).seal}
+      $logger(TestValue(
+        ${tree.show.toExpr},
+        ${tpe.show.toExpr},
+        tmp
+      ))
+      tmp
+    }.unseal
+  }
 
-  //   import compat._
-  //   object tracingTransformer extends Transformer {
-  //     override def transform(tree: Tree): Tree = {
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]]) given (ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
+    import ctx.tasty._
 
-  //       tree match {
-  //         case i @ Ident(name)
-  //           if i.symbol.pos != NoPosition
-  //           && i.pos != NoPosition
-  //           // only trace identifiers coming from the same file,
-  //           // since those are the ones people probably care about
-  //           && i.symbol.pos.source == i.pos.source
-  //           // Don't trace methods, since you cannot just print them "standalone"
-  //           // without providing arguments
-  //           && !i.symbol.isMethod
-  //           // Don't trace identifiers which are synthesized by the compiler
-  //           // as part of the language implementation
-  //           && !i.symbol.isImplementationArtifact
-  //           // Don't trace "magic" identifiers with '$'s in them
-  //           && !name.toString.contains('$') =>
+    def tracingTransformer(logger: Expr[TestValue => Unit]) = new TreeMap {
+      override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
+        tree match {
+          case i @ Ident(name) if i.symbol.pos.exists
+            && i.pos.exists
+            // only trace identifiers coming from the same file,
+            // since those are the ones people probably care about
+            && i.symbol.pos.sourceFile == i.pos.sourceFile
+            // Don't trace methods, since you cannot just print them "standalone"
+            // without providing arguments
+            && !IsDefDefSymbol.unapply(i.symbol).isDefined && !i.symbol.isClassConstructor
+            // Don't trace identifiers which are synthesized by the compiler
+            // as part of the language implementation
+            && !i.symbol.flags.is(Flags.Artifact)
+            // Don't trace "magic" identifiers with '$'s in them
+            && !name.toString.contains('$') =>
 
-  //           wrapWithLoggedValue(c)(tree, loggerName, tree.tpe.widen)
-  //         case i: Typed =>
-  //           i.tpe match {
-  //             case t: AnnotatedType
-  //               // Don't worry about multiple chained annotations for now...
-  //               if t.annotations.map(_.tpe) == Seq(typeOf[utest.asserts.Show]) =>
+            wrapWithLoggedValue(tree, logger, tree.tpe.widen)
+         
+          // Don't worry about multiple chained annotations for now...
+          case Typed(_, tpt) =>
+            tpt.tpe match {
+              case Type.AnnotatedType(underlying, annot) if annot.tpe == typeOf[utest.asserts.Show] =>
+                wrapWithLoggedValue(tree, logger, underlying.widen)
+              case _ => super.transformTerm(tree)
+            }
+  
+          // Don't recurse and trace the LHS of assignments
+          case Assign(_, rhs) => super.transformTerm(rhs)
 
-  //               val newTpe = t.underlying
+          case _ => super.transformTerm(tree)
+        }
+      }
+    }
 
-  //               wrapWithLoggedValue(c)(tree, loggerName, newTpe.widen)
-  //             case _ => super.transform(tree)
-  //           }
+    exprs match {
+      case ExprSeq(ess) =>
+        val trees: Expr[Seq[AssertEntry[T]]] = ess.map(expr =>
+          '{AssertEntry(
+            ${expr.show.toExpr},
+            logger => ${tracingTransformer('logger).transformTerm(expr.unseal).seal.cast[T]})}
+        ).toExprOfSeq
 
-  //         // Don't recurse and trace the LHS of assignments
-  //         case i: Assign => super.transform(i.rhs)
+        func(trees)
 
-  //         case _ => super.transform(tree)
-  //       }
-  //     }
-  //   }
-
-  //   val trees = exprs.map(expr =>
-  //     q"""utest.asserts.AssertEntry(
-  //       ${expr.tree.pos.lineContent.trim},
-  //       (($loggerName: ${tq""}) => ${tracingTransformer.transform(expr.tree)})
-  //     )"""
-  //   )
-
-  //   c.Expr[Unit](c.resetLocalAttrs(q"""$func(..$trees)"""))
-  // }
+      case _ => throw new RuntimeException(s"Only varargs are supported. Got: $exprs")
+    }
+  }
 }

@@ -14,8 +14,9 @@ import scala.collection.mutable
  * Macro implementation that provides rich error
  * message for boolean expression assertion.
  */
-object Asserts {
-  def assertImpl(exprs: Expr[Seq[Boolean]]) given QuoteContext: Expr[Unit] = '{???}
+object Asserts extends AssertsCommons {
+  def assertProxy(exprs: Expr[Seq[Boolean]]) given QuoteContext: Expr[Unit] =
+    Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
 }
 
 
@@ -50,7 +51,7 @@ trait Asserts{
     * Checks that one or more expressions are true; otherwises raises an
     * exception with some debugging info
     */
-  inline def assert(exprs: => Boolean*): Unit = ${assertImpl('exprs)}
+  inline def assert(exprs: => Boolean*): Unit = ${assertProxy('exprs)}
 
   /**
     * Checks that one or more expressions all become true within a certain
