@@ -38,12 +38,12 @@ class TestBuilder given (val qc: QuoteContext) given Toolbox extends TestBuilder
   }
 
   def processTests(body: Term): Expr[Tests] = body.underlyingArgument match {
-      case Stats(tests, setupStats) =>
-        val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests)
-        '{Tests(UTree[String](
-            "<root>", ${nestedNameTrees.toExprOfList}: _*)
-          , ${TestCallTreeExpr(nestedBodyTrees, setupStats)})}
-    }
+    case Stats(tests, setupStats) =>
+      val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests)
+      '{Tests(UTree[String](
+          "<root>", ${nestedNameTrees.toExprOfList}: _*)
+        , ${TestCallTreeExpr(nestedBodyTrees, setupStats)})}
+  }
 }
 
 trait TestBuilderExtractors {
