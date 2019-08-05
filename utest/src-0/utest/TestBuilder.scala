@@ -9,14 +9,18 @@ import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
   import qc.tasty.{ Tree => TasTree, _ }
 
-  def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) = tests match {
-    case t :: ts =>
-      val (name, body) = processTest(t, path)
-      val (names, bodies) = buildTestsTrees(ts, path)
-      (name :: names, body :: bodies)
+  def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
+    if tests.isEmpty then Nil -> Nil else tests.zipWithIndex.foldLeft((List.empty[Expr[UTree[String]]], List.empty[Expr[TestCallTree]])) {
+      case ((namesForest, callsForest), (nextTest, id)) =>
+        val (name, body) = processTest(nextTest, path, id)
+        (namesForest :+ name, callsForest :+ body)
+    }
 
-    case Nil => (Nil, Nil)
-  }
+        // val  ts.zipWithIndex.map { case (t, id) => processTest(t, id) }
+        // val (name, body) = processTest(t, path, index)
+        // val (names, bodies) = buildTestsTrees(ts, path)
+        // (name :: names, body :: bodies)
+    // }
 
   def TestCallTreeExpr(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[Statement]): Expr[TestCallTree] = '{TestCallTree { ${(
     if (nestedBodyTrees.nonEmpty)
@@ -27,8 +31,9 @@ class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
   }}}
 
 
-  def processTest(test: Apply, pathOld: Seq[String]): (Expr[UTree[String]], Expr[TestCallTree]) = test match {
-    case Test(name, nestedTests, setupStatsRaw) =>
+  def processTest(test: Apply, pathOld: Seq[String], index: Int): (Expr[UTree[String]], Expr[TestCallTree]) = test match {
+    case Test(nameOpt, nestedTests, setupStatsRaw) =>
+      val name = nameOpt.getOrElse(index.toString)
       val path = pathOld :+ name
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
 
@@ -59,14 +64,38 @@ class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
 trait TestBuilderExtractors given (val qc: QuoteContext) {
   import qc.tasty._
 
-  object TestMethod { def unapply(tree: Tree): Option[(String, Tree)] =
-    Option(tree).collect { case tree: Term => tree.seal }.collect {
-      case '{utest.test($name: String)($body)} => (run(name), body.unseal)
-    }
+  object TestMethod {
+    def (strExpr: Expr[String]) exec: Option[String] = Some(run(strExpr))
+
+    def unapply(tree: Tree): Option[(Option[String], Tree)] =
+      Option(tree).collect { case IsTerm(tree) => tree.seal }.collect {
+        // case q"""utest.`package`.*.-($body)""" => (None, body)
+        case '{utest.*.-($body)} => (None, body.unseal)
+
+        // case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
+        // case '{($name: TestableString).apply($body)} => (Some(run(name).value), body.unseal)
+        case '{($sym : TestableSymbol).apply($body)} => (Some(run(sym).value.name), body.unseal)
+
+        // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
+        case '{($name: TestableString).-($body)} => (Some(run(name).value), body.unseal)
+        case '{($sym : TestableSymbol).-($body)} => (Some(run(sym).value.name), body.unseal)
+
+        // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
+        case '{utest.test($name: String)($body)} => (name.exec, body.unseal)
+
+        // case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
+        case '{utest.test($name: String).-($body)} => (name.exec, body.unseal)
+
+        // case q"""utest.`package`.test.-($body)""" => (None, body)
+        case '{utest.test.-($body)} => (None, body.unseal)
+
+        // case q"""utest.`package`.test.apply($body)""" => (None, body)
+        case '{utest.test($body: Any)} => (None, body.unseal)
+      }
   }
 
   object Test {
-    def unapply(tree: Tree): Option[(String, List[Apply], List[Statement])] = tree match {
+    def unapply(tree: Tree): Option[(Option[String], List[Apply], List[Statement])] = tree match {
       case TestMethod(name, Stats(nested, stats)) => Some((name, nested, stats))
     }
   }
