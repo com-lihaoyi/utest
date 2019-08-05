@@ -27,7 +27,7 @@ object Tracer{
   def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]]) given (ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     import ctx.tasty._
 
-    def tracingTransformer(logger: Expr[TestValue => Unit]) = new TreeMap {
+    def tracingMap(logger: Expr[TestValue => Unit]) = new TreeMap {
       override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
         tree match {
           case i @ Ident(name) if i.symbol.pos.exists
@@ -67,7 +67,7 @@ object Tracer{
         val trees: Expr[Seq[AssertEntry[T]]] = ess.map(expr =>
           '{AssertEntry(
             ${expr.show.toExpr},
-            logger => ${tracingTransformer('logger).transformTerm(expr.unseal).seal.cast[T]})}
+            logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
         ).toExprOfSeq
 
         func(trees)

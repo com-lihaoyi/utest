@@ -3,16 +3,16 @@ package utest
 import scala.quoted.{ Type => QType, _ }
 import scala.tasty._
 
-import utest.framework.{TestCallTree, Tree => UTree }
+import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
 class TestBuilder given (val qc: QuoteContext) given Toolbox extends TestBuilderExtractors {
   import qc.tasty.{ Tree => TasTree, _ }
 
-  def buildTestsTrees(tests: List[Apply]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) = tests match {
+  def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) = tests match {
     case t :: ts =>
-      val (name, body) = processTest(t)
-      val (names, bodies) = buildTestsTrees(ts)
+      val (name, body) = processTest(t, path)
+      val (names, bodies) = buildTestsTrees(ts, path)
       (name :: names, body :: bodies)
 
     case Nil => (Nil, Nil)
@@ -27,9 +27,19 @@ class TestBuilder given (val qc: QuoteContext) given Toolbox extends TestBuilder
   }}}
 
 
-  def processTest(test: Apply): (Expr[UTree[String]], Expr[TestCallTree]) = test match {
-    case Test(name, nestedTests, setupStats) =>
-      val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests)
+  def processTest(test: Apply, pathOld: Seq[String]): (Expr[UTree[String]], Expr[TestCallTree]) = test match {
+    case Test(name, nestedTests, setupStatsRaw) =>
+      val path = pathOld :+ name
+      val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
+
+      object testPathMap extends TreeMap {
+        override def transformTerm(t: Term)(implicit ctx: Context): Term = t.seal match {
+          case '{TestPath.synthetic} => '{TestPath(${path.toExpr})}.unseal
+          case _ => super.transformTerm(t)
+        }
+      }
+
+      val setupStats = testPathMap.transformStats(setupStatsRaw)
 
       val names: Expr[UTree[String]] = '{UTree[String](${name.toExpr}, ${nestedNameTrees.toExprOfList}: _*)}
       val bodies: Expr[TestCallTree] = TestCallTreeExpr(nestedBodyTrees, setupStats)
@@ -39,9 +49,9 @@ class TestBuilder given (val qc: QuoteContext) given Toolbox extends TestBuilder
 
   def processTests(body: Term): Expr[Tests] = body.underlyingArgument match {
     case Stats(tests, setupStats) =>
-      val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests)
+      val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests, Vector())
       '{Tests(UTree[String](
-          "<root>", ${nestedNameTrees.toExprOfList}: _*)
+          "", ${nestedNameTrees.toExprOfList}: _*)
         , ${TestCallTreeExpr(nestedBodyTrees, setupStats)})}
   }
 }
