@@ -74,11 +74,11 @@ trait TestBuilderExtractors given (val qc: QuoteContext) {
 
         // case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
         // case '{($name: TestableString).apply($body)} => (Some(run(name).value), body.unseal)
-        case '{($sym : TestableSymbol).apply($body)} => (Some(run(sym).value.name), body.unseal)
+        case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), body.unseal)
 
         // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        case '{($name: TestableString).-($body)} => (Some(run(name).value), body.unseal)
-        case '{($sym : TestableSymbol).-($body)} => (Some(run(sym).value.name), body.unseal)
+        case '{($name: String).-($body)} => (name.exec, body.unseal)
+        case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), body.unseal)
 
         // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
         case '{utest.test($name: String)($body)} => (name.exec, body.unseal)

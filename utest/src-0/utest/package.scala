@@ -15,7 +15,7 @@ package object utest extends utest.asserts.Asserts{
    * Extension methods to allow you to create tests via the "omg"-{ ... }
    * syntax.
    */
-  implicit class TestableString(val value: String){
+  implicit class TestableString(s: String){
     // def apply(foo: String)(body: Any) = ???
 
     /**
@@ -26,7 +26,7 @@ package object utest extends utest.asserts.Asserts{
     erased def -(x: => Any) = ()
   }
 
-  implicit class TestableSymbol(val value: Symbol){
+  implicit class TestableSymbol(s: Symbol){
     /**
      * Used to demarcate tests with the `TestSuite{ ... }` block. Has no
      * meaning outside that block
