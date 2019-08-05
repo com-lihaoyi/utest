@@ -6,7 +6,7 @@ import scala.tasty._
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder given (val qc: QuoteContext) given Toolbox extends TestBuilderExtractors {
+class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
   import qc.tasty.{ Tree => TasTree, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) = tests match {
@@ -56,31 +56,24 @@ class TestBuilder given (val qc: QuoteContext) given Toolbox extends TestBuilder
   }
 }
 
-trait TestBuilderExtractors {
-  val qc: QuoteContext
+trait TestBuilderExtractors given (val qc: QuoteContext) {
   import qc.tasty._
 
-  object Test {
-    def unapply(tree: Tree): Option[(String, List[Apply], List[Statement])] = tree match {
-      case Apply(
-        TestName(testName)
-      , Stats(nestedTests, setupStats) :: Nil) => Some((testName, nestedTests, setupStats))
-      case _ => None
+  object TestMethod { def unapply(tree: Tree): Option[(String, Tree)] =
+    Option(tree).collect { case tree: Term => tree.seal }.collect {
+      case '{utest.test($name: String)($body)} => (run(name), body.unseal)
     }
   }
 
-  object TestName {
-    def unapply(tree: Tree): Option[String] = tree match {
-      // '{ test($name)($body) }
-      case Select(Apply(Select(Ident("test"),"apply"),List(Literal(Constant(name: String)))),"apply") => Some(name)
-      case _ => None
+  object Test {
+    def unapply(tree: Tree): Option[(String, List[Apply], List[Statement])] = tree match {
+      case TestMethod(name, Stats(nested, stats)) => Some((name, nested, stats))
     }
   }
 
   object IsTest {
     def unapply(tree: Tree): Option[Apply] = tree match {
-      // case t@Apply(Apply(Ident("test"), List(Literal(Constant(_)))), _) => Some(t.asInstanceOf[Apply])
-      case t@Apply(TestName(_), _) => Some(t.asInstanceOf[Apply])
+      case t@TestMethod(_, _) => Some(t.asInstanceOf[Apply])
       case _ => None
     }
   }
