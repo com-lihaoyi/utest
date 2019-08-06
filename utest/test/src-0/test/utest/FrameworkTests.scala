@@ -43,13 +43,13 @@ object FrameworkTests extends utest.TestSuite{
     }
     test("helloWorldSymbol"){
       val tests = Tests{
-        Symbol("test1"){
+        test("test1"){
           throw new Exception("test1")
         }
-        Symbol("test2"){
+        test("test2"){
           1
         }
-        Symbol("test3"){
+        test("test3"){
           val a = List[Byte](1, 2)
           a(10)
         }
@@ -58,12 +58,12 @@ object FrameworkTests extends utest.TestSuite{
     }
     test("helloWorldSymbol2"){
       val tests = Tests{
-        Symbol("test1")-{
+        test("test1")-{
           throw new Exception("test1")
         }
-        Symbol("test2")-1
+        test("test2")-1
 
-        Symbol("test3")-{
+        test("test3")-{
           val a = List[Byte](1, 2)
           a(10)
         }
@@ -86,7 +86,7 @@ object FrameworkTests extends utest.TestSuite{
           e.getMessage
         }
       }
-      Symbol("weirdTestName"){
+      test("weirdTestName"){
         val tests = Tests{
           "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
             1
@@ -133,7 +133,7 @@ object FrameworkTests extends utest.TestSuite{
             }
             999
           }
-          Symbol("test3"){
+          test("test3"){
             Seq('a', 'b')
           }
         }

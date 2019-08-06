@@ -27,7 +27,7 @@ object Tests{
     // println(s"In:\n${body.show}")
     val bTree = body.unseal
     val res = processTests(bTree)
-    println(s"Out:\n${res.show}\n")
+    // println(s"Out:\n${res.show}\n")
     res
   }
 

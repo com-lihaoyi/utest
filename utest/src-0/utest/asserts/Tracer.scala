@@ -46,7 +46,6 @@ object Tracer{
             // Don't trace "magic" identifiers with '$'s in them
             && !name.toString.contains('$') =>
 
-            println(s"Doing $name")
             wrapWithLoggedValue(tree, logger, tree.tpe.widen)
          
           // Don't worry about multiple chained annotations for now...

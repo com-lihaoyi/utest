@@ -10,11 +10,11 @@ object FrameworkAsyncTests extends TestSuite {
   private val isNative = sys.props("java.vm.name") == "Scala Native"
 
   def tests = Tests {
-    Symbol("hello") {
+    test("hello") {
       Future(10)
     }
 
-    Symbol("asyncFailures") {
+    test("asyncFailures") {
       val tests = Tests {
         test("testSuccessAsync"){
           val p = concurrent.Promise[Int]

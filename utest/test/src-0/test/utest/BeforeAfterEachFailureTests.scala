@@ -25,11 +25,11 @@ object BeforeAfterEachFailureTests extends TestSuite {
     } else ()
 
   def tests = Tests {
-    Symbol("hello") {
+    test("hello") {
       Future(10)
     }
 
-    Symbol("beforeAfterEachFailures") {
+    test("beforeAfterEachFailures") {
       def tests = Tests {
         test("testSuccess"){
           Future {
