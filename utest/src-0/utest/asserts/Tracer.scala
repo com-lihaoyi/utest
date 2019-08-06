@@ -13,8 +13,10 @@ import scala.tasty._
 object Tracer{
   val wrapWithLoggedValue = given (ctx: QuoteContext) => (tree: ctx.tasty.Term, logger: Expr[TestValue => Unit], tpe: ctx.tasty.Type) => {
     import ctx.tasty._
+    type T
+    implicit val t: scala.quoted.Type[T] = tpe.seal.asInstanceOf[scala.quoted.Type[T]]
     '{
-      val tmp = ${TermToQuotedAPI(tree).seal}
+      val tmp: $t = ${tree.seal}.asInstanceOf[$t]
       $logger(TestValue(
         ${tree.show.toExpr},
         ${tpe.show.toExpr},
@@ -44,6 +46,7 @@ object Tracer{
             // Don't trace "magic" identifiers with '$'s in them
             && !name.toString.contains('$') =>
 
+            println(s"Doing $name")
             wrapWithLoggedValue(tree, logger, tree.tpe.widen)
          
           // Don't worry about multiple chained annotations for now...

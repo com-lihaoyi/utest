@@ -24,7 +24,7 @@ object Tests{
     import helpers._, helpers.qc.tasty._
     import delegate helpers._
 
-    println(s"In:\n${body.show}")
+    // println(s"In:\n${body.show}")
     val bTree = body.unseal
     val res = processTests(bTree)
     println(s"Out:\n${res.show}\n")
