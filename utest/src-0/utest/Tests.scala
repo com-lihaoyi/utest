@@ -22,7 +22,6 @@ object Tests{
 
   def testsImpl(body: Expr[Any]) given (helpers: TestBuilder): Expr[Tests] = {
     import helpers._, helpers.qc.tasty._
-    import delegate helpers._
 
     // println(s"In:\n${body.show}")
     val bTree = body.unseal

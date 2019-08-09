@@ -16,12 +16,6 @@ class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
         (namesForest :+ name, callsForest :+ body)
     }
 
-        // val  ts.zipWithIndex.map { case (t, id) => processTest(t, id) }
-        // val (name, body) = processTest(t, path, index)
-        // val (names, bodies) = buildTestsTrees(ts, path)
-        // (name :: names, body :: bodies)
-    // }
-
   def TestCallTreeExpr(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[Statement]): Expr[TestCallTree] = '{TestCallTree { ${(
     if (nestedBodyTrees.nonEmpty)
       Block(setupStats, '{Right(${nestedBodyTrees.toExprOfList}.toIndexedSeq)}.unseal)
@@ -131,3 +125,4 @@ trait TestBuilderExtractors given (val qc: QuoteContext) {
 
 delegate for Toolbox = Toolbox.make(getClass.getClassLoader)
 delegate for TestBuilder given QuoteContext, Toolbox = new TestBuilder
+delegate for QuoteContext given (b: TestBuilder) = b.qc

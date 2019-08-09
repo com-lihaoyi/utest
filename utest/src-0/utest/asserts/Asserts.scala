@@ -3,7 +3,7 @@ package asserts
 
 import scala.quoted._
 import delegate scala.quoted._
-import scala.tasty._
+import scala.reflect.ClassTag
 
 import utest.framework.StackMarker
 
@@ -15,9 +15,17 @@ import scala.collection.mutable
  * message for boolean expression assertion.
  */
 object Asserts extends AssertsCommons {
-  def assertProxy(exprs: Expr[Seq[Boolean]]) given (ctx: QuoteContext): Expr[Unit] = {
-    val res = Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
-    '{$res: Unit}
+  def assertProxy(exprs: Expr[Seq[Boolean]]) given (ctx: QuoteContext): Expr[Unit] =
+    Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
+
+  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]]) given (ctx: QuoteContext): Expr[Unit] =
+    Tracer.traceOne[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t)
+
+  def interceptProxy[T](exprs: Expr[Unit]) given (ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
+    import ctx.tasty._
+    val clazz = Literal(Constant.ClassTag[T] given (tpe.unseal.tpe))
+    Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
+      utest.asserts.Asserts.interceptImpl[$tpe](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
   }
 }
 
@@ -47,7 +55,7 @@ trait Asserts{
     * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
-  def compileError(expr: String): CompileError = ???
+  def compileError(expr: => String): CompileError = ???
 
   /**
     * Checks that one or more expressions are true; otherwises raises an
@@ -59,26 +67,25 @@ trait Asserts{
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def eventually(exprs: Boolean*): Unit = ???
+  inline def eventually(exprs: => Boolean*): Unit = ${Parallel.eventuallyProxy('exprs)}
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def continually(exprs: Boolean*): Unit = ???
+  inline def continually(exprs: => Boolean*): Unit = ${Parallel.continuallyProxy('exprs)}
 
   /**
     * Asserts that the given value matches the PartialFunction. Useful for using
     * pattern matching to validate the shape of a data structure.
     */
-  def assertMatch(t: Any)(pf: PartialFunction[Any, Unit]): Unit = ???
-
+  inline def assertMatch(t: => Any)(pf: => PartialFunction[Any, Unit]): Unit = ${assertMatchProxy('t, 'pf)}
 
   /**
     * Asserts that the given block raises the expected exception. The exception
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  def intercept[T](exprs: Unit): T = ???
+  inline def intercept[T](exprs: => Unit): T = ${interceptProxy[T]('exprs)}
 
   @tailrec final def retry[T](n: Int)(body: => T): T = {
     try body

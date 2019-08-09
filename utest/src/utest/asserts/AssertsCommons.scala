@@ -1,6 +1,6 @@
 package utest
 package asserts
-//import acyclic.file
+
 import utest.framework.StackMarker
 
 import scala.annotation.{StaticAnnotation, tailrec}
