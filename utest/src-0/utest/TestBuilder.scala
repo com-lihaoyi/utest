@@ -65,7 +65,7 @@ trait TestBuilderExtractors given (val qc: QuoteContext) {
   import qc.tasty._
 
   object TestMethod {
-    def (strExpr: Expr[String]) exec: Option[String] = Some(run(strExpr))
+    def (strExpr: Expr[String]) exec given (v: ValueOfExpr[String]): Option[String] = v(strExpr)
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
       Option(tree).collect { case IsTerm(tree) => tree.seal }.collect {
