@@ -67,7 +67,7 @@ class TracerHelper given (val ctx: QuoteContext) {
         // Don't worry about multiple chained annotations for now...
         case Typed(_, tpt) =>
           tpt.tpe match {
-            case Type.AnnotatedType(underlying, annot) if annot.tpe == typeOf[utest.asserts.Show] =>
+            case Type.AnnotatedType(underlying, annot) if annot.tpe =:= typeOf[utest.asserts.Show] =>
               wrapWithLoggedValue(tree, logger, underlying.widen)
             case _ => super.transformTerm(tree)
           }
