@@ -83,7 +83,7 @@ class TracerHelper given (val ctx: QuoteContext) {
       val tmp: $t = ${tree.seal}.asInstanceOf[$t]
       $logger(TestValue(
         ${tree.show.toExpr},
-        ${tpe.show.toExpr},
+        ${stripScalaCorePrefixes(tpe.show).toExpr},
         tmp
       ))
       tmp
@@ -93,6 +93,11 @@ class TracerHelper given (val ctx: QuoteContext) {
   def makeAssertEntry[T](expr: Expr[T]) given scala.quoted.Type[T] = '{AssertEntry(
     ${expr.show.toExpr},
     logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
+
+  def stripScalaCorePrefixes(tpeName: String): String = {
+    val pattern = """(?<!\.)scala(\.\w+)*\.(?<tpe>\w+)""".r // Match everything under the core `scala` package
+    pattern.replaceAllIn(tpeName, _.group("tpe"))
+  }
 }
 
 delegate for TracerHelper given QuoteContext = new TracerHelper
