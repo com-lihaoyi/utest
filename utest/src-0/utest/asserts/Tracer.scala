@@ -95,7 +95,7 @@ class TracerHelper given (val ctx: QuoteContext) {
     logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
 
   def stripScalaCorePrefixes(tpeName: String): String = {
-    val pattern = """(?<!\.)scala(\.\w+)*\.(?<tpe>\w+)""".r // Match everything under the core `scala` package
+    val pattern = """(?<!\.)(scala|java\.lang)(\.\w+)*\.(?<tpe>\w+)""".r // Match everything under the core `scala` or `java.lang` packages
     pattern.replaceAllIn(tpeName, _.group("tpe"))
   }
 }
