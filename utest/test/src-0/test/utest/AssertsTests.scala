@@ -215,131 +215,131 @@ object AssertsTests extends utest.TestSuite{
         }
       }
     }
-    // test("compileError"){
-    //   test("success"){
-    //     // Make sure that on successfully catching a compilation
-    //     // error, the error it reports is in the correct place for
-    //     // a variety of inputs
-    //     val qq = "\"" * 3
-    //     * - compileError("1 + abc").check(
-    //       """
-    //     * - compileError("1 + abc").check(
-    //                           ^
-    //       """,
-    //       "not found: value abc"
-    //     )
-    //     * - compileError(""" 1 + abc""").check(
-    //       s"""
-    //     * - compileError($qq 1 + abc$qq).check(
-    //                              ^
-    //       """,
-    //       "not found: value abc"
-    //     )
-    //     * - compileError("""
-    //         1 + abc
-    //     """).check(
-    //       """
-    //         1 + abc
-    //             ^
-    //       """,
-    //       "not found: value abc"
-    //     )
-    //     * - compileError("""
+    test("compileError"){
+      test("success"){
+        // Make sure that on successfully catching a compilation
+        // error, the error it reports is in the correct place for
+        // a variety of inputs
+        val qq = "\"" * 3
+        * - compileError("1 + abc").check(
+          """
+        * - compileError("1 + abc").check(
+                              ^
+          """,
+          "not found: value abc"
+        )
+        * - compileError(""" 1 + abc""").check(
+          s"""
+        * - compileError($qq 1 + abc$qq).check(
+                                 ^
+          """,
+          "not found: value abc"
+        )
+        * - compileError("""
+            1 + abc
+        """).check(
+          """
+            1 + abc
+                ^
+          """,
+          "not found: value abc"
+        )
+        * - compileError("""
 
 
 
-    //         1 + abc
+            1 + abc
 
 
-    //     """).check(
-    //       """
-    //         1 + abc
-    //             ^
-    //       """,
-    //       "not found: value abc"
-    //     )
-    //     * - compileError("true * false").check(
-    //       """
-    //     * - compileError("true * false").check(
-    //                            ^
-    //       """,
-    //       "value * is not a member of Boolean"
-    //     )
-    //     // need to work around inability to use """ in string
+        """).check(
+          """
+            1 + abc
+                ^
+          """,
+          "not found: value abc"
+        )
+        * - compileError("true * false").check(
+          """
+        * - compileError("true * false").check(
+                               ^
+          """,
+          "value * is not a member of Boolean"
+        )
+        // need to work around inability to use """ in string
 
-    //     * - compileError(""" true * false""").check(
-    //       s"""
-    //     * - compileError($qq true * false$qq).check(
-    //                               ^
-    //       """,
-    //       "value * is not a member of Boolean"
-    //     )
-    //     * - compileError("ab ( cd }").check(
-    //       """""",
-    //       "')' expected but '}' found."
+        * - compileError(""" true * false""").check(
+          s"""
+        * - compileError($qq true * false$qq).check(
+                                  ^
+          """,
+          "value * is not a member of Boolean"
+        )
+        * - compileError("ab ( cd }").check(
+          """""",
+          "')' expected but '}' found."
 
-    //     )
-    //   }
+        )
+      }
 
-    //   test("failure"){
-    //     // Use compileError to check itself to verify that when it
-    //     // doesn't throw an error, it actually does (super meta!)
-    //     * - compileError("""
-    //         compileError("1 + 1").check(
-    //           ""
-    //         )
-    //       """).check(
-    //       """
-    //         compileError("1 + 1").check(
-    //                     ^
-    //       """,
-    //       "compileError check failed to have a compilation error"
-    //     )
-    //     * - compileError("""
-    //         val x = 0
-    //         compileError("x + x").check(
-    //         ""
-    //       )
-    //       """).check(
-    //       """
-    //         compileError("x + x").check(
-    //                     ^
-    //       """,
-    //       "compileError check failed to have a compilation error"
-    //     )
-    //     * - compileError("""
-    //         compileError("1" * 2).check(
-    //           ""
-    //         )
-    //     """).check(
-    //       """
-    //         compileError("1" * 2).check(
-    //                          ^
-    //       """,
-    //       "You can only have literal strings in compileError"
-    //     )
+      test("failure"){
+        // Use compileError to check itself to verify that when it
+        // doesn't throw an error, it actually does (super meta!)
+        * - compileError("""
+            compileError("1 + 1").check(
+              ""
+            )
+          """).check(
+          """
+            compileError("1 + 1").check(
+                        ^
+          """,
+          "compileError check failed to have a compilation error"
+        )
+        * - compileError("""
+            val x = 0
+            compileError("x + x").check(
+            ""
+          )
+          """).check(
+          """
+            compileError("x + x").check(
+                        ^
+          """,
+          "compileError check failed to have a compilation error"
+        )
+        * - compileError("""
+            compileError("1" * 2).check(
+              ""
+            )
+        """).check(
+          """
+            compileError("1" * 2).check(
+                             ^
+          """,
+          "You can only have literal strings in compileError"
+        )
 
-    //   }
-    //   test("compileTimeOnly"){
-    //     // Make sure that when the body contains a `@compileTimeOnly`, it
-    //     // gets counted as a valid compile error and `compileError` passes
-    //     compileError("compileTimeOnlyVal").check(
-    //       """
-    //     compileError("compileTimeOnlyVal").check(
-    //                   ^
-    //       """,
-    //       "compileTimeOnlyVal should be a compile error if used!"
-    //     )
+      }
+      test("compileTimeOnly"){
+        // Make sure that when the body contains a `@compileTimeOnly`, it
+        // gets counted as a valid compile error and `compileError` passes
+        compileError("compileTimeOnlyVal").check(
+          """
+        compileError("compileTimeOnlyVal").check(
+                      ^
+          """,
+          "compileTimeOnlyVal should be a compile error if used!"
+        )
 
-    //     compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-    //       """
-    //     compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-    //                                                                    ^
-    //       """,
-    //       "compileTimeOnlyVal should be a compile error if used!"
-    //     )
-    //   }
-    // }
+        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
+          """
+        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
+                                                                       ^
+          """,
+          "compileTimeOnlyVal should be a compile error if used!"
+        )
+      }
+    }
   }
 
   erased def compileTimeOnlyVal = 1
