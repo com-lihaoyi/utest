@@ -12,16 +12,15 @@ import scala.tasty._
  */
 object Tracer {
 
-  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I]) given (h: TracerHelper, tt: Type[I]): Expr[O] = {
+  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I]) given TracerHelper, Type[I]: Expr[O] =
+    traceOneWithCode(func, expr, codeOf(expr))
+
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String) given (h: TracerHelper, tt: Type[I]): Expr[O] = {
     import h._, h.ctx.tasty._
-    val tree = makeAssertEntry(expr)
+    val tree = makeAssertEntry(expr, code)
     func(tree)
   }
 
-  def toExprOfSeq[T](seq: Seq[Expr[T]], tp: Type[T], qctx: QuoteContext): Expr[Seq[T]] = {
-    import qctx.tasty._
-    Repeated(seq.map(_.unseal).toList, tp.unseal).seal.asInstanceOf[Expr[Seq[T]]]
-  }
   def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]]) given (ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     val h = new TracerHelper
     import h._, h.ctx.tasty._
@@ -29,16 +28,22 @@ object Tracer {
 
     exprs match {
       case ExprSeq(ess) =>
-        val trees: Expr[Seq[AssertEntry[T]]] = ess.map(makeAssertEntry).toExprOfSeq
+        val trees: Expr[Seq[AssertEntry[T]]] = ess.map(e => makeAssertEntry(e, codeOf(e))).toExprOfSeq
         func(trees)
 
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.unseal}")
     }
   }
+
+  def codeOf[T](expr: Expr[T]) given (h: TracerHelper): String = {
+    import h.ctx.tasty._
+    expr.unseal.pos.sourceCode
+  }
 }
 
 class TracerHelper given (val ctx: QuoteContext) {
   import ctx.tasty._
+  import StringUtilHelpers._
 
   def tracingMap(logger: Expr[TestValue => Unit]) = new TreeMap {
     override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
@@ -90,14 +95,19 @@ class TracerHelper given (val ctx: QuoteContext) {
     }.unseal
   }
 
-  def makeAssertEntry[T](expr: Expr[T]) given scala.quoted.Type[T] = '{AssertEntry(
-    ${expr.show.toExpr},
+  def makeAssertEntry[T](expr: Expr[T], code: String) given scala.quoted.Type[T] = '{AssertEntry(
+    ${code.toExpr},
     logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
+}
 
+object StringUtilHelpers {
   def stripScalaCorePrefixes(tpeName: String): String = {
     val pattern = """(?<!\.)(scala|java\.lang)(\.\w+)*\.(?<tpe>\w+)""".r // Match everything under the core `scala` or `java.lang` packages
     pattern.replaceAllIn(tpeName, _.group("tpe"))
   }
+
+  def (str: String) trim: String =
+    str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse
 }
 
 delegate for TracerHelper given QuoteContext = new TracerHelper

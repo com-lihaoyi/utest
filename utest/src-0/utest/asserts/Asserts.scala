@@ -18,8 +18,10 @@ object Asserts extends AssertsCommons {
   def assertProxy(exprs: Expr[Seq[Boolean]]) given (ctx: QuoteContext): Expr[Unit] =
     Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
 
-  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]]) given (ctx: QuoteContext): Expr[Unit] =
-    Tracer.traceOne[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t)
+  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]]) given (ctx: QuoteContext): Expr[Unit] = {
+    val code = s"${Tracer.codeOf(t)} match { ${Tracer.codeOf(pf)} }"
+    Tracer.traceOneWithCode[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t, code)
+  }
 
   def interceptProxy[T](exprs: Expr[Unit]) given (ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
     import ctx.tasty._
