@@ -67,6 +67,7 @@ object utest extends Module {
     ) else Agg())
     object test extends Tests with UtestTestModule{
       val crossScalaVersion = JvmUtestModule.this.crossScalaVersion
+      // def scalacOptions = Seq("-Xprint:frontend")
     }
   }
 

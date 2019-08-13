@@ -68,7 +68,7 @@ class TracerHelper given (val ctx: QuoteContext) {
           }
 
         // Don't recurse and trace the LHS of assignments
-        case Assign(_, rhs) => super.transformTerm(rhs)
+        case t@Assign(lhs, rhs) => Assign.copy(t)(lhs, super.transformTerm(rhs))
 
         case _ => super.transformTerm(tree)
       }
