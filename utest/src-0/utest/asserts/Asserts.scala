@@ -67,12 +67,14 @@ trait Asserts{
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def eventually(exprs: => Boolean*): Unit = ${Parallel.eventuallyProxy('exprs)}
+  inline def eventually(exprs: => Boolean*) given (ri: => RetryInterval, rm: => RetryMax): Unit =
+    ${Parallel.eventuallyProxy('exprs, 'ri, 'rm)}
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def continually(exprs: => Boolean*): Unit = ${Parallel.continuallyProxy('exprs)}
+  inline def continually(exprs: => Boolean*) given (ri: => RetryInterval, rm: => RetryMax): Unit =
+    ${Parallel.continuallyProxy('exprs, 'ri, 'rm)}
 
   /**
     * Asserts that the given value matches the PartialFunction. Useful for using
