@@ -1,8 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted._
-import delegate scala.quoted._
+import scala.quoted.{ given, _ }
 import scala.reflect.ClassTag
 
 import utest.framework.StackMarker
@@ -15,17 +14,17 @@ import scala.collection.mutable
  * message for boolean expression assertion.
  */
 object Asserts extends AssertsCommons {
-  def assertProxy(exprs: Expr[Seq[Boolean]]) given (ctx: QuoteContext): Expr[Unit] =
+  def assertProxy(exprs: Expr[Seq[Boolean]])(given ctx: QuoteContext): Expr[Unit] =
     Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
 
-  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]]) given (ctx: QuoteContext): Expr[Unit] = {
+  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]])(given ctx: QuoteContext): Expr[Unit] = {
     val code = s"${Tracer.codeOf(t)} match { ${Tracer.codeOf(pf)} }"
     Tracer.traceOneWithCode[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t, code)
   }
 
-  def interceptProxy[T](exprs: Expr[Unit]) given (ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
-    import ctx.tasty._
-    val clazz = Literal(Constant.ClassTag[T] given (tpe.unseal.tpe))
+  def interceptProxy[T](exprs: Expr[Unit])(given ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
+    import ctx.tasty.{ given, _ }
+    val clazz = Literal(Constant.ClassTag[T](given tpe.unseal.tpe))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
       utest.asserts.Asserts.interceptImpl[$tpe](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
   }
@@ -46,7 +45,7 @@ trait Asserts{
           // custom, extensible, typesafe equality check but for now this will do
           case (lhs: Array[_], rhs: Array[_]) =>
             Predef.assert(lhs.toSeq == rhs.toSeq, s"==> assertion failed: ${lhs.toSeq} != ${rhs.toSeq}")
-          case (lhs, rhs) => 
+          case (lhs, rhs) =>
             Predef.assert(lhs == rhs, s"==> assertion failed: $lhs != $rhs")
         }
     }
@@ -69,13 +68,13 @@ trait Asserts{
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def eventually(exprs: => Boolean*) given (ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def eventually(exprs: => Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.eventuallyProxy('exprs, 'ri, 'rm)}
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def continually(exprs: => Boolean*) given (ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def continually(exprs: => Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.continuallyProxy('exprs, 'ri, 'rm)}
 
   /**

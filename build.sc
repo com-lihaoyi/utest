@@ -56,7 +56,7 @@ trait UtestTestModule extends ScalaModule with TestModule {
 }
 
 object utest extends Module {
-  object jvm extends Cross[JvmUtestModule]("2.12.8", "2.13.0", "0.18.0-bin-SNAPSHOT")
+  object jvm extends Cross[JvmUtestModule]("2.12.8", "2.13.0", "0.21.0-bin-SNAPSHOT")
   class JvmUtestModule(val crossScalaVersion: String)
     extends UtestMainModule with ScalaModule with UtestModule {
     def ivyDeps = Agg(
@@ -64,6 +64,8 @@ object utest extends Module {
     ) ++ (if (crossScalaVersion.startsWith("2")) Agg(
       ivy"org.portable-scala::portable-scala-reflect::0.1.0",
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
+    ) else Agg()) ++(if (crossScalaVersion.startsWith("0")) Agg(
+      ivy"ch.epfl.lamp::dotty-staging:$crossScalaVersion"
     ) else Agg())
     object test extends Tests with UtestTestModule{
       val crossScalaVersion = JvmUtestModule.this.crossScalaVersion

@@ -1,7 +1,6 @@
 package utest
 
-import scala.quoted._
-import delegate scala.quoted._
+import scala.quoted.{ given, _ }
 import scala.tasty._
 
 import utest.framework.{TestCallTree, Tree => UTree }
@@ -20,7 +19,7 @@ case class Tests(nameTree: UTree[String], callTree: TestCallTree)
 object Tests{
   inline def apply(expr: => Unit): Tests = ${testsImpl('expr)}
 
-  def testsImpl(body: Expr[Any]) given (helpers: TestBuilder): Expr[Tests] = {
+  def testsImpl(body: Expr[Any])(given helpers: TestBuilder): Expr[Tests] = {
     import helpers._, helpers.qc.tasty._
 
     // println(s"In:\n${body.show}")

@@ -1,8 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted._, scala.quoted.matching._
-import delegate scala.quoted._
+import scala.quoted.{ given, _ }, scala.quoted.matching._
 import scala.tasty._
 
 
@@ -12,37 +11,37 @@ import scala.tasty._
  */
 object Tracer {
 
-  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I]) given TracerHelper, Type[I]: Expr[O] =
+  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(given TracerHelper, Type[I]): Expr[O] =
     traceOneWithCode(func, expr, codeOf(expr))
 
-  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String) given (h: TracerHelper, tt: Type[I]): Expr[O] = {
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(given h: TracerHelper, tt: Type[I]): Expr[O] = {
     import h._, h.ctx.tasty._
     val tree = makeAssertEntry(expr, code)
-    func(tree)
+    Expr.betaReduce(func)(tree)
   }
 
-  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]]) given (ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(given ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     val h = new TracerHelper
     import h._, h.ctx.tasty._
-    
+
 
     exprs match {
       case ExprSeq(ess) =>
-        val trees: Expr[Seq[AssertEntry[T]]] = ess.map(e => makeAssertEntry(e, codeOf(e))).toExprOfSeq
-        func(trees)
+        val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
+        Expr.betaReduce(func)(trees)
 
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.unseal}")
     }
   }
 
-  def codeOf[T](expr: Expr[T]) given (h: TracerHelper): String = {
-    import h.ctx.tasty._
+  def codeOf[T](expr: Expr[T])(given h: TracerHelper): String = {
+    import h.ctx.tasty.{ given, _ }
     expr.unseal.pos.sourceCode
   }
 }
 
-class TracerHelper given (val ctx: QuoteContext) {
-  import ctx.tasty._
+class TracerHelper(given val ctx: QuoteContext) {
+  import ctx.tasty.{ given, _ }
   import StringUtilHelpers._
 
   def tracingMap(logger: Expr[TestValue => Unit]) = new TreeMap {
@@ -55,7 +54,7 @@ class TracerHelper given (val ctx: QuoteContext) {
           && i.symbol.pos.sourceFile == i.pos.sourceFile
           // Don't trace methods, since you cannot just print them "standalone"
           // without providing arguments
-          && !IsDefDefSymbol.unapply(i.symbol).isDefined && !i.symbol.isClassConstructor
+          && !i.symbol.isDefDef && !i.symbol.isClassConstructor
           // Don't trace identifiers which are synthesized by the compiler
           // as part of the language implementation
           && !i.symbol.flags.is(Flags.Artifact)
@@ -63,11 +62,11 @@ class TracerHelper given (val ctx: QuoteContext) {
           && !name.toString.contains('$') =>
 
           wrapWithLoggedValue(tree, logger, tree.tpe.widen)
-       
+
         // Don't worry about multiple chained annotations for now...
         case Typed(_, tpt) =>
           tpt.tpe match {
-            case Type.AnnotatedType(underlying, annot) if annot.tpe =:= typeOf[utest.asserts.Show] =>
+            case AnnotatedType(underlying, annot) if annot.tpe =:= typeOf[utest.asserts.Show] =>
               wrapWithLoggedValue(tree, logger, underlying.widen)
             case _ => super.transformTerm(tree)
           }
@@ -95,7 +94,7 @@ class TracerHelper given (val ctx: QuoteContext) {
     }.unseal
   }
 
-  def makeAssertEntry[T](expr: Expr[T], code: String) given scala.quoted.Type[T] = '{AssertEntry(
+  def makeAssertEntry[T](expr: Expr[T], code: String)(given scala.quoted.Type[T]) = '{AssertEntry(
     ${code.toExpr},
     logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
 }
@@ -110,5 +109,5 @@ object StringUtilHelpers {
     str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse
 }
 
-delegate for TracerHelper given QuoteContext = new TracerHelper
-delegate for QuoteContext given (h: TracerHelper) = h.ctx
+given (given QuoteContext): TracerHelper = new TracerHelper
+given (given h: TracerHelper): QuoteContext = h.ctx

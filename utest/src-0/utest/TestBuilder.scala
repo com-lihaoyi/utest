@@ -1,13 +1,14 @@
 package utest
 
 import scala.quoted.{ Type => QType, _ }
+import scala.quoted.staging.Toolbox
 import scala.tasty._
 
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
-  import qc.tasty.{ Tree => TasTree, _ }
+class TestBuilder(given QuoteContext, Toolbox) extends TestBuilderExtractors {
+  import qc.tasty.{ Tree => TasTree, given, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
     if tests.isEmpty then Nil -> Nil else tests.zipWithIndex.foldLeft((List.empty[Expr[UTree[String]]], List.empty[Expr[TestCallTree]])) {
@@ -18,7 +19,7 @@ class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
 
   def TestCallTreeExpr(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[Statement]): Expr[TestCallTree] = '{TestCallTree { ${(
     if (nestedBodyTrees.nonEmpty)
-      Block(setupStats, '{Right(${nestedBodyTrees.toExprOfList}.toIndexedSeq)}.unseal)
+      Block(setupStats, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.unseal)
     else
       Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].seal})}.unseal)
     ).seal.cast[Either[Any, IndexedSeq[TestCallTree]]]
@@ -40,7 +41,7 @@ class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
 
       val setupStats = testPathMap.transformStats(setupStatsRaw)
 
-      val names: Expr[UTree[String]] = '{UTree[String](${name.toExpr}, ${nestedNameTrees.toExprOfList}: _*)}
+      val names: Expr[UTree[String]] = '{UTree[String](${name.toExpr}, ${Expr.ofList(nestedNameTrees)}: _*)}
       val bodies: Expr[TestCallTree] = TestCallTreeExpr(nestedBodyTrees, setupStats)
 
       (names, bodies)
@@ -50,16 +51,16 @@ class TestBuilder given QuoteContext, Toolbox extends TestBuilderExtractors {
     case Stats(tests, setupStats) =>
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests, Vector())
       '{Tests(UTree[String](
-          "", ${nestedNameTrees.toExprOfList}: _*)
+          "", ${Expr.ofList(nestedNameTrees)}: _*)
         , ${TestCallTreeExpr(nestedBodyTrees, setupStats)})}
   }
 }
 
-trait TestBuilderExtractors given (val qc: QuoteContext) {
+trait TestBuilderExtractors(given val qc: QuoteContext) {
   import qc.tasty._
 
   object TestMethod {
-    def (strExpr: Expr[String]) exec given (v: ValueOfExpr[String]): Option[String] = v(strExpr)
+    def (strExpr: Expr[String]) exec (given v: ValueOfExpr[String]): Option[String] = v(strExpr)
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
       Option(tree).collect { case IsTerm(tree) => tree.seal }.collect {
@@ -102,14 +103,8 @@ trait TestBuilderExtractors given (val qc: QuoteContext) {
   }
 
   object Stats {
-    def (lst: List[A]) partitionMap[A, B, C] (f: A => Either[B, C]): (List[B], List[C]) =
-      lst.foldLeft((Nil: List[B], Nil: List[C])) { case ((bs, cs), next) => f(next) match {
-        case Left (b) => (bs :+ b, cs)
-        case Right(c) => (bs, cs :+ c)
-      }}
-
     def partition(stats: List[Statement]): (List[Apply], List[Statement]) =
-      stats.partitionMap[Statement, Apply, Statement] {
+      stats.partitionMap[Apply, Statement] {
         case IsTest     (test) => Left (test)
         case IsStatement(stmt) => Right(stmt)
         case IsImport   (stmt) => Right(stmt)
@@ -123,6 +118,6 @@ trait TestBuilderExtractors given (val qc: QuoteContext) {
   }
 }
 
-delegate for Toolbox = Toolbox.make(getClass.getClassLoader)
-delegate for TestBuilder given QuoteContext, Toolbox = new TestBuilder
-delegate for QuoteContext given (b: TestBuilder) = b.qc
+given Toolbox = Toolbox.make(getClass.getClassLoader)
+given (given QuoteContext, Toolbox): TestBuilder = new TestBuilder
+given (given b: TestBuilder): QuoteContext = b.qc
