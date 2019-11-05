@@ -221,21 +221,21 @@ object AssertsTests extends utest.TestSuite{
         // error, the error it reports is in the correct place for
         // a variety of inputs
         val qq = "\"" * 3
-        * - compileError("1 + abc").check(
+        test - compileError("1 + abc").check(
           """
-        * - compileError("1 + abc").check(
+        test - compileError("1 + abc").check(
                               ^
           """,
           "not found: value abc"
         )
-        * - compileError(""" 1 + abc""").check(
+        test - compileError(""" 1 + abc""").check(
           s"""
-        * - compileError($qq 1 + abc$qq).check(
+        test - compileError($qq 1 + abc$qq).check(
                                  ^
           """,
           "not found: value abc"
         )
-        * - compileError("""
+        test - compileError("""
             1 + abc
         """).check(
           """
@@ -244,7 +244,7 @@ object AssertsTests extends utest.TestSuite{
           """,
           "not found: value abc"
         )
-        * - compileError("""
+        test - compileError("""
 
 
 
@@ -258,23 +258,23 @@ object AssertsTests extends utest.TestSuite{
           """,
           "not found: value abc"
         )
-        * - compileError("true * false").check(
+        test - compileError("true * false").check(
           """
-        * - compileError("true * false").check(
+        test - compileError("true * false").check(
                                ^
           """,
           "value * is not a member of Boolean"
         )
         // need to work around inability to use """ in string
 
-        * - compileError(""" true * false""").check(
+        test - compileError(""" true * false""").check(
           s"""
-        * - compileError($qq true * false$qq).check(
+        test - compileError($qq true * false$qq).check(
                                   ^
           """,
           "value * is not a member of Boolean"
         )
-        * - compileError("ab ( cd }").check(
+        test - compileError("ab ( cd }").check(
           """""",
           "')' expected but '}' found."
 
@@ -284,7 +284,7 @@ object AssertsTests extends utest.TestSuite{
       test("failure"){
         // Use compileError to check itself to verify that when it
         // doesn't throw an error, it actually does (super meta!)
-        * - compileError("""
+        test - compileError("""
             compileError("1 + 1").check(
               ""
             )
@@ -295,7 +295,7 @@ object AssertsTests extends utest.TestSuite{
           """,
           "compileError check failed to have a compilation error"
         )
-        * - compileError("""
+        test - compileError("""
             val x = 0
             compileError("x + x").check(
             ""
@@ -307,7 +307,7 @@ object AssertsTests extends utest.TestSuite{
           """,
           "compileError check failed to have a compilation error"
         )
-        * - compileError("""
+        test - compileError("""
             compileError("1" * 2).check(
               ""
             )
