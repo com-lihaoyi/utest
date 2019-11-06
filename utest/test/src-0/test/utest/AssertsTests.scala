@@ -222,27 +222,22 @@ object AssertsTests extends utest.TestSuite{
         // a variety of inputs
         val qq = "\"" * 3
         test - compileError("1 + abc").check(
-          """
-        test - compileError("1 + abc").check(
-                              ^
-          """,
-          "not found: value abc"
+          """|1 + abc
+             |    ^  """.stripMargin,
+          "Not found: abc"
         )
         test - compileError(""" 1 + abc""").check(
-          s"""
-        test - compileError($qq 1 + abc$qq).check(
-                                 ^
-          """,
-          "not found: value abc"
+          """ 1 + abc
+            |     ^""".stripMargin,
+          "Not found: abc"
         )
         test - compileError("""
             1 + abc
-        """).check(
+          """).check(
           """
             1 + abc
-                ^
-          """,
-          "not found: value abc"
+                ^""".tail,
+          "Not found: abc"
         )
         test - compileError("""
 
@@ -255,28 +250,24 @@ object AssertsTests extends utest.TestSuite{
           """
             1 + abc
                 ^
-          """,
-          "not found: value abc"
+          """.tail,
+          "Not found: abc"
         )
         test - compileError("true * false").check(
-          """
-        test - compileError("true * false").check(
-                               ^
-          """,
+          """true * false
+            |     ^""".stripMargin,
           "value * is not a member of Boolean"
         )
         // need to work around inability to use """ in string
 
         test - compileError(""" true * false""").check(
-          s"""
-        test - compileError($qq true * false$qq).check(
-                                  ^
-          """,
+          """ true * false
+            |      ^""".stripMargin,
           "value * is not a member of Boolean"
         )
         test - compileError("ab ( cd }").check(
           """""",
-          "')' expected but '}' found."
+          "')' expected, but eof found"
 
         )
       }
@@ -284,64 +275,35 @@ object AssertsTests extends utest.TestSuite{
       test("failure"){
         // Use compileError to check itself to verify that when it
         // doesn't throw an error, it actually does (super meta!)
-        test - compileError("""
-            compileError("1 + 1").check(
-              ""
-            )
-          """).check(
-          """
-            compileError("1 + 1").check(
-                        ^
-          """,
-          "compileError check failed to have a compilation error"
-        )
-        test - compileError("""
+        test - {
+          try compileError("1 + 1").check("")
+          catch { case e: utest.AssertionError =>
+            assert(e.getMessage ==
+              """compileError check failed to have a compilation error when compiling
+                |1 + 1""".stripMargin)
+          }
+        }
+
+        test - {
+          try {
             val x = 0
-            compileError("x + x").check(
-            ""
+            compileError("x + x").check("")
+          }
+          catch { case e: utest.AssertionError =>
+            assert(e.getMessage ==
+              """compileError check failed to have a compilation error when compiling
+                |x + x""".stripMargin)
+          }
+        }
+
+        test - compileError(
+            """compileError("1" * 2).check("")"""
+          ).check("""compileError("1" * 2).check("")
+                      |             ^""".stripMargin,
+              "argument to inline parameter must be a known value"
           )
-          """).check(
-          """
-            compileError("x + x").check(
-                        ^
-          """,
-          "compileError check failed to have a compilation error"
-        )
-        test - compileError("""
-            compileError("1" * 2).check(
-              ""
-            )
-        """).check(
-          """
-            compileError("1" * 2).check(
-                             ^
-          """,
-          "You can only have literal strings in compileError"
-        )
-
-      }
-      test("compileTimeOnly"){
-        // Make sure that when the body contains a `@compileTimeOnly`, it
-        // gets counted as a valid compile error and `compileError` passes
-        compileError("compileTimeOnlyVal").check(
-          """
-        compileError("compileTimeOnlyVal").check(
-                      ^
-          """,
-          "compileTimeOnlyVal should be a compile error if used!"
-        )
-
-        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-          """
-        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-                                                                       ^
-          """,
-          "compileTimeOnlyVal should be a compile error if used!"
-        )
       }
     }
   }
-
-  erased def compileTimeOnlyVal = 1
 }
 
