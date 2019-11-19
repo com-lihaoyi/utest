@@ -42,11 +42,11 @@ package object utest extends utest.asserts.Asserts{
   }
 
   /**
-   * Placeholder object used to declare test cases which you don't want to 
-   * bother naming. These test cases are named with sequential numbers 
+   * Placeholder object used to declare test cases which you don't want to
+   * bother naming. These test cases are named with sequential numbers
    * starting from "0", "1", "2", etc.
    */
-  object * { 
+  object * {
     /**
      * Declares a numbered test-case
      */

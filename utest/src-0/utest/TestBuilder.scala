@@ -33,10 +33,14 @@ class TestBuilder(given QuoteContext, Toolbox) extends TestBuilderExtractors {
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
 
       object testPathMap extends TreeMap {
-        override def transformTerm(t: Term)(implicit ctx: Context): Term = t.seal match {
-          case '{TestPath.synthetic} => '{TestPath(${path.toExpr})}.unseal
-          case _ => super.transformTerm(t)
-        }
+        override def transformTerm(t: Term)(implicit ctx: Context): Term =
+          t.tpe.widen match {
+            case _: MethodType | _: PolyType => super.transformTerm(t)
+            case _ => t.seal match {
+              case '{TestPath.synthetic} => '{TestPath(${path.toExpr})}.unseal
+              case _ => super.transformTerm(t)
+            }
+          }
       }
 
       val setupStats = testPathMap.transformStats(setupStatsRaw)
@@ -57,7 +61,7 @@ class TestBuilder(given QuoteContext, Toolbox) extends TestBuilderExtractors {
 }
 
 trait TestBuilderExtractors(given val qc: QuoteContext) {
-  import qc.tasty._
+  import qc.tasty.{ given, _ }
 
   object TestMethod {
     def (strExpr: Expr[String]) exec (given v: ValueOfExpr[String]): Option[String] = v(strExpr)
