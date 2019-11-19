@@ -65,8 +65,6 @@ object utest extends Module {
     ) ++ (if (crossScalaVersion.startsWith("2")) Agg(
       ivy"org.portable-scala::portable-scala-reflect::0.1.0",
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
-    ) else Agg()) ++(if (crossScalaVersion.startsWith("0")) Agg(
-      ivy"ch.epfl.lamp::dotty-staging:$crossScalaVersion"
     ) else Agg())
     object test extends Tests with UtestTestModule{
       val crossScalaVersion = JvmUtestModule.this.crossScalaVersion

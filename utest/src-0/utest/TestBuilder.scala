@@ -1,13 +1,12 @@
 package utest
 
 import scala.quoted.{ Type => QType, _ }
-import scala.quoted.staging.Toolbox
 import scala.tasty._
 
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder(given QuoteContext, Toolbox) extends TestBuilderExtractors {
+class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
   import qc.tasty.{ Tree => TasTree, given, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
@@ -122,6 +121,5 @@ trait TestBuilderExtractors(given val qc: QuoteContext) {
   }
 }
 
-given Toolbox = Toolbox.make(getClass.getClassLoader)
-given (given QuoteContext, Toolbox): TestBuilder = new TestBuilder
+given (given QuoteContext): TestBuilder = new TestBuilder
 given (given b: TestBuilder): QuoteContext = b.qc
