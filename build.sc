@@ -61,7 +61,7 @@ object utest extends Module {
     extends UtestMainModule with ScalaModule with UtestModule {
     def ivyDeps = Agg(
       ivy"org.scala-sbt:test-interface::1.0",
-      ivy"org.portable-scala::portable-scala-reflect::0.1.0",
+      ivy"org.portable-scala::portable-scala-reflect::0.1.1",
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
     )
     object test extends Tests with UtestTestModule{
@@ -70,14 +70,14 @@ object utest extends Module {
   }
 
   object js extends Cross[JsUtestModule](
-    ("2.12.8", "0.6.26"), ("2.13.0", "0.6.28")/*, ("2.12.8", "1.0.0-M8"), ("2.13.0", "1.0.0-M8")*/
+    ("2.12.8", "0.6.28"), ("2.13.0", "0.6.28"), ("2.12.8", "1.0.0-RC1"), ("2.13.0", "1.0.0-RC1")
   )
   class JsUtestModule(val crossScalaVersion: String, crossJSVersion: String)
     extends UtestMainModule with ScalaJSModule with UtestModule {
     def offset = os.up
     def ivyDeps = Agg(
       ivy"org.scala-js::scalajs-test-interface:$crossJSVersion",
-      ivy"org.portable-scala::portable-scala-reflect::0.1.0",
+      ivy"org.portable-scala::portable-scala-reflect::0.1.1",
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
     )
     def scalaJSVersion = crossJSVersion
