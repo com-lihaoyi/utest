@@ -32,7 +32,7 @@ case class TestValue(name: String, tpeName: String, value: Any)
  * [[utest.asserts.Asserts.compileError]] macro. Contains only a single message and no position since
  * things compiled using macros don't really have source positions.
  */
-trait CompileError extends CompileErrorVersionDependent {
+trait CompileError extends CompileErrorVersionSpecific {
   def pos: String
   def msg: String
 

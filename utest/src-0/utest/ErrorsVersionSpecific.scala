@@ -1,6 +1,6 @@
 package utest
 
-trait CompileErrorVersionDependent { this: CompileError =>
+trait CompileErrorVersionSpecific { this: CompileError =>
   def checkPositionString(expectedStripped: String, expectedRaw: String): Unit =
     val actualNormalized = pos
 
