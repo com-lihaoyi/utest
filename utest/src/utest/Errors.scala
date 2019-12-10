@@ -32,7 +32,7 @@ case class TestValue(name: String, tpeName: String, value: Any)
  * [[utest.asserts.Asserts.compileError]] macro. Contains only a single message and no position since
  * things compiled using macros don't really have source positions.
  */
-trait CompileError{
+trait CompileError extends CompileErrorVersionDependent {
   def pos: String
   def msg: String
 
@@ -58,16 +58,7 @@ trait CompileError{
    */
   def check(errorPos: String, msgs: String*) = {
     val stripped = errorPos.reverse.dropWhile("\n ".toSet.contains).reverse
-    val normalizedPos = pos
-
-    if (errorPos != "")
-      if normalizedPos != stripped
-        println(s"""Compile error positions do not match
-         |Expected Position
-         |${stripped}
-         |Actual Position
-         |${normalizedPos}""".stripMargin)
-        Predef.assert(false, "Compile error positions do not match")
+    checkPositionString(stripped, errorPos)
     for(msg <- msgs){
       Predef.assert(
         this.msg.contains(msg),
