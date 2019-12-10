@@ -9,7 +9,7 @@ import concurrent.duration._
 object PlatformShims {
   def await[T](f: Future[T]): T = Await.result(f, 10.hours)
 
-  type PortableScalaReflectExcerpts =
+  type EnableReflectiveInstantiation =
     utest.EnableReflectiveInstantiation
 
   def loadModule(name: String, loader: ClassLoader): Any =
