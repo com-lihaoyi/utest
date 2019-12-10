@@ -16,13 +16,13 @@ abstract class TestSuite
   def utestFormatter: Formatter = null
   def tests: Tests
   @deprecated("Use `utest.Tests{...}` instead")
-  inline def apply(expr: => Unit): Tests = ${Tests.testsImpl('expr)}
+  inline def apply(expr: => Unit): Tests = ${TestsVersionSpecific.testsImpl('expr)}
 }
 
 object TestSuite {
 
   @deprecated("Use `utest.Tests{...}` instead")
-  inline def apply(expr: => Unit): Tests = ${Tests.testsImpl('expr)}
+  inline def apply(expr: => Unit): Tests = ${TestsVersionSpecific.testsImpl('expr)}
   trait Retries extends utest.TestSuite{
     def utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
