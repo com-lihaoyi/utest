@@ -50,13 +50,18 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
       (names, bodies)
   }
 
-  def processTests(body: Term): Expr[Tests] = body.underlyingArgument match {
-    case Stats(tests, setupStats) =>
-      val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests, Vector())
-      '{Tests(UTree[String](
-          "", ${Expr.ofList(nestedNameTrees)}: _*)
-        , ${TestCallTreeExpr(nestedBodyTrees, setupStats)})}
-  }
+  def processTests(body: Term): Expr[Tests] =
+    @annotation.tailrec def unwrap(t: Term): Term = t match
+      case Inlined(_, _, x) => unwrap(x)
+      case x => x
+
+    unwrap(body) match {
+      case Stats(tests, setupStats) =>
+        val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests, Vector())
+        '{Tests(UTree[String](
+            "", ${Expr.ofList(nestedNameTrees)}: _*)
+          , ${TestCallTreeExpr(nestedBodyTrees, setupStats)})}
+    }
 }
 
 trait TestBuilderExtractors(given val qc: QuoteContext) {
