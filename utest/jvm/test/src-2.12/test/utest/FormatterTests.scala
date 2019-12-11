@@ -54,8 +54,6 @@ object FormatterTests extends utest.TestSuite {
           |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
-          |    utest.asserts.AssertsCommons.assertImpl(AssertsCommons.scala:)
-          |    utest.asserts.AssertsCommons.assertImpl$(AssertsCommons.scala:)
           |    utest.asserts.Asserts$.assertImpl(Asserts.scala:)
           |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:)
           |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
@@ -73,8 +71,6 @@ object FormatterTests extends utest.TestSuite {
           |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
-          |      utest.asserts.AssertsCommons.assertImpl(AssertsCommons.scala:)
-          |      utest.asserts.AssertsCommons.assertImpl$(AssertsCommons.scala:)
           |      utest.asserts.Asserts$.assertImpl(Asserts.scala:)
           |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:)
           |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
@@ -118,10 +114,6 @@ object FormatterTests extends utest.TestSuite {
           |    rmatterTests.scala:)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
-          |    utest.asserts.AssertsCommons.assertImpl(Assert
-          |    sCommons.scala:)
-          |    utest.asserts.AssertsCommons.assertImpl$(Asser
-          |    tsCommons.scala:)
           |    utest.asserts.Asserts$.assertImpl(Asserts.scal
           |    a:)
           |    test.utest.FormatterTests$.liftedTree1$1(Forma
@@ -148,10 +140,6 @@ object FormatterTests extends utest.TestSuite {
           |      FormatterTests.scala:)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
-          |      utest.asserts.AssertsCommons.assertImpl(Asse
-          |      rtsCommons.scala:)
-          |      utest.asserts.AssertsCommons.assertImpl$(Ass
-          |      ertsCommons.scala:)
           |      utest.asserts.Asserts$.assertImpl(Asserts.sc
           |      ala:)
           |      test.utest.FormatterTests$.liftedTree1$1(For

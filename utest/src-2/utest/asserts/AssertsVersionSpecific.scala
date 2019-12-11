@@ -17,7 +17,7 @@ import scala.language.experimental.macros
  * Macro implementation that provides rich error
  * message for boolean expression assertion.
  */
-object Asserts extends AssertsCommons {
+trait AssertsCompanionVersionSpecific {
   def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
     val macrocompat = new MacroCompat(c)
@@ -120,24 +120,7 @@ object Asserts extends AssertsCommons {
 }
 
 
-trait Asserts{
-    /**
-    * Provides a nice syntax for asserting things are equal, that is pretty
-    * enough to embed in documentation and examples
-    */
-  implicit class ArrowAssert(lhs: Any){
-    def ==>[V](rhs: V) = {
-      (lhs, rhs) match{
-          // Hack to make Arrays compare sanely; at some point we may want some
-          // custom, extensible, typesafe equality check but for now this will do
-          case (lhs: Array[_], rhs: Array[_]) =>
-            Predef.assert(lhs.toSeq == rhs.toSeq, s"==> assertion failed: ${lhs.toSeq} != ${rhs.toSeq}")
-          case (lhs, rhs) => 
-            Predef.assert(lhs == rhs, s"==> assertion failed: $lhs != $rhs")
-        }
-    }
-  }
-
+trait AssertsVersionSpecific {
   /**
     * Asserts that the given expression fails to compile, and returns a
     * [[utest.CompileError]] containing the message of the failure. If the expression
@@ -173,13 +156,5 @@ trait Asserts{
     * exception does not appear.
     */
   def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
-
-  @tailrec final def retry[T](n: Int)(body: => T): T = {
-    try body
-    catch{case e: Throwable =>
-      if (n > 0) retry(n-1)(body)
-      else throw e
-    }
-  }
 }
 

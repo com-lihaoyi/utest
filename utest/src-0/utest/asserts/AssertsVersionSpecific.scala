@@ -14,7 +14,7 @@ import scala.collection.mutable
  * Macro implementation that provides rich error
  * message for boolean expression assertion.
  */
-object Asserts extends AssertsCommons {
+trait AssertsCompanionVersionSpecific {
   def assertProxy(exprs: Expr[Seq[Boolean]])(given ctx: QuoteContext): Expr[Unit] =
     Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
 
@@ -40,25 +40,8 @@ object Asserts extends AssertsCommons {
 }
 
 
-trait Asserts{
+trait AssertsVersionSpecific {
   import Asserts._
-
-    /**
-    * Provides a nice syntax for asserting things are equal, that is pretty
-    * enough to embed in documentation and examples
-    */
-  implicit class ArrowAssert(lhs: Any){
-    def ==>[V](rhs: V) = {
-      (lhs, rhs) match{
-          // Hack to make Arrays compare sanely; at some point we may want some
-          // custom, extensible, typesafe equality check but for now this will do
-          case (lhs: Array[_], rhs: Array[_]) =>
-            Predef.assert(lhs.toSeq == rhs.toSeq, s"==> assertion failed: ${lhs.toSeq} != ${rhs.toSeq}")
-          case (lhs, rhs) =>
-            Predef.assert(lhs == rhs, s"==> assertion failed: $lhs != $rhs")
-        }
-    }
-  }
 
   /**
     * Asserts that the given expression fails to compile, and returns a
@@ -71,7 +54,7 @@ trait Asserts{
     * Checks that one or more expressions are true; otherwises raises an
     * exception with some debugging info
     */
-  inline def assert(exprs: => Boolean*): Unit = ${assertProxy('exprs)}
+  inline def assert(exprs: => Boolean*): Unit = ${Asserts.assertProxy('exprs)}
 
   /**
     * Checks that one or more expressions all become true within a certain
@@ -90,21 +73,13 @@ trait Asserts{
     * Asserts that the given value matches the PartialFunction. Useful for using
     * pattern matching to validate the shape of a data structure.
     */
-  inline def assertMatch(t: => Any)(pf: => PartialFunction[Any, Unit]): Unit = ${assertMatchProxy('t, 'pf)}
+  inline def assertMatch(t: => Any)(pf: => PartialFunction[Any, Unit]): Unit = ${Asserts.assertMatchProxy('t, 'pf)}
 
   /**
     * Asserts that the given block raises the expected exception. The exception
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  inline def intercept[T](exprs: => Unit): T = ${interceptProxy[T]('exprs)}
-
-  @tailrec final def retry[T](n: Int)(body: => T): T = {
-    try body
-    catch{case e: Throwable =>
-      if (n > 0) retry(n-1)(body)
-      else throw e
-    }
-  }
+  inline def intercept[T](exprs: => Unit): T = ${Asserts.interceptProxy[T]('exprs)}
 }
 

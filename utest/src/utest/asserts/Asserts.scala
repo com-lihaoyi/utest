@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
  * Macro implementation that provides rich error
  * message for boolean expression assertion.
  */
-trait AssertsCommons {
+object Asserts extends AssertsCompanionVersionSpecific {
 
   def assertImpl(funcs0: AssertEntry[Boolean]*) = {
     val funcs = funcs0.toArray
@@ -69,6 +69,34 @@ trait AssertsCommons {
           try{pf(value);???}catch{case e: Throwable => e}
         )
       case Failure(e) => throw Util.makeAssertError(src, logged, e)
+    }
+  }
+}
+
+
+trait Asserts extends AssertsVersionSpecific {
+    /**
+    * Provides a nice syntax for asserting things are equal, that is pretty
+    * enough to embed in documentation and examples
+    */
+  implicit class ArrowAssert(lhs: Any){
+    def ==>[V](rhs: V) = {
+      (lhs, rhs) match{
+          // Hack to make Arrays compare sanely; at some point we may want some
+          // custom, extensible, typesafe equality check but for now this will do
+          case (lhs: Array[_], rhs: Array[_]) =>
+            Predef.assert(lhs.toSeq == rhs.toSeq, s"==> assertion failed: ${lhs.toSeq} != ${rhs.toSeq}")
+          case (lhs, rhs) =>
+            Predef.assert(lhs == rhs, s"==> assertion failed: $lhs != $rhs")
+        }
+    }
+  }
+
+  @tailrec final def retry[T](n: Int)(body: => T): T = {
+    try body
+    catch{case e: Throwable =>
+      if (n > 0) retry(n-1)(body)
+      else throw e
     }
   }
 }
