@@ -19,7 +19,7 @@ case class RetryMax(d: FiniteDuration)
 /**
  * Asserts which only make sense when running on multiple threads.
  */
-trait ParallelCommons {
+object Parallel extends ParallelVersionSpecific {
 
   def eventuallyImpl(funcs: AssertEntry[Boolean]*)
                     (implicit interval: RetryInterval, max: RetryMax): Unit = {

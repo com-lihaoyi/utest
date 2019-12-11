@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 /**
  * Asserts which only make sense when running on multiple threads.
  */
-object Parallel extends ParallelCommons {
+trait ParallelVersionSpecific {
 
   def eventuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
