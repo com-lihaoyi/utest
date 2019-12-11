@@ -1,19 +1,19 @@
 package test.utest
 
 import utest._
-import scala.concurrent.Future
+import scala.concurrent.{Future, ExecutionContext}
 import concurrent.duration._
 
 object FrameworkAsyncTests extends TestSuite {
-  implicit val ec = utest.framework.ExecutionContext.RunNow
+  implicit val ec: ExecutionContext = utest.framework.ExecutionContext.RunNow
   private val isNative = sys.props("java.vm.name") == "Scala Native"
 
   def tests = Tests {
-    'hello {
+    test("hello") {
       Future(10)
     }
 
-    'asyncFailures {
+    test("asyncFailures") {
       val tests = Tests {
         test("testSuccessAsync"){
           val p = concurrent.Promise[Int]
