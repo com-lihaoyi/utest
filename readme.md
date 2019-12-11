@@ -1329,6 +1329,11 @@ libraries are currently at.
 Changelog
 =========
 
+0.7.2 (in progress)
+-----
+
+- Add support for Scala.js 1.0.0-RC1
+
 0.7.1
 -----
 
