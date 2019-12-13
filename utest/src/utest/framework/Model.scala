@@ -12,7 +12,7 @@ object TestPath{
   @annotation.compileTimeOnly(
     "TestPath is only available within a uTest suite, and not outside."
   )
-  implicit lazy val synthetic: TestPath = ???
+  implicit def synthetic: TestPath = ???
 }
 
 
