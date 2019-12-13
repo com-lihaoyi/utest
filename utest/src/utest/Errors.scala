@@ -58,7 +58,14 @@ trait CompileError extends CompileErrorVersionSpecific {
    */
   def check(errorPos: String, msgs: String*) = {
     val stripped = errorPos.reverse.dropWhile("\n ".toSet.contains).reverse
-    checkPositionString(stripped, errorPos)
+    if (errorPos != "") Predef.assert(
+      normalizedPos == stripped,
+      "Compile error positions do not match\n" +
+      "Expected Position\n" +
+      stripped + "\n" +
+      "Actual Position\n" +
+      normalizedPos
+    )
     for(msg <- msgs){
       Predef.assert(
         this.msg.contains(msg),
