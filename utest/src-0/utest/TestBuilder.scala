@@ -67,7 +67,7 @@ trait TestBuilderExtractors(given val qc: QuoteContext) {
     def (strExpr: Expr[String]) exec (given v: ValueOfExpr[String]): Option[String] = v(strExpr)
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
-      Option(tree).collect { case IsTerm(tree) => tree.seal }.collect {
+      Option(tree).collect { case tree: Term => tree.seal }.collect {
         // case q"""utest.`package`.*.-($body)""" => (None, body)
         case '{utest.*.-($body)} => (None, body.unseal)
 
@@ -109,15 +109,15 @@ trait TestBuilderExtractors(given val qc: QuoteContext) {
   object Stats {
     def partition(stats: List[Statement]): (List[Apply], List[Statement]) =
       stats.partitionMap[Apply, Statement] {
-        case IsTest     (test) => Left (test)
-        case IsStatement(stmt) => Right(stmt)
-        case IsImport   (stmt) => Right(stmt)
+        case IsTest(test) => Left (test)
+        case stmt: Statement => Right(stmt)
+        case stmt: Import => Right(stmt)
       }
 
     def unapply(tree: Tree): Option[(List[Apply], List[Statement])] = tree match {
       case Inlined(_, inlBindings, Stats(tests, testsBindings)) => Some((tests, inlBindings ++ testsBindings))
       case Block(stats, expr) => Some(partition(stats :+ expr))
-      case IsStatement(stmt) => Some(partition(stmt :: Nil))
+      case stmt: Statement => Some(partition(stmt :: Nil))
       case _ => None
     }
   }
