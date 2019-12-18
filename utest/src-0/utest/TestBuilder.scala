@@ -55,7 +55,7 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
       case Stats(tests, setupStats) =>
         val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests, Vector())
         '{Tests(UTree[String](
-            "", ${Expr.ofList(nestedNameTrees)}: _*)
+            "", ${Expr.ofSeq(nestedNameTrees)}: _*)
           , ${TestCallTreeExpr(nestedBodyTrees, setupStats)})}
     }
 }
