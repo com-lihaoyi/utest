@@ -51,11 +51,7 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
   }
 
   def processTests(body: Term): Expr[Tests] =
-    @annotation.tailrec def unwrap(t: Term): Term = t match
-      case Inlined(_, _, x) => unwrap(x)
-      case x => x
-
-    unwrap(body) match {
+    body match {
       case Stats(tests, setupStats) =>
         val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(tests, Vector())
         '{Tests(UTree[String](
@@ -119,6 +115,7 @@ trait TestBuilderExtractors(given val qc: QuoteContext) {
       }
 
     def unapply(tree: Tree): Option[(List[Apply], List[Statement])] = tree match {
+      case Inlined(_, inlBindings, Stats(tests, testsBindings)) => Some((tests, inlBindings ++ testsBindings))
       case Block(stats, expr) => Some(partition(stats :+ expr))
       case IsStatement(stmt) => Some(partition(stmt :: Nil))
       case _ => None
