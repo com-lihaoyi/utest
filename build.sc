@@ -56,17 +56,27 @@ trait UtestTestModule extends ScalaModule with TestModule {
 }
 
 object utest extends Module {
-  object jvm extends Cross[JvmUtestModule]("2.12.8", "2.13.0")
+  object jvm extends Cross[JvmUtestModule]("2.12.8", "2.13.0", "0.21.0-RC1")
   class JvmUtestModule(val crossScalaVersion: String)
     extends UtestMainModule with ScalaModule with UtestModule {
     def ivyDeps = Agg(
-      ivy"org.scala-sbt:test-interface::1.0",
+      ivy"org.scala-sbt:test-interface::1.0"
+    ) ++ (if (crossScalaVersion.startsWith("2")) Agg(
       ivy"org.portable-scala::portable-scala-reflect::0.1.1",
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
-    )
+    ) else Agg())
     object test extends Tests with UtestTestModule{
       val crossScalaVersion = JvmUtestModule.this.crossScalaVersion
     }
+
+    override def docJar =
+      if (crossScalaVersion.startsWith("2")) super.docJar
+      else T {
+        val outDir = T.ctx().dest
+        val javadocDir = outDir / 'javadoc
+        os.makeDir.all(javadocDir)
+        mill.api.Result.Success(mill.modules.Jvm.createJar(Agg(javadocDir))(outDir))
+      }
   }
 
   object js extends Cross[JsUtestModule](

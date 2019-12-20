@@ -75,7 +75,7 @@ object Parallel extends TestSuite{
       }
       "adjustInterval"-{
         import concurrent.duration._
-        implicit val retryInterval = RetryInterval(300.millis)
+        implicit val retryInterval: RetryInterval = RetryInterval(300.millis)
 
         val i = Counter()
 
@@ -88,7 +88,7 @@ object Parallel extends TestSuite{
 
       "adjustMax"-{
         import concurrent.duration._
-        implicit val retryMax = RetryMax(300.millis)
+        implicit val retryMax: RetryMax = RetryMax(300.millis)
 
         val i = Counter()
 

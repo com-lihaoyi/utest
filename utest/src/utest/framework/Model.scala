@@ -9,7 +9,7 @@ import utest.PlatformShims
 
 case class TestPath(value: Seq[String])
 object TestPath{
-  @reflect.internal.annotations.compileTimeOnly(
+  @annotation.compileTimeOnly(
     "TestPath is only available within a uTest suite, and not outside."
   )
   implicit def synthetic: TestPath = ???

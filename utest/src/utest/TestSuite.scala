@@ -1,14 +1,7 @@
 package utest
 
-//import acyclic.file
-
-
 import utest.framework.Formatter
-
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.macros.Context
-import scala.language.experimental.macros
-
 import PlatformShims.EnableReflectiveInstantiation
 
 /**
@@ -17,17 +10,12 @@ import PlatformShims.EnableReflectiveInstantiation
  */
 @EnableReflectiveInstantiation
 abstract class TestSuite
-  extends framework.Executor{
+  extends framework.Executor with TestSuiteVersionSpecific {
   def utestFormatter: Formatter = null
   def tests: Tests
-  @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl
 }
 
-object TestSuite {
-
-  @deprecated("Use `utest.Tests{...}` instead")
-  def apply(expr: Unit): Tests = macro Tests.Builder.applyImpl
+object TestSuite extends TestSuiteCompanionVersionSpecific {
   trait Retries extends utest.TestSuite{
     def utestRetryCount: Int
     override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {

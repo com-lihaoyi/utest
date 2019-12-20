@@ -1,5 +1,7 @@
 package test.utest
 import utest._
+import TestUtil.isDotty
+
 /**
 * Test suite for all the assertions that uTest comes bundled with.
 *
@@ -193,8 +195,10 @@ object AssertsTests extends utest.TestSuite{
           Predef.assert(e.captured == Seq(
             TestValue("x", "Int", 1), TestValue("iAmCow", "Seq[String]", Seq("2.0")))
           )
-          Predef.assert(e.getMessage.contains("assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}"))
-
+          Predef.assert(e.getMessage.contains(
+            if (isDotty) "Seq(x, iAmCow, 3) match { case Seq(1, 2) => }"
+            else "assertMatch(Seq(x, iAmCow, 3)){case Seq(1, 2) =>}"
+          ))
 
           Predef.assert(e.getCause().getMessage.contains("List(1, List(2.0), 3)"))
           e.getMessage
@@ -210,7 +214,10 @@ object AssertsTests extends utest.TestSuite{
         } catch{ case e: utest.AssertionError =>
           Predef.assert(e.captured == Seq(TestValue("a", "Iterator[Nothing]", Iterator.empty)))
           Predef.assert(e.cause.isInstanceOf[NoSuchElementException])
-          Predef.assert(e.getMessage.contains("assertMatch(Seq(a.next(), 3, b)){case Seq(1, 2) =>}"))
+          Predef.assert(e.getMessage.contains(
+            if (isDotty) "Seq(a.next(), 3, b) match { case Seq(1, 2) => }"
+            else "assertMatch(Seq(a.next(), 3, b)){case Seq(1, 2) =>}"
+          ))
           e.getMessage
         }
       }
@@ -221,30 +228,40 @@ object AssertsTests extends utest.TestSuite{
         // error, the error it reports is in the correct place for
         // a variety of inputs
         val qq = "\"" * 3
-        * - compileError("1 + abc").check(
-          """
-        * - compileError("1 + abc").check(
-                              ^
-          """,
-          "not found: value abc"
-        )
-        * - compileError(""" 1 + abc""").check(
-          s"""
-        * - compileError($qq 1 + abc$qq).check(
+        test - compileError("1 + abc").check(
+          if (isDotty) """|1 + abc
+                          |    ^  """.stripMargin
+          else """
+        test - compileError("1 + abc").check(
                                  ^
           """,
-          "not found: value abc"
+          if (isDotty) "Not found: abc"
+          else "not found: value abc"
         )
-        * - compileError("""
+        test - compileError(""" 1 + abc""").check(
+          if (isDotty) """ 1 + abc
+                         |     ^""".stripMargin
+          else s"""
+        test - compileError($qq 1 + abc$qq).check(
+                                    ^
+          """,
+          if (isDotty) "Not found: abc"
+          else "not found: value abc"
+        )
+        test - compileError("""
             1 + abc
-        """).check(
-          """
+          """).check(
+          if (isDotty) """
+            1 + abc
+                ^""".tail
+          else """
             1 + abc
                 ^
           """,
-          "not found: value abc"
+          if (isDotty) "Not found: abc"
+          else "not found: value abc"
         )
-        * - compileError("""
+        test - compileError("""
 
 
 
@@ -252,99 +269,46 @@ object AssertsTests extends utest.TestSuite{
 
 
         """).check(
-          """
+          if (isDotty) """
             1 + abc
                 ^
+          """.tail
+          else """
+            1 + abc
+                ^
+
           """,
-          "not found: value abc"
+          if (isDotty) "Not found: abc"
+          else "not found: value abc"
         )
-        * - compileError("true * false").check(
-          """
-        * - compileError("true * false").check(
-                               ^
+        test - compileError("true * false").check(
+          if (isDotty) """true * false
+                         |     ^""".stripMargin
+          else """
+        test - compileError("true * false").check(
+                                  ^
           """,
           "value * is not a member of Boolean"
         )
         // need to work around inability to use """ in string
 
-        * - compileError(""" true * false""").check(
-          s"""
-        * - compileError($qq true * false$qq).check(
-                                  ^
+        test - compileError(""" true * false""").check(
+          if (isDotty) """ true * false
+                         |      ^""".stripMargin
+          else s"""
+        test - compileError($qq true * false$qq).check(
+                                     ^
           """,
           "value * is not a member of Boolean"
         )
-        * - compileError("ab ( cd }").check(
+        test - compileError("ab ( cd }").check(
           """""",
-          "')' expected but '}' found."
+          if (isDotty) "')' expected, but eof found"
+          else "')' expected but '}' found."
 
-        )
-      }
-
-      test("failure"){
-        // Use compileError to check itself to verify that when it
-        // doesn't throw an error, it actually does (super meta!)
-        * - compileError("""
-            compileError("1 + 1").check(
-              ""
-            )
-          """).check(
-          """
-            compileError("1 + 1").check(
-                        ^
-          """,
-          "compileError check failed to have a compilation error"
-        )
-        * - compileError("""
-            val x = 0
-            compileError("x + x").check(
-            ""
-          )
-          """).check(
-          """
-            compileError("x + x").check(
-                        ^
-          """,
-          "compileError check failed to have a compilation error"
-        )
-        * - compileError("""
-            compileError("1" * 2).check(
-              ""
-            )
-        """).check(
-          """
-            compileError("1" * 2).check(
-                             ^
-          """,
-          "You can only have literal strings in compileError"
-        )
-
-      }
-      test("compileTimeOnly"){
-        // Make sure that when the body contains a `@compileTimeOnly`, it
-        // gets counted as a valid compile error and `compileError` passes
-        compileError("compileTimeOnlyVal").check(
-          """
-        compileError("compileTimeOnlyVal").check(
-                      ^
-          """,
-          "compileTimeOnlyVal should be a compile error if used!"
-        )
-
-        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-          """
-        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-                                                                       ^
-          """,
-          "compileTimeOnlyVal should be a compile error if used!"
         )
       }
     }
   }
-
-  @scala.reflect.internal.annotations.compileTimeOnly(
-    "compileTimeOnlyVal should be a compile error if used!"
-  )
-  def compileTimeOnlyVal = 1
 }
 
