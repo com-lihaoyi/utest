@@ -81,17 +81,18 @@ class TracerHelper(given val ctx: QuoteContext) {
 
   def wrapWithLoggedValue(tree: ctx.tasty.Term, logger: Expr[TestValue => Unit], tpe: ctx.tasty.Type) = {
     import ctx.tasty._
-    type T
-    implicit val t: scala.quoted.Type[T] = tpe.seal.asInstanceOf[scala.quoted.Type[T]]
-    '{
-      val tmp: $t = ${tree.seal}.asInstanceOf[$t]
-      $logger(TestValue(
-        ${tree.show.toExpr},
-        ${stripScalaCorePrefixes(tpe.show).toExpr},
-        tmp
-      ))
-      tmp
-    }.unseal
+    tree.seal match {
+      case '{ $x: $t } =>
+        '{
+          val tmp: $t = $x
+          $logger(TestValue(
+            ${tree.show.toExpr},
+            ${stripScalaCorePrefixes(tpe.show).toExpr},
+            tmp
+          ))
+          tmp
+        }.unseal
+    }
   }
 
   def makeAssertEntry[T](expr: Expr[T], code: String)(given scala.quoted.Type[T]) = '{AssertEntry(
