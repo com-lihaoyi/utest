@@ -36,7 +36,7 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
           t.tpe.widen match {
             case _: MethodType | _: PolyType => super.transformTerm(t)
             case _ => t.seal match {
-              case '{TestPath.synthetic} => '{TestPath(${path.toExpr})}.unseal
+              case '{TestPath.synthetic} => '{TestPath(${Expr(path)})}.unseal
               case _ => super.transformTerm(t)
             }
           }
@@ -44,7 +44,7 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
 
       val setupStats = testPathMap.transformStats(setupStatsRaw)
 
-      val names: Expr[UTree[String]] = '{UTree[String](${name.toExpr}, ${Expr.ofList(nestedNameTrees)}: _*)}
+      val names: Expr[UTree[String]] = '{UTree[String](${Expr(name)}, ${Expr.ofList(nestedNameTrees)}: _*)}
       val bodies: Expr[TestCallTree] = TestCallTreeExpr(nestedBodyTrees, setupStats)
 
       (names, bodies)

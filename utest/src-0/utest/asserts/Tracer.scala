@@ -86,8 +86,8 @@ class TracerHelper(given val ctx: QuoteContext) {
         '{
           val tmp: $t = $x
           $logger(TestValue(
-            ${tree.show.toExpr},
-            ${stripScalaCorePrefixes(tpe.show).toExpr},
+            ${Expr(tree.show)},
+            ${Expr(stripScalaCorePrefixes(tpe.show))},
             tmp
           ))
           tmp
@@ -96,7 +96,7 @@ class TracerHelper(given val ctx: QuoteContext) {
   }
 
   def makeAssertEntry[T](expr: Expr[T], code: String)(given scala.quoted.Type[T]) = '{AssertEntry(
-    ${code.toExpr},
+    ${Expr(code)},
     logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
 }
 
