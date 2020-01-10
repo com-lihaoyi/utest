@@ -9,7 +9,7 @@ case class NoSuchTestException(path: Seq[String]*)
   extends Exception(path.map(_.mkString(".")).mkString("[", ", ", "]"))
 
 /**
- * A special `AssertionError` thrown by utest's macro-powered asserts that 
+ * A special `AssertionError` thrown by utest's macro-powered asserts that
  * contains metadata about local variables used in the assert expression.
  */
 case class AssertionError(msgPrefix: String, captured: Seq[TestValue], cause: Throwable = null)
@@ -32,7 +32,7 @@ case class TestValue(name: String, tpeName: String, value: Any)
  * [[utest.asserts.Asserts.compileError]] macro. Contains only a single message and no position since
  * things compiled using macros don't really have source positions.
  */
-trait CompileError{
+trait CompileError extends CompileErrorVersionSpecific {
   def pos: String
   def msg: String
 
@@ -58,7 +58,6 @@ trait CompileError{
    */
   def check(errorPos: String, msgs: String*) = {
     val stripped = errorPos.reverse.dropWhile("\n ".toSet.contains).reverse
-    val normalizedPos = "\n" + pos
     if (errorPos != "") Predef.assert(
       normalizedPos == stripped,
       "Compile error positions do not match\n" +

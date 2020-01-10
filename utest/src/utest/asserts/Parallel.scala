@@ -1,10 +1,8 @@
 package utest
 package asserts
-//import acyclic.file
+
 import scala.concurrent.duration._
 import scala.annotation.tailrec
-import scala.language.experimental.macros
-import scala.reflect.macros.Context
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -21,12 +19,8 @@ case class RetryMax(d: FiniteDuration)
 /**
  * Asserts which only make sense when running on multiple threads.
  */
-object Parallel {
+object Parallel extends ParallelVersionSpecific {
 
-  def eventuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
-    import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Parallel.eventuallyImpl", exprs:_*)
-  }
   def eventuallyImpl(funcs: AssertEntry[Boolean]*)
                     (implicit interval: RetryInterval, max: RetryMax): Unit = {
     val start = Deadline.now
@@ -49,11 +43,6 @@ object Parallel {
       }
     }
     rec()
-  }
-
-  def continuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
-    import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Parallel.continuallyImpl", exprs:_*)
   }
 
   def continuallyImpl(funcs: AssertEntry[Boolean]*)
