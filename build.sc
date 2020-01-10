@@ -56,7 +56,7 @@ trait UtestTestModule extends ScalaModule with TestModule {
 }
 
 object utest extends Module {
-  object jvm extends Cross[JvmUtestModule]("2.12.8", "2.13.0", "0.21.0-RC1")
+  object jvm extends Cross[JvmUtestModule]("2.12.10", "2.13.1", "0.21.0-RC1")
   class JvmUtestModule(val crossScalaVersion: String)
     extends UtestMainModule with ScalaModule with UtestModule {
     def ivyDeps = Agg(
@@ -80,7 +80,7 @@ object utest extends Module {
   }
 
   object js extends Cross[JsUtestModule](
-    ("2.12.8", "0.6.28"), ("2.13.0", "0.6.28"), ("2.12.8", "1.0.0-RC1"), ("2.13.0", "1.0.0-RC1")
+    ("2.12.10", "0.6.31"), ("2.13.1", "0.6.31"), ("2.12.10", "1.0.0-RC2"), ("2.13.1", "1.0.0-RC2")
   )
   class JsUtestModule(val crossScalaVersion: String, crossJSVersion: String)
     extends UtestMainModule with ScalaJSModule with UtestModule {
