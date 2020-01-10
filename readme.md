@@ -1333,8 +1333,8 @@ Changelog
 -----
 
 - Add support for Scala.js 1.0.0-RC2
-0.7.2
 
+0.7.2
 -----
 
 - Add support for Scala.js 1.0.0-RC1
