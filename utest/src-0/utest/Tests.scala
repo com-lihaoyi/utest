@@ -8,7 +8,7 @@ import scala.collection.mutable
 
 trait TestsVersionSpecific {
   import TestsVersionSpecific._
-  inline def apply(expr: => Unit): Tests = ${testsImpl('expr)}
+  inline def apply(inline expr: Unit): Tests = ${testsImpl('expr)}
 }
 
 object TestsVersionSpecific {

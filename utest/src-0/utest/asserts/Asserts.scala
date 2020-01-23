@@ -48,38 +48,38 @@ trait AssertsVersionSpecific {
     * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
-  inline def compileError(inline expr: => String): CompileError = compileErrorImpl(typeCheckErrors(expr), expr)
+  inline def compileError(inline expr: String): CompileError = compileErrorImpl(typeCheckErrors(expr), expr)
 
   /**
     * Checks that one or more expressions are true; otherwises raises an
     * exception with some debugging info
     */
-  inline def assert(exprs: => Boolean*): Unit = ${Asserts.assertProxy('exprs)}
+  inline def assert(inline exprs: Boolean*): Unit = ${Asserts.assertProxy('exprs)}
 
   /**
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def eventually(exprs: => Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def eventually(inline exprs: Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.eventuallyProxy('exprs, 'ri, 'rm)}
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def continually(exprs: => Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def continually(inline exprs: Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.continuallyProxy('exprs, 'ri, 'rm)}
 
   /**
     * Asserts that the given value matches the PartialFunction. Useful for using
     * pattern matching to validate the shape of a data structure.
     */
-  inline def assertMatch(t: => Any)(pf: => PartialFunction[Any, Unit]): Unit = ${Asserts.assertMatchProxy('t, 'pf)}
+  inline def assertMatch(inline t: Any)(pf: => PartialFunction[Any, Unit]): Unit = ${Asserts.assertMatchProxy('t, 'pf)}
 
   /**
     * Asserts that the given block raises the expected exception. The exception
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  inline def intercept[T](exprs: => Unit): T = ${Asserts.interceptProxy[T]('exprs)}
+  inline def intercept[T](inline exprs: Unit): T = ${Asserts.interceptProxy[T]('exprs)}
 }
 
