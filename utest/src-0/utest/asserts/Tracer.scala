@@ -22,7 +22,7 @@ object Tracer {
 
   def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(given ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     val h = new TracerHelper
-    import h._, h.ctx.tasty._
+    import h._, h.ctx.tasty.{given, _}
 
 
     exprs match {
