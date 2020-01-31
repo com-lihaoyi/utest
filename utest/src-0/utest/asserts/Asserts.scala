@@ -60,13 +60,13 @@ trait AssertsVersionSpecific {
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def eventually(inline exprs: Boolean*)(using ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def eventually(inline exprs: Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.eventuallyProxy('exprs, 'ri, 'rm)}
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def continually(inline exprs: Boolean*)(using ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def continually(inline exprs: Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.continuallyProxy('exprs, 'ri, 'rm)}
 
   /**
