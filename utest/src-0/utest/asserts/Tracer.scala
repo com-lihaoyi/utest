@@ -44,7 +44,8 @@ class TracerHelper(given val ctx: QuoteContext) {
   import ctx.tasty.{ given, _ }
   import StringUtilHelpers._
 
-  def tracingMap(logger: Expr[TestValue => Unit]) = new TreeMap {
+  def tracingMap(logger: Expr[TestValue => Unit]) = new reflect.TreeMap {
+    val reflect: ctx.tasty.type = ctx.tasty
     override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
       tree match {
         case i @ Ident(name) if i.symbol.pos.exists

@@ -31,7 +31,8 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
       val path = pathOld :+ name
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
 
-      object testPathMap extends TreeMap {
+      object testPathMap extends reflect.TreeMap {
+        val reflect: qc.tasty.type = qc.tasty
         override def transformTerm(t: Term)(implicit ctx: Context): Term =
           t.tpe.widen match {
             case _: MethodType | _: PolyType => super.transformTerm(t)
