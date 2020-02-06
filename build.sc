@@ -97,7 +97,7 @@ object utest extends Module {
     }
   }
 
-  object native extends Cross[NativeUtestModule](("2.11.12", "0.3.8")/*, ("2.11.12", "0.4.0-M2")*/)
+  /*object native extends Cross[NativeUtestModule](("2.11.12", "0.3.8")/*, ("2.11.12", "0.4.0-M2")*/)
   class NativeUtestModule(val crossScalaVersion: String, crossScalaNativeVersion: String)
     extends UtestMainModule with ScalaNativeModule with UtestModule {
     def offset = os.up
@@ -111,5 +111,5 @@ object utest extends Module {
       def offset = os.up
       val crossScalaVersion = NativeUtestModule.this.crossScalaVersion
     }
-  }
+  }*/
 }
