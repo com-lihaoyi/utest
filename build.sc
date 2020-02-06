@@ -80,7 +80,7 @@ object utest extends Module {
   }
 
   object js extends Cross[JsUtestModule](
-    ("2.12.10", "0.6.31"), ("2.13.1", "0.6.31"), ("2.12.10", "1.0.0-RC2"), ("2.13.1", "1.0.0-RC2")
+    ("2.12.10", "0.6.31"), ("2.13.1", "0.6.31"), ("2.12.10", "1.0.0"), ("2.13.1", "1.0.0")
   )
   class JsUtestModule(val crossScalaVersion: String, crossJSVersion: String)
     extends UtestMainModule with ScalaJSModule with UtestModule {
