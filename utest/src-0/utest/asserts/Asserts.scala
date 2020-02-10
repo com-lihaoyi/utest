@@ -15,17 +15,17 @@ import scala.collection.mutable
  * message for boolean expression assertion.
  */
 trait AssertsCompanionVersionSpecific {
-  def assertProxy(exprs: Expr[Seq[Boolean]])(given ctx: QuoteContext): Expr[Unit] =
+  def assertProxy(exprs: Expr[Seq[Boolean]])(using ctx: QuoteContext): Expr[Unit] =
     Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
 
-  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]])(given ctx: QuoteContext): Expr[Unit] = {
+  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]])(using ctx: QuoteContext): Expr[Unit] = {
     val code = s"${Tracer.codeOf(t)} match { ${Tracer.codeOf(pf)} }"
     Tracer.traceOneWithCode[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t, code)
   }
 
-  def interceptProxy[T](exprs: Expr[Unit])(given ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
+  def interceptProxy[T](exprs: Expr[Unit])(using ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
     import ctx.tasty.{ given, _ }
-    val clazz = Literal(Constant.ClassTag[T](given tpe.unseal.tpe))
+    val clazz = Literal(Constant.ClassTag[T](using tpe.unseal.tpe))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
       utest.asserts.Asserts.interceptImpl[$tpe](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
   }
@@ -60,13 +60,13 @@ trait AssertsVersionSpecific {
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def eventually(inline exprs: Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def eventually(inline exprs: Boolean*)(using ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.eventuallyProxy('exprs, 'ri, 'rm)}
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def continually(inline exprs: Boolean*)(given ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def continually(inline exprs: Boolean*)(using ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.continuallyProxy('exprs, 'ri, 'rm)}
 
   /**

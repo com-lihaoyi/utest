@@ -12,7 +12,7 @@ trait TestsVersionSpecific {
 }
 
 object TestsVersionSpecific {
-  def testsImpl(body: Expr[Any])(given helpers: TestBuilder): Expr[Tests] = {
+  def testsImpl(body: Expr[Any])(using helpers: TestBuilder): Expr[Tests] = {
     import helpers._, helpers.qc.tasty.{given, _}
     val bTree = body.unseal
     val res = processTests(bTree)

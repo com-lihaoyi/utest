@@ -6,7 +6,7 @@ import scala.tasty._
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
+class TestBuilder(using QuoteContext) extends TestBuilderExtractors {
   import qc.tasty.{ Tree => TasTree, given, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
@@ -61,11 +61,11 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
     }
 }
 
-trait TestBuilderExtractors(given val qc: QuoteContext) {
+trait TestBuilderExtractors(using val qc: QuoteContext) {
   import qc.tasty.{ given, _ }
 
   object TestMethod {
-    def (strExpr: Expr[String]) exec (given v: ValueOfExpr[String]): Option[String] = v(strExpr)
+    def (strExpr: Expr[String]) exec (using v: ValueOfExpr[String]): Option[String] = v(strExpr)
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
       Option(tree).collect { case tree: Term => tree.seal }.collect {
