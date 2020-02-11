@@ -1,6 +1,6 @@
 package utest
 
-import scala.quoted.{ given, _ }
+import scala.quoted.{ given _, _ }
 import scala.tasty._
 
 import utest.framework.{TestCallTree, Tree => UTree }
@@ -13,7 +13,7 @@ trait TestsVersionSpecific {
 
 object TestsVersionSpecific {
   def testsImpl(body: Expr[Any])(using helpers: TestBuilder): Expr[Tests] = {
-    import helpers._, helpers.qc.tasty.{given, _}
+    import helpers._, helpers.qc.tasty.{given _, _}
     val bTree = body.unseal
     val res = processTests(bTree)
     res

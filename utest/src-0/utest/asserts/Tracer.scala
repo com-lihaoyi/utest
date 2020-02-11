@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted.{ given, _ }, scala.quoted.matching._
+import scala.quoted.{ given _, _ }, scala.quoted.matching._
 import scala.tasty._
 
 
@@ -22,7 +22,7 @@ object Tracer {
 
   def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     val h = new TracerHelper
-    import h._, h.ctx.tasty.{given, _}
+    import h._, h.ctx.tasty.{given _, _}
 
 
     exprs match {
@@ -35,13 +35,13 @@ object Tracer {
   }
 
   def codeOf[T](expr: Expr[T])(using h: TracerHelper): String = {
-    import h.ctx.tasty.{ given, _ }
+    import h.ctx.tasty.{ given _, _ }
     expr.unseal.pos.sourceCode
   }
 }
 
 class TracerHelper(using val ctx: QuoteContext) {
-  import ctx.tasty.{ given, _ }
+  import ctx.tasty.{ given _, _ }
   import StringUtilHelpers._
 
   def tracingMap(logger: Expr[TestValue => Unit]) = new reflect.TreeMap {

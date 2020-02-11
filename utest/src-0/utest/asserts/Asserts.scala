@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted.{ given, _ }
+import scala.quoted.{ given _, _ }
 import scala.reflect.ClassTag
 import scala.compiletime.testing._
 
@@ -24,7 +24,7 @@ trait AssertsCompanionVersionSpecific {
   }
 
   def interceptProxy[T](exprs: Expr[Unit])(using ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
-    import ctx.tasty.{ given, _ }
+    import ctx.tasty.{ given _, _ }
     val clazz = Literal(Constant.ClassTag[T](using tpe.unseal.tpe))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
       utest.asserts.Asserts.interceptImpl[$tpe](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)

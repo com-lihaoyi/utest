@@ -7,7 +7,7 @@ import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
 class TestBuilder(using QuoteContext) extends TestBuilderExtractors {
-  import qc.tasty.{ Tree => TasTree, given, _ }
+  import qc.tasty.{ Tree => TasTree, given _, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
     if tests.isEmpty then Nil -> Nil else tests.zipWithIndex.foldLeft((List.empty[Expr[UTree[String]]], List.empty[Expr[TestCallTree]])) {
@@ -62,7 +62,7 @@ class TestBuilder(using QuoteContext) extends TestBuilderExtractors {
 }
 
 trait TestBuilderExtractors(using val qc: QuoteContext) {
-  import qc.tasty.{ given, _ }
+  import qc.tasty.{ given _, _ }
 
   object TestMethod {
     def (strExpr: Expr[String]) exec (using v: ValueOfExpr[String]): Option[String] = v(strExpr)
