@@ -111,5 +111,5 @@ object StringUtilHelpers {
     str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse
 }
 
-given (using QuoteContext): TracerHelper = new TracerHelper
-given (using h: TracerHelper): QuoteContext = h.ctx
+given (using QuoteContext) as TracerHelper = new TracerHelper
+given (using h: TracerHelper) as QuoteContext = h.ctx
