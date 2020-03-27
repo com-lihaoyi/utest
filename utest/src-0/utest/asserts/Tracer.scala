@@ -46,7 +46,7 @@ class TracerHelper(using val ctx: QuoteContext) {
 
   def tracingMap(logger: Expr[TestValue => Unit]) = new TreeMap {
     // Do not descend into definitions inside blocks since their arguments are unbound
-    override def transformStatement(tree: Statement)(given ctx: Context): Statement = tree match
+    override def transformStatement(tree: Statement)(using ctx: Context): Statement = tree match
       case _: DefDef => tree
       case _ => super.transformStatement(tree)
 
