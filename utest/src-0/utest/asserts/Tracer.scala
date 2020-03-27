@@ -35,8 +35,14 @@ object Tracer {
   }
 
   def codeOf[T](expr: Expr[T])(using h: TracerHelper): String = {
-    import h.ctx.tasty.{ given _, _ }
-    expr.unseal.pos.sourceCode
+    import h.ctx.tasty._
+    h.ctx.tasty.positionOps.sourceCode(
+      h.ctx.tasty.TreeOps.pos(
+        expr.unseal(using h.ctx)
+      )(using h.ctx.tasty.given_Context)
+    )
+    // TODO: replace the above with expr.unseal.pos.sourceCode
+    // see lampepfl/dotty#8623
   }
 }
 
