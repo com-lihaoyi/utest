@@ -106,9 +106,12 @@ class TracerHelper(using val ctx: QuoteContext) {
     }
   }
 
-  def makeAssertEntry[T](expr: Expr[T], code: String)(using scala.quoted.Type[T]) = '{AssertEntry(
-    ${Expr(code)},
-    logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
+  def makeAssertEntry[T](expr: Expr[T], code: String)(using scala.quoted.Type[T]) =
+    def entryBody(logger: Expr[TestValue => Unit]) =
+      tracingMap(logger).transformTerm(expr.unseal).seal.cast[T]
+    '{AssertEntry(
+      ${Expr(code)},
+      logger => ${entryBody('logger)})}
 }
 
 object StringUtilHelpers {
