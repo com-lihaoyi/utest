@@ -303,7 +303,7 @@ object AssertsTests extends utest.TestSuite{
         )
         test - compileError("ab ( cd }").check(
           """""",
-          if (isDotty) "')' expected, but eof found"
+          if (isDotty) "')' expected, but '}' found"
           else "')' expected but '}' found."
 
         )
