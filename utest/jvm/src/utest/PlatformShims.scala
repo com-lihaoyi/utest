@@ -4,10 +4,10 @@ import scala.concurrent.{Await, Future}
 import concurrent.duration._
 
 /**
- * Platform specific stuff that differs between JVM and JS
+ * Platform specific stuff that differs between JVM, JS and Native
  */
 object PlatformShims extends PlatformShimsVersionSpecific {
-  def await[T](f: Future[T]): T = Await.result(f, 10.hours)
+  def await[T](f: Future[T]): T = Await.result(f, Duration.Inf)
 
   def loadModule(name: String, loader: ClassLoader): Any =
     Reflect

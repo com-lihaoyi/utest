@@ -17,7 +17,7 @@ class Task(val taskDef: TaskDef,
   def tags(): Array[String] = Array()
 
   def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[testing.Task] = {
-    Await.result(runUTestTask(loggers, eventHandler), Duration.Inf)
+    PlatformShims.await(runUTestTask(loggers, eventHandler))
     Array()
   }
 
