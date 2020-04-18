@@ -1,7 +1,7 @@
 package test.utest
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 object Scheduler {
   // Will execute immediately, because we cannot currenly schedule
@@ -10,7 +10,8 @@ object Scheduler {
   def scheduleOnce[T](interval: FiniteDuration)
                      (thunk: => T)
                      (implicit executor: ExecutionContext): Unit = {
-    Future { thunk }
-    ()
+    executor.execute(new Runnable {
+      def run(): Unit = thunk
+    })
   }
 }

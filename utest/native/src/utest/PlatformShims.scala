@@ -6,10 +6,11 @@ import scala.concurrent.Future
 import org.scalajs.testinterface.TestUtils
 
 /**
- * Platform specific stuff that differs between JVM and Native
+ * Platform specific stuff that differs between JVM, JS and Native
  */
 object PlatformShims {
   def await[T](f: Future[T]): T = {
+    scala.scalanative.runtime.loop()
     f.value match {
       case Some(v) => v.get
       case None => throw new IllegalStateException(

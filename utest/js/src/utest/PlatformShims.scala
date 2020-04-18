@@ -4,7 +4,7 @@ import scala.concurrent.Future
 import org.portablescala.reflect.Reflect
 
 /**
- * Platform specific stuff that differs between JVM and JS
+ * Platform specific stuff that differs between JVM, JS and Native
  */
 object PlatformShims {
   def await[T](f: Future[T]): T = {
