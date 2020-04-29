@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted.{ given, _ }, scala.quoted.matching._
+import scala.quoted.{ given _, _ }, scala.quoted.matching._
 import scala.tasty._
 
 
@@ -11,18 +11,18 @@ import scala.tasty._
  */
 object Tracer {
 
-  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(given TracerHelper, Type[I]): Expr[O] =
+  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using TracerHelper, Type[I]): Expr[O] =
     traceOneWithCode(func, expr, codeOf(expr))
 
-  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(given h: TracerHelper, tt: Type[I]): Expr[O] = {
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using h: TracerHelper, tt: Type[I]): Expr[O] = {
     import h._, h.ctx.tasty._
     val tree = makeAssertEntry(expr, code)
     Expr.betaReduce(func)(tree)
   }
 
-  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(given ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     val h = new TracerHelper
-    import h._, h.ctx.tasty._
+    import h._, h.ctx.tasty.{given _, _}
 
 
     exprs match {
@@ -34,17 +34,28 @@ object Tracer {
     }
   }
 
-  def codeOf[T](expr: Expr[T])(given h: TracerHelper): String = {
-    import h.ctx.tasty.{ given, _ }
-    expr.unseal.pos.sourceCode
+  def codeOf[T](expr: Expr[T])(using h: TracerHelper): String = {
+    import h.ctx.tasty._
+    h.ctx.tasty.positionOps.sourceCode(
+      h.ctx.tasty.TreeOps.pos(
+        expr.unseal(using h.ctx)
+      )(using h.ctx.tasty.given_Context)
+    )
+    // TODO: replace the above with expr.unseal.pos.sourceCode
+    // see lampepfl/dotty#8623
   }
 }
 
-class TracerHelper(given val ctx: QuoteContext) {
-  import ctx.tasty.{ given, _ }
+class TracerHelper(using val ctx: QuoteContext) {
+  import ctx.tasty.{ given _, _ }
   import StringUtilHelpers._
 
   def tracingMap(logger: Expr[TestValue => Unit]) = new TreeMap {
+    // Do not descend into definitions inside blocks since their arguments are unbound
+    override def transformStatement(tree: Statement)(using ctx: Context): Statement = tree match
+      case _: DefDef => tree
+      case _ => super.transformStatement(tree)
+
     override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
       tree match {
         case i @ Ident(name) if i.symbol.pos.exists
@@ -86,8 +97,8 @@ class TracerHelper(given val ctx: QuoteContext) {
         '{
           val tmp: $t = $x
           $logger(TestValue(
-            ${tree.show.toExpr},
-            ${stripScalaCorePrefixes(tpe.show).toExpr},
+            ${Expr(tree.show)},
+            ${Expr(stripScalaCorePrefixes(tpe.show))},
             tmp
           ))
           tmp
@@ -95,9 +106,12 @@ class TracerHelper(given val ctx: QuoteContext) {
     }
   }
 
-  def makeAssertEntry[T](expr: Expr[T], code: String)(given scala.quoted.Type[T]) = '{AssertEntry(
-    ${code.toExpr},
-    logger => ${tracingMap('logger).transformTerm(expr.unseal).seal.cast[T]})}
+  def makeAssertEntry[T](expr: Expr[T], code: String)(using scala.quoted.Type[T]) =
+    def entryBody(logger: Expr[TestValue => Unit]) =
+      tracingMap(logger).transformTerm(expr.unseal).seal.cast[T]
+    '{AssertEntry(
+      ${Expr(code)},
+      logger => ${entryBody('logger)})}
 }
 
 object StringUtilHelpers {
@@ -110,5 +124,5 @@ object StringUtilHelpers {
     str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse
 }
 
-given (given QuoteContext): TracerHelper = new TracerHelper
-given (given h: TracerHelper): QuoteContext = h.ctx
+given (using QuoteContext) as TracerHelper = new TracerHelper
+given (using h: TracerHelper) as QuoteContext = h.ctx

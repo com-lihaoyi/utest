@@ -6,8 +6,8 @@ import scala.tasty._
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
-  import qc.tasty.{ Tree => TasTree, given, _ }
+class TestBuilder(ctx: QuoteContext) extends TestBuilderExtractors(using ctx) {
+  import qc.tasty.{ Tree => TasTree, given _, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
     if tests.isEmpty then Nil -> Nil else tests.zipWithIndex.foldLeft((List.empty[Expr[UTree[String]]], List.empty[Expr[TestCallTree]])) {
@@ -31,12 +31,13 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
       val path = pathOld :+ name
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
 
-      object testPathMap extends TreeMap {
+      object testPathMap extends reflect.TreeMap {
+        val reflect: qc.tasty.type = qc.tasty
         override def transformTerm(t: Term)(implicit ctx: Context): Term =
           t.tpe.widen match {
             case _: MethodType | _: PolyType => super.transformTerm(t)
             case _ => t.seal match {
-              case '{TestPath.synthetic} => '{TestPath(${path.toExpr})}.unseal
+              case '{TestPath.synthetic} => '{TestPath(${Expr(path)})}.unseal
               case _ => super.transformTerm(t)
             }
           }
@@ -44,7 +45,7 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
 
       val setupStats = testPathMap.transformStats(setupStatsRaw)
 
-      val names: Expr[UTree[String]] = '{UTree[String](${name.toExpr}, ${Expr.ofList(nestedNameTrees)}: _*)}
+      val names: Expr[UTree[String]] = '{UTree[String](${Expr(name)}, ${Expr.ofList(nestedNameTrees)}: _*)}
       val bodies: Expr[TestCallTree] = TestCallTreeExpr(nestedBodyTrees, setupStats)
 
       (names, bodies)
@@ -60,11 +61,11 @@ class TestBuilder(given QuoteContext) extends TestBuilderExtractors {
     }
 }
 
-trait TestBuilderExtractors(given val qc: QuoteContext) {
-  import qc.tasty.{ given, _ }
+trait TestBuilderExtractors(using val qc: QuoteContext) {
+  import qc.tasty.{ given _, _ }
 
   object TestMethod {
-    def (strExpr: Expr[String]) exec (given v: ValueOfExpr[String]): Option[String] = v(strExpr)
+    def (strExpr: Expr[String]) exec (using v: Unliftable[String]): Option[String] = v(strExpr)
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
       Option(tree).collect { case tree: Term => tree.seal }.collect {
@@ -123,4 +124,4 @@ trait TestBuilderExtractors(given val qc: QuoteContext) {
   }
 }
 
-given QuoteContext => TestBuilder = new TestBuilder
+given (using ctx: QuoteContext) as TestBuilder = new TestBuilder(ctx)
