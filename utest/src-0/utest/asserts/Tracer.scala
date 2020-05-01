@@ -92,13 +92,17 @@ class TracerHelper(using val ctx: QuoteContext) {
 
   def wrapWithLoggedValue(tree: ctx.tasty.Term, logger: Expr[TestValue => Unit], tpe: ctx.tasty.Type) = {
     import ctx.tasty._
+    val tpeString =
+      try tpe.show
+      catch
+        case _ => tpe.toString // Workaround lampepfl/dotty#8858
     tree.seal match {
       case '{ $x: $t } =>
         '{
           val tmp: $t = $x
           $logger(TestValue(
             ${Expr(tree.show)},
-            ${Expr(stripScalaCorePrefixes(tpe.show))},
+            ${Expr(stripScalaCorePrefixes(tpeString))},
             tmp
           ))
           tmp
