@@ -1,9 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted.{ given _, _ }, scala.quoted.matching._
-import scala.tasty._
-
+import scala.quoted._
 
 /**
  * Macro implementation to take a block of code and trace through it,
@@ -26,7 +24,7 @@ object Tracer {
 
 
     exprs match {
-      case ExprSeq(ess) =>
+      case Varargs(ess) =>
         val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
         Expr.betaReduce(func)(trees)
 

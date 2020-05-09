@@ -1,7 +1,6 @@
 package utest
 
 import scala.quoted.{ Type => QType, _ }
-import scala.tasty._
 
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
@@ -31,8 +30,7 @@ class TestBuilder(ctx: QuoteContext) extends TestBuilderExtractors(using ctx) {
       val path = pathOld :+ name
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
 
-      object testPathMap extends reflect.TreeMap {
-        val reflect: qc.tasty.type = qc.tasty
+      object testPathMap extends TreeMap {
         override def transformTerm(t: Term)(implicit ctx: Context): Term =
           t.tpe.widen match {
             case _: MethodType | _: PolyType => super.transformTerm(t)
