@@ -9,20 +9,15 @@ import scala.quoted._
  */
 object Tracer {
 
-  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using TracerHelper, Type[I]): Expr[O] =
+  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using QuoteContext, Type[I]): Expr[O] =
     traceOneWithCode(func, expr, codeOf(expr))
 
-  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using h: TracerHelper, tt: Type[I]): Expr[O] = {
-    import h._, h.ctx.tasty._
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using qctx: QuoteContext, tt: Type[I]): Expr[O] = {
     val tree = makeAssertEntry(expr, code)
     Expr.betaReduce(func)(tree)
   }
 
-  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using ctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
-    val h = new TracerHelper
-    import h._, h.ctx.tasty.{given _, _}
-
-
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using qctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     exprs match {
       case Varargs(ess) =>
         val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
@@ -32,75 +27,63 @@ object Tracer {
     }
   }
 
-  def codeOf[T](expr: Expr[T])(using h: TracerHelper): String = {
-    import h.ctx.tasty._
-    h.ctx.tasty.positionOps.extension_sourceCode(
-      h.ctx.tasty.TreeOps.extension_pos(
-        expr.unseal(using h.ctx)
-      )(using h.ctx.tasty.given_Context)
-    )
-    // TODO: replace the above with expr.unseal.pos.sourceCode
-    // see lampepfl/dotty#8623
-  }
-}
+  def codeOf[T](expr: Expr[T])(using QuoteContext): String =
+    expr.unseal.pos.sourceCode
 
-class TracerHelper(using val ctx: QuoteContext) {
-  import ctx.tasty.{ given _, _ }
-  import StringUtilHelpers._
+  private def tracingMap(logger: Expr[TestValue => Unit])(using QuoteContext) =
+    import qctx.tasty._
+    new TreeMap {
+      // Do not descend into definitions inside blocks since their arguments are unbound
+      override def transformStatement(tree: Statement)(using ctx: Context): Statement = tree match
+        case _: DefDef => tree
+        case _ => super.transformStatement(tree)
 
-  def tracingMap(logger: Expr[TestValue => Unit]) = new TreeMap {
-    // Do not descend into definitions inside blocks since their arguments are unbound
-    override def transformStatement(tree: Statement)(using ctx: Context): Statement = tree match
-      case _: DefDef => tree
-      case _ => super.transformStatement(tree)
+      override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
+        tree match {
+          case i @ Ident(name) if i.symbol.pos.exists
+            && i.pos.exists
+            // only trace identifiers coming from the same file,
+            // since those are the ones people probably care about
+            && i.symbol.pos.sourceFile == i.pos.sourceFile
+            // Don't trace methods, since you cannot just print them "standalone"
+            // without providing arguments
+            && !i.symbol.isDefDef && !i.symbol.isClassConstructor
+            // Don't trace identifiers which are synthesized by the compiler
+            // as part of the language implementation
+            && !i.symbol.flags.is(Flags.Artifact)
+            // Don't trace "magic" identifiers with '$'s in them
+            && !name.toString.contains('$') =>
 
-    override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
-      tree match {
-        case i @ Ident(name) if i.symbol.pos.exists
-          && i.pos.exists
-          // only trace identifiers coming from the same file,
-          // since those are the ones people probably care about
-          && i.symbol.pos.sourceFile == i.pos.sourceFile
-          // Don't trace methods, since you cannot just print them "standalone"
-          // without providing arguments
-          && !i.symbol.isDefDef && !i.symbol.isClassConstructor
-          // Don't trace identifiers which are synthesized by the compiler
-          // as part of the language implementation
-          && !i.symbol.flags.is(Flags.Artifact)
-          // Don't trace "magic" identifiers with '$'s in them
-          && !name.toString.contains('$') =>
+            wrapWithLoggedValue(tree.seal, logger, tree.tpe.widen.seal)
 
-          wrapWithLoggedValue(tree, logger, tree.tpe.widen)
+          // Don't worry about multiple chained annotations for now...
+          case Typed(_, tpt) =>
+            tpt.tpe match {
+              case AnnotatedType(underlying, annot) if annot.tpe =:= typeOf[utest.asserts.Show] =>
+                wrapWithLoggedValue(tree.seal, logger, underlying.widen.seal)
+              case _ => super.transformTerm(tree)
+            }
 
-        // Don't worry about multiple chained annotations for now...
-        case Typed(_, tpt) =>
-          tpt.tpe match {
-            case AnnotatedType(underlying, annot) if annot.tpe =:= typeOf[utest.asserts.Show] =>
-              wrapWithLoggedValue(tree, logger, underlying.widen)
-            case _ => super.transformTerm(tree)
-          }
+          // Don't recurse and trace the LHS of assignments
+          case t@Assign(lhs, rhs) => Assign.copy(t)(lhs, super.transformTerm(rhs))
 
-        // Don't recurse and trace the LHS of assignments
-        case t@Assign(lhs, rhs) => Assign.copy(t)(lhs, super.transformTerm(rhs))
-
-        case _ => super.transformTerm(tree)
+          case _ => super.transformTerm(tree)
+        }
       }
     }
-  }
 
-  def wrapWithLoggedValue(tree: ctx.tasty.Term, logger: Expr[TestValue => Unit], tpe: ctx.tasty.Type) = {
-    import ctx.tasty._
+  private def wrapWithLoggedValue(expr: Expr[Any], logger: Expr[TestValue => Unit], tpe: Type[?])(using QuoteContext) = {
     val tpeString =
       try tpe.show
       catch
         case _ => tpe.toString // Workaround lampepfl/dotty#8858
-    tree.seal match {
+    expr match {
       case '{ $x: $t } =>
         '{
           val tmp: $t = $x
           $logger(TestValue(
-            ${Expr(tree.show)},
-            ${Expr(stripScalaCorePrefixes(tpeString))},
+            ${Expr(expr.show)},
+            ${Expr(StringUtilHelpers.stripScalaCorePrefixes(tpeString))},
             tmp
           ))
           tmp
@@ -108,7 +91,7 @@ class TracerHelper(using val ctx: QuoteContext) {
     }
   }
 
-  def makeAssertEntry[T](expr: Expr[T], code: String)(using scala.quoted.Type[T]) =
+  private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, scala.quoted.Type[T]) =
     def entryBody(logger: Expr[TestValue => Unit]) =
       tracingMap(logger).transformTerm(expr.unseal).seal.cast[T]
     '{AssertEntry(
@@ -125,6 +108,3 @@ object StringUtilHelpers {
   def (str: String) trim: String =
     str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse
 }
-
-given (using QuoteContext) as TracerHelper = new TracerHelper
-given (using h: TracerHelper) as QuoteContext = h.ctx
