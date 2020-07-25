@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted.{ given _, _ }, scala.quoted.matching._
+import scala.quoted.{ given _, _ }
 import scala.tasty._
 
 
@@ -26,9 +26,9 @@ object Tracer {
 
 
     exprs match {
-      case ExprSeq(ess) =>
-        val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
-        Expr.betaReduce(func)(trees)
+      case Varargs(ess) =>
+	val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
+	Expr.betaReduce(func)(trees)
 
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.unseal}")
     }
@@ -36,11 +36,7 @@ object Tracer {
 
   def codeOf[T](expr: Expr[T])(using h: TracerHelper): String = {
     import h.ctx.tasty._
-    h.ctx.tasty.positionOps.sourceCode(
-      h.ctx.tasty.TreeOps.pos(
-        expr.unseal(using h.ctx)
-      )(using h.ctx.tasty.given_Context)
-    )
+    expr.unseal(using h.ctx).pos(using h.ctx.tasty.given_Context).sourceCode
     // TODO: replace the above with expr.unseal.pos.sourceCode
     // see lampepfl/dotty#8623
   }
