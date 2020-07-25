@@ -27,8 +27,8 @@ object Tracer {
 
     exprs match {
       case Varargs(ess) =>
-	val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
-	Expr.betaReduce(func)(trees)
+        val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
+        Expr.betaReduce(func)(trees)
 
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.unseal}")
     }
