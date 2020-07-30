@@ -9,19 +9,19 @@ import scala.quoted._
  */
 object Tracer {
 
-  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using QuoteContext, Type[I]): Expr[O] =
+  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using QuoteContext, Type[I], Type[O]): Expr[O] =
     traceOneWithCode(func, expr, codeOf(expr))
 
-  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using qctx: QuoteContext, tt: Type[I]): Expr[O] = {
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using qctx: QuoteContext, tt: Type[I], to: Type[O]): Expr[O] = {
     val tree = makeAssertEntry(expr, code)
-    Expr.betaReduce(func)(tree)
+    Expr.betaReduce('{ $func($tree)})
   }
 
   def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using qctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
     exprs match {
       case Varargs(ess) =>
         val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
-        Expr.betaReduce(func)(trees)
+        Expr.betaReduce('{ $func($trees)})
 
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.unseal}")
     }
