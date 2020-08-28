@@ -1,7 +1,6 @@
 package utest
 
-import scala.quoted.{ given _, _ }
-import scala.tasty._
+import scala.quoted._
 
 import utest.framework.{TestCallTree, Tree => UTree }
 import scala.collection.mutable
