@@ -63,7 +63,6 @@ trait TestBuilderExtractors(using val qc: QuoteContext) {
   import qc.tasty.{ given _, _ }
 
   object TestMethod {
-    def (strExpr: Expr[String]) exec (using v: Unliftable[String]): Option[String] = v(strExpr)
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
       Option(tree).collect { case tree: Term => tree.seal }.collect {
@@ -75,14 +74,14 @@ trait TestBuilderExtractors(using val qc: QuoteContext) {
         // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), body.unseal)
 
         // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        case '{($name: String).-($body)} => (name.exec, body.unseal)
+        case '{($name: String).-($body)} => (name.unlift, body.unseal)
         // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), body.unseal)
 
         // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String)($body)} => (name.exec, body.unseal)
+        case '{utest.test($name: String)($body)} => (name.unlift, body.unseal)
 
         // case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String).-($body)} => (name.exec, body.unseal)
+        case '{utest.test($name: String).-($body)} => (name.unlift, body.unseal)
 
         // case q"""utest.`package`.test.-($body)""" => (None, body)
         case '{utest.test.-($body)} => (None, body.unseal)
