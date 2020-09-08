@@ -59,7 +59,7 @@ object Tracer {
           // Don't worry about multiple chained annotations for now...
           case Typed(_, tpt) =>
             tpt.tpe match {
-              case AnnotatedType(underlying, annot) if annot.tpe =:= typeOf[utest.asserts.Show] =>
+              case AnnotatedType(underlying, annot) if annot.tpe =:= Type.of[utest.asserts.Show] =>
                 wrapWithLoggedValue(tree.seal, logger, underlying.widen.seal)
               case _ => super.transformTerm(tree)
             }
