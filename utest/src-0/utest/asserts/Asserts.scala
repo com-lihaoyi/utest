@@ -27,7 +27,7 @@ trait AssertsCompanionVersionSpecific {
     import ctx.tasty.{ given _, _ }
     val clazz = Literal(Constant.ClassTag[T](using tpe.unseal.tpe))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
-      utest.asserts.Asserts.interceptImpl[$tpe](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
+      utest.asserts.Asserts.interceptImpl[T](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
   }
 
   def compileErrorImpl(errors: List[Error], snippet: String): CompileError =
