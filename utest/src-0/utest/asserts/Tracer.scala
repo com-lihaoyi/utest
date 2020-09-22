@@ -105,6 +105,6 @@ object StringUtilHelpers {
     pattern.replaceAllIn(tpeName, _.group("tpe"))
   }
 
-  def (str: String) trim: String =
+  extension (str: String) def trim: String =
     str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse
 }
