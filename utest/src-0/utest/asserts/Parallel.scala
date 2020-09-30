@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted.{ given _, _ }
+import scala.quoted._
 
 import scala.concurrent.duration._
 import scala.annotation.tailrec
