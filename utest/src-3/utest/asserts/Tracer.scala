@@ -78,9 +78,9 @@ object Tracer {
       catch
         case _ => tpe.toString // Workaround lampepfl/dotty#8858
     expr match {
-      case '{ $x: $t } =>
+      case '{ $x: $T } =>
         '{
-          val tmp: $t = $x
+          val tmp: T = $x
           $logger(TestValue(
             ${Expr(expr.show)},
             ${Expr(StringUtilHelpers.stripScalaCorePrefixes(tpeString))},
