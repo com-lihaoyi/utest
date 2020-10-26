@@ -59,7 +59,7 @@ object Tracer {
           // Don't worry about multiple chained annotations for now...
           case Typed(_, tpt) =>
             tpt.tpe match {
-              case AnnotatedType(underlying, annot) if annot.tpe =:= Type.of[utest.asserts.Show] =>
+              case AnnotatedType(underlying, annot) if annot.tpe =:= TypeRepr.of[utest.asserts.Show] =>
                 wrapWithLoggedValue(tree.seal, logger, underlying.widen.seal)
               case _ => super.transformTerm(tree)
             }
@@ -91,7 +91,7 @@ object Tracer {
     }
   }
 
-  private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, scala.quoted.Type[T]) =
+  private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, Type[T]) =
     def entryBody(logger: Expr[TestValue => Unit]) =
       tracingMap(logger).transformTerm(expr.unseal).seal.cast[T]
     '{AssertEntry(
