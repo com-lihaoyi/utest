@@ -5,8 +5,8 @@ import scala.quoted.{ Type => QType, _ }
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder(ctx: QuoteContext) extends TestBuilderExtractors(using ctx) {
-  import qc.tasty.{ Tree => TasTree, given, _ }
+class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuilderExtractors[QCtx](using ctx) {
+  import qc.tasty.{ Tree => TasTree, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
     if tests.isEmpty then Nil -> Nil else tests.zipWithIndex.foldLeft((List.empty[Expr[UTree[String]]], List.empty[Expr[TestCallTree]])) {
@@ -59,8 +59,8 @@ class TestBuilder(ctx: QuoteContext) extends TestBuilderExtractors(using ctx) {
     }
 }
 
-trait TestBuilderExtractors(using val qc: QuoteContext) {
-  import qc.tasty.{ given _, _ }
+trait TestBuilderExtractors[QCtx <: QuoteContext & Singleton](using val qc: QCtx) {
+  import qc.tasty._
 
   object TestMethod {
 
@@ -121,4 +121,3 @@ trait TestBuilderExtractors(using val qc: QuoteContext) {
   }
 }
 
-given (using ctx: QuoteContext) as TestBuilder = new TestBuilder(ctx)
