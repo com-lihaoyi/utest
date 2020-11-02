@@ -19,8 +19,8 @@ class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuild
     if (nestedBodyTrees.nonEmpty)
       Block(setupStats, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.unseal)
     else
-      Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].seal})}.unseal)
-    ).seal.cast[Either[Any, IndexedSeq[TestCallTree]]]
+      Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].asExpr})}.unseal)
+    ).asExprOf[Either[Any, IndexedSeq[TestCallTree]]]
   }}}
 
 
@@ -34,7 +34,7 @@ class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuild
         override def transformTerm(t: Term)(implicit ctx: Context): Term =
           t.tpe.widen match {
             case _: MethodType | _: PolyType => super.transformTerm(t)
-            case _ => t.seal match {
+            case _ => t.asExpr match {
               case '{TestPath.synthetic} => '{TestPath(${Expr(path)})}.unseal
               case _ => super.transformTerm(t)
             }
@@ -109,7 +109,6 @@ trait TestBuilderExtractors[QCtx <: QuoteContext & Singleton](using val qctx: QC
       stats.partitionMap[Apply, Statement] {
         case IsTest(test) => Left (test)
         case stmt: Statement => Right(stmt)
-        case stmt: Import => Right(stmt)
       }
 
     def unapply(tree: Tree): Option[(List[Apply], List[Statement])] = tree match {

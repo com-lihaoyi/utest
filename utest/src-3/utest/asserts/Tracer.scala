@@ -54,15 +54,15 @@ object Tracer {
             // Don't trace "magic" identifiers with '$'s in them
             && !name.toString.contains('$') =>
 
-            tree.tpe.widen.seal match
-              case '[$t] => wrapWithLoggedValue[t](tree.seal, logger)
+            tree.tpe.widen.asType match
+              case '[t] => wrapWithLoggedValue[t](tree.asExpr, logger)
 
           // Don't worry about multiple chained annotations for now...
           case Typed(_, tpt) =>
             tpt.tpe match {
               case AnnotatedType(underlying, annot) if annot.tpe =:= TypeRepr.of[utest.asserts.Show] =>
-                underlying.widen.seal match
-                  case '[$t] => wrapWithLoggedValue[t](tree.seal, logger)
+                underlying.widen.asType match
+                  case '[t] => wrapWithLoggedValue[t](tree.asExpr, logger)
               case _ => super.transformTerm(tree)
             }
 
@@ -80,9 +80,9 @@ object Tracer {
       catch
         case _ => Type[T].toString // Workaround lampepfl/dotty#8858
     expr match {
-      case '{ $x: $T } =>
+      case '{ $x: t } =>
         '{
-          val tmp: T = $x
+          val tmp: t = $x
           $logger(TestValue(
             ${Expr(expr.show)},
             ${Expr(StringUtilHelpers.stripScalaCorePrefixes(tpeString))},
@@ -95,7 +95,7 @@ object Tracer {
 
   private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, Type[T]) =
     def entryBody(logger: Expr[TestValue => Unit]) =
-      tracingMap(logger).transformTerm(expr.unseal).seal.cast[T]
+      tracingMap(logger).transformTerm(expr.unseal).asExprOf[T]
     '{AssertEntry(
       ${Expr(code)},
       logger => ${entryBody('logger)})}

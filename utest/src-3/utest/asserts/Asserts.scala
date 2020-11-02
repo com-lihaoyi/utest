@@ -27,7 +27,7 @@ trait AssertsCompanionVersionSpecific {
     import qctx.reflect._
     val clazz = Literal(Constant.ClassOf(TypeRepr.of[T]))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
-      utest.asserts.Asserts.interceptImpl[T](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
+      utest.asserts.Asserts.interceptImpl[T](x)(ClassTag(${clazz.asExprOf[Class[T]]})) }, exprs)
   }
 
   def compileErrorImpl(errors: List[Error], snippet: String): CompileError =
