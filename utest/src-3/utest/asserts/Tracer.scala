@@ -31,7 +31,7 @@ object Tracer {
     expr.unseal.pos.sourceCode
 
   private def tracingMap(logger: Expr[TestValue => Unit])(using QuoteContext) =
-    import qctx.tasty._
+    import qctx.reflect._
     new TreeMap {
       // Do not descend into definitions inside blocks since their arguments are unbound
       override def transformStatement(tree: Statement)(using ctx: Context): Statement = tree match
