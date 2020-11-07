@@ -54,13 +54,15 @@ object Tracer {
             // Don't trace "magic" identifiers with '$'s in them
             && !name.toString.contains('$') =>
 
-            wrapWithLoggedValue(tree.seal, logger, tree.tpe.widen.seal)
+            tree.tpe.widen.seal match
+              case '[$t] => wrapWithLoggedValue[t](tree.seal, logger)
 
           // Don't worry about multiple chained annotations for now...
           case Typed(_, tpt) =>
             tpt.tpe match {
               case AnnotatedType(underlying, annot) if annot.tpe =:= TypeRepr.of[utest.asserts.Show] =>
-                wrapWithLoggedValue(tree.seal, logger, underlying.widen.seal)
+                underlying.widen.seal match
+                  case '[$t] => wrapWithLoggedValue[t](tree.seal, logger)
               case _ => super.transformTerm(tree)
             }
 
@@ -72,11 +74,11 @@ object Tracer {
       }
     }
 
-  private def wrapWithLoggedValue(expr: Expr[Any], logger: Expr[TestValue => Unit], tpe: Type[?])(using QuoteContext) = {
+  private def wrapWithLoggedValue[T: Type](expr: Expr[Any], logger: Expr[TestValue => Unit])(using QuoteContext) = {
     val tpeString =
-      try tpe.show
+      try Type.show[T]
       catch
-        case _ => tpe.toString // Workaround lampepfl/dotty#8858
+        case _ => Type[T].toString // Workaround lampepfl/dotty#8858
     expr match {
       case '{ $x: $T } =>
         '{

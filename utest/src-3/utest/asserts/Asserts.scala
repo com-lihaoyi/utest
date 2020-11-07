@@ -23,9 +23,9 @@ trait AssertsCompanionVersionSpecific {
     Tracer.traceOneWithCode[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t, code)
   }
 
-  def interceptProxy[T](exprs: Expr[Unit])(using ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
-    import ctx.reflect._
-    val clazz = Literal(Constant.ClassOf(tpe.unseal.tpe))
+  def interceptProxy[T](exprs: Expr[Unit])(using QuoteContext, Type[T]): Expr[T] = {
+    import qctx.reflect._
+    val clazz = Literal(Constant.ClassOf(TypeRepr.of[T]))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
       utest.asserts.Asserts.interceptImpl[T](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
   }
