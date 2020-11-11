@@ -65,7 +65,7 @@ trait TestBuilderExtractors[QCtx <: QuoteContext & Singleton](using val qctx: QC
   object TestMethod {
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
-      Option(tree).collect { case tree: Term => tree.seal }.collect {
+      Option(tree).collect { case tree: Term => tree.asExpr }.collect {
         // case q"""utest.`package`.*.-($body)""" => (None, body)
         case '{utest.*.-($body)} => (None, body.unseal)
 
