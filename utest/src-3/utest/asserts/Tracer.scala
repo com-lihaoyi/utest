@@ -78,7 +78,7 @@ object Tracer {
     val tpeString =
       try Type.show[T]
       catch
-        case _ => Type[T].toString // Workaround lampepfl/dotty#8858
+        case _ => Type.of[T].toString // Workaround lampepfl/dotty#8858
     expr match {
       case '{ $x: t } =>
         '{
