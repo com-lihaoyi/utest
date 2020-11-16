@@ -17,18 +17,20 @@ object Tracer {
     Expr.betaReduce('{ $func($tree)})
   }
 
-  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using qctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using QuoteContext, Type[T]): Expr[Unit] = {
+    import qctx.reflect._
     exprs match {
       case Varargs(ess) =>
         val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
         Expr.betaReduce('{ $func($trees)})
 
-      case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.unseal}")
+      case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${Term.of(exprs)}")
     }
   }
 
   def codeOf[T](expr: Expr[T])(using QuoteContext): String =
-    expr.unseal.pos.sourceCode
+    import qctx.reflect._
+    Term.of(expr).pos.sourceCode
 
   private def tracingMap(logger: Expr[TestValue => Unit])(using QuoteContext) =
     import qctx.reflect._
@@ -75,13 +77,14 @@ object Tracer {
     }
 
   private def wrapWithLoggedValue[T: Type](expr: Expr[Any], logger: Expr[TestValue => Unit])(using QuoteContext) = {
+    import qctx.reflect._
     val tpeString =
       try Type.show[T]
       catch
         case _ => Type.of[T].toString // Workaround lampepfl/dotty#8858
     expr match {
       case '{ $x: t } =>
-        '{
+        Term.of('{
           val tmp: t = $x
           $logger(TestValue(
             ${Expr(expr.show)},
@@ -89,13 +92,14 @@ object Tracer {
             tmp
           ))
           tmp
-        }.unseal
+        })
     }
   }
 
   private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, Type[T]) =
+    import qctx.reflect._
     def entryBody(logger: Expr[TestValue => Unit]) =
-      tracingMap(logger).transformTerm(expr.unseal).asExprOf[T]
+      tracingMap(logger).transformTerm(Term.of(expr)).asExprOf[T]
     '{AssertEntry(
       ${Expr(code)},
       logger => ${entryBody('logger)})}
