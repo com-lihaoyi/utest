@@ -36,11 +36,11 @@ object Tracer {
     import qctx.reflect._
     new TreeMap {
       // Do not descend into definitions inside blocks since their arguments are unbound
-      override def transformStatement(tree: Statement)(using ctx: Context): Statement = tree match
+      override def transformStatement(tree: Statement)(owner: Symbol): Statement = tree match
         case _: DefDef => tree
-        case _ => super.transformStatement(tree)
+        case _ => super.transformStatement(tree)(owner)
 
-      override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
+      override def transformTerm(tree: Term)(owner: Symbol): Term = {
         tree match {
           case i @ Ident(name) if i.symbol.pos.exists
             && i.pos.exists
@@ -65,13 +65,13 @@ object Tracer {
               case AnnotatedType(underlying, annot) if annot.tpe =:= TypeRepr.of[utest.asserts.Show] =>
                 underlying.widen.asType match
                   case '[t] => wrapWithLoggedValue[t](tree.asExpr, logger)
-              case _ => super.transformTerm(tree)
+              case _ => super.transformTerm(tree)(owner)
             }
 
           // Don't recurse and trace the LHS of assignments
-          case t@Assign(lhs, rhs) => Assign.copy(t)(lhs, super.transformTerm(rhs))
+          case t@Assign(lhs, rhs) => Assign.copy(t)(lhs, super.transformTerm(rhs)(owner))
 
-          case _ => super.transformTerm(tree)
+          case _ => super.transformTerm(tree)(owner)
         }
       }
     }
@@ -99,7 +99,7 @@ object Tracer {
   private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, Type[T]) =
     import qctx.reflect._
     def entryBody(logger: Expr[TestValue => Unit]) =
-      tracingMap(logger).transformTerm(Term.of(expr)).asExprOf[T]
+      tracingMap(logger).transformTerm(Term.of(expr))(Symbol.spliceOwner).asExprOf[T]
     '{AssertEntry(
       ${Expr(code)},
       logger => ${entryBody('logger)})}

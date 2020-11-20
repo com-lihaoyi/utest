@@ -31,17 +31,17 @@ class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuild
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
 
       object testPathMap extends TreeMap {
-        override def transformTerm(t: Term)(implicit ctx: Context): Term =
+        override def transformTerm(t: Term)(owner: Symbol): Term =
           t.tpe.widen match {
-            case _: MethodType | _: PolyType => super.transformTerm(t)
+            case _: MethodType | _: PolyType => super.transformTerm(t)(owner)
             case _ => t.asExpr match {
               case '{TestPath.synthetic} => Term.of('{TestPath(${Expr(path)})})
-              case _ => super.transformTerm(t)
+              case _ => super.transformTerm(t)(owner)
             }
           }
       }
 
-      val setupStats = testPathMap.transformStats(setupStatsRaw)
+      val setupStats = testPathMap.transformStats(setupStatsRaw)(Symbol.spliceOwner)
 
       val names: Expr[UTree[String]] = '{UTree[String](${Expr(name)}, ${Expr.ofList(nestedNameTrees)}: _*)}
       val bodies: Expr[TestCallTree] = TestCallTreeExpr(nestedBodyTrees, setupStats)
