@@ -5,7 +5,7 @@ import scala.quoted.{ Type => QType, _ }
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuilderExtractors[QCtx](using ctx) {
+class TestBuilder[QCtx <: Quotes & Singleton](ctx: QCtx) extends TestBuilderExtractors[QCtx](using ctx) {
   import qctx.reflect.{ Tree => TasTree, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
@@ -59,7 +59,7 @@ class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuild
     }
 }
 
-trait TestBuilderExtractors[QCtx <: QuoteContext & Singleton](using val qctx: QCtx) {
+trait TestBuilderExtractors[QCtx <: Quotes & Singleton](using val qctx: QCtx) {
   import qctx.reflect._
 
   object TestMethod {

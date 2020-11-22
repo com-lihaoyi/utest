@@ -9,15 +9,15 @@ import scala.quoted._
  */
 object Tracer {
 
-  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using QuoteContext, Type[I], Type[O]): Expr[O] =
+  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using Quotes, Type[I], Type[O]): Expr[O] =
     traceOneWithCode(func, expr, codeOf(expr))
 
-  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using qctx: QuoteContext, tt: Type[I], to: Type[O]): Expr[O] = {
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using qctx: Quotes, tt: Type[I], to: Type[O]): Expr[O] = {
     val tree = makeAssertEntry(expr, code)
     Expr.betaReduce('{ $func($tree)})
   }
 
-  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using QuoteContext, Type[T]): Expr[Unit] = {
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using Quotes, Type[T]): Expr[Unit] = {
     import qctx.reflect._
     exprs match {
       case Varargs(ess) =>
@@ -28,11 +28,11 @@ object Tracer {
     }
   }
 
-  def codeOf[T](expr: Expr[T])(using QuoteContext): String =
+  def codeOf[T](expr: Expr[T])(using Quotes): String =
     import qctx.reflect._
     Term.of(expr).pos.sourceCode
 
-  private def tracingMap(logger: Expr[TestValue => Unit])(using QuoteContext) =
+  private def tracingMap(logger: Expr[TestValue => Unit])(using Quotes) =
     import qctx.reflect._
     new TreeMap {
       // Do not descend into definitions inside blocks since their arguments are unbound
@@ -76,7 +76,7 @@ object Tracer {
       }
     }
 
-  private def wrapWithLoggedValue[T: Type](expr: Expr[Any], logger: Expr[TestValue => Unit])(using QuoteContext) = {
+  private def wrapWithLoggedValue[T: Type](expr: Expr[Any], logger: Expr[TestValue => Unit])(using Quotes) = {
     import qctx.reflect._
     val tpeString =
       try Type.show[T]
@@ -96,7 +96,7 @@ object Tracer {
     }
   }
 
-  private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, Type[T]) =
+  private def makeAssertEntry[T](expr: Expr[T], code: String)(using Quotes, Type[T]) =
     import qctx.reflect._
     def entryBody(logger: Expr[TestValue => Unit]) =
       tracingMap(logger).transformTerm(Term.of(expr))(Symbol.spliceOwner).asExprOf[T]

@@ -15,15 +15,15 @@ import scala.collection.mutable
  * message for boolean expression assertion.
  */
 trait AssertsCompanionVersionSpecific {
-  def assertProxy(exprs: Expr[Seq[Boolean]])(using ctx: QuoteContext): Expr[Unit] =
+  def assertProxy(exprs: Expr[Seq[Boolean]])(using ctx: Quotes): Expr[Unit] =
     Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
 
-  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]])(using ctx: QuoteContext): Expr[Unit] = {
+  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]])(using ctx: Quotes): Expr[Unit] = {
     val code = s"${Tracer.codeOf(t)} match { ${Tracer.codeOf(pf)} }"
     Tracer.traceOneWithCode[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t, code)
   }
 
-  def interceptProxy[T](exprs: Expr[Unit])(using QuoteContext, Type[T]): Expr[T] = {
+  def interceptProxy[T](exprs: Expr[Unit])(using Quotes, Type[T]): Expr[T] = {
     import qctx.reflect._
     val clazz = Literal(Constant.ClassOf(TypeRepr.of[T]))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
