@@ -6,7 +6,7 @@ import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
 class TestBuilder[QCtx <: Quotes & Singleton](ctx: QCtx) extends TestBuilderExtractors[QCtx](using ctx) {
-  import qctx.reflect.{ Tree => TasTree, _ }
+  import quotes.reflect.{ Tree => TasTree, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
     if tests.isEmpty then Nil -> Nil else tests.zipWithIndex.foldLeft((List.empty[Expr[UTree[String]]], List.empty[Expr[TestCallTree]])) {
@@ -60,7 +60,7 @@ class TestBuilder[QCtx <: Quotes & Singleton](ctx: QCtx) extends TestBuilderExtr
 }
 
 trait TestBuilderExtractors[QCtx <: Quotes & Singleton](using val qctx: QCtx) {
-  import qctx.reflect._
+  import quotes.reflect._
 
   object TestMethod {
 

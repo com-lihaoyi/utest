@@ -18,7 +18,7 @@ object Tracer {
   }
 
   def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using Quotes, Type[T]): Expr[Unit] = {
-    import qctx.reflect._
+    import quotes.reflect._
     exprs match {
       case Varargs(ess) =>
         val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
@@ -29,11 +29,11 @@ object Tracer {
   }
 
   def codeOf[T](expr: Expr[T])(using Quotes): String =
-    import qctx.reflect._
+    import quotes.reflect._
     Term.of(expr).pos.sourceCode
 
   private def tracingMap(logger: Expr[TestValue => Unit])(using Quotes) =
-    import qctx.reflect._
+    import quotes.reflect._
     new TreeMap {
       // Do not descend into definitions inside blocks since their arguments are unbound
       override def transformStatement(tree: Statement)(owner: Symbol): Statement = tree match
@@ -77,7 +77,7 @@ object Tracer {
     }
 
   private def wrapWithLoggedValue[T: Type](expr: Expr[Any], logger: Expr[TestValue => Unit])(using Quotes) = {
-    import qctx.reflect._
+    import quotes.reflect._
     val tpeString =
       try Type.show[T]
       catch
@@ -97,7 +97,7 @@ object Tracer {
   }
 
   private def makeAssertEntry[T](expr: Expr[T], code: String)(using Quotes, Type[T]) =
-    import qctx.reflect._
+    import quotes.reflect._
     def entryBody(logger: Expr[TestValue => Unit]) =
       tracingMap(logger).transformTerm(Term.of(expr))(Symbol.spliceOwner).asExprOf[T]
     '{AssertEntry(

@@ -24,7 +24,7 @@ trait AssertsCompanionVersionSpecific {
   }
 
   def interceptProxy[T](exprs: Expr[Unit])(using Quotes, Type[T]): Expr[T] = {
-    import qctx.reflect._
+    import quotes.reflect._
     val clazz = Literal(Constant.ClassOf(TypeRepr.of[T]))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
       utest.asserts.Asserts.interceptImpl[T](x)(ClassTag(${clazz.asExprOf[Class[T]]})) }, exprs)
