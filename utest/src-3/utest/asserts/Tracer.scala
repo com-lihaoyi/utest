@@ -12,7 +12,7 @@ object Tracer {
   def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using Quotes, Type[I], Type[O]): Expr[O] =
     traceOneWithCode(func, expr, codeOf(expr))
 
-  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using qctx: Quotes, tt: Type[I], to: Type[O]): Expr[O] = {
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using Quotes, Type[I], Type[O]): Expr[O] = {
     val tree = makeAssertEntry(expr, code)
     Expr.betaReduce('{ $func($tree)})
   }
