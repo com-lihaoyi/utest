@@ -57,7 +57,7 @@ trait UtestTestModule extends ScalaModule with TestModule {
 
 object utest extends Module {
   val dottyVersion = Option(sys.props("dottyVersion"))
-  object jvm extends Cross[JvmUtestModule]((List("2.11.12", "2.12.8", "2.13.0", "3.0.0-M1") ++ dottyVersion): _*)
+  object jvm extends Cross[JvmUtestModule]((List("2.11.12", "2.12.8", "2.13.0", "3.0.0-M2") ++ dottyVersion): _*)
   class JvmUtestModule(val crossScalaVersion: String)
     extends UtestMainModule with ScalaModule with UtestModule {
     def ivyDeps = Agg(
