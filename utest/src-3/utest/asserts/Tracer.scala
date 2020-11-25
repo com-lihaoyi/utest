@@ -9,36 +9,38 @@ import scala.quoted._
  */
 object Tracer {
 
-  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using QuoteContext, Type[I], Type[O]): Expr[O] =
+  def traceOne[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I])(using Quotes, Type[I], Type[O]): Expr[O] =
     traceOneWithCode(func, expr, codeOf(expr))
 
-  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using qctx: QuoteContext, tt: Type[I], to: Type[O]): Expr[O] = {
+  def traceOneWithCode[I, O](func: Expr[AssertEntry[I] => O], expr: Expr[I], code: String)(using Quotes, Type[I], Type[O]): Expr[O] = {
     val tree = makeAssertEntry(expr, code)
     Expr.betaReduce('{ $func($tree)})
   }
 
-  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using qctx: QuoteContext, tt: Type[T]): Expr[Unit] = {
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using Quotes, Type[T]): Expr[Unit] = {
+    import quotes.reflect._
     exprs match {
       case Varargs(ess) =>
         val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
         Expr.betaReduce('{ $func($trees)})
 
-      case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.unseal}")
+      case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${Term.of(exprs)}")
     }
   }
 
-  def codeOf[T](expr: Expr[T])(using QuoteContext): String =
-    expr.unseal.pos.sourceCode
+  def codeOf[T](expr: Expr[T])(using Quotes): String =
+    import quotes.reflect._
+    Term.of(expr).pos.sourceCode
 
-  private def tracingMap(logger: Expr[TestValue => Unit])(using QuoteContext) =
-    import qctx.tasty._
+  private def tracingMap(logger: Expr[TestValue => Unit])(using Quotes) =
+    import quotes.reflect._
     new TreeMap {
       // Do not descend into definitions inside blocks since their arguments are unbound
-      override def transformStatement(tree: Statement)(using ctx: Context): Statement = tree match
+      override def transformStatement(tree: Statement)(owner: Symbol): Statement = tree match
         case _: DefDef => tree
-        case _ => super.transformStatement(tree)
+        case _ => super.transformStatement(tree)(owner)
 
-      override def transformTerm(tree: Term)(implicit ctx: Context): Term = {
+      override def transformTerm(tree: Term)(owner: Symbol): Term = {
         tree match {
           case i @ Ident(name) if i.symbol.pos.exists
             && i.pos.exists
@@ -54,46 +56,50 @@ object Tracer {
             // Don't trace "magic" identifiers with '$'s in them
             && !name.toString.contains('$') =>
 
-            wrapWithLoggedValue(tree.seal, logger, tree.tpe.widen.seal)
+            tree.tpe.widen.asType match
+              case '[t] => wrapWithLoggedValue[t](tree.asExpr, logger)
 
           // Don't worry about multiple chained annotations for now...
           case Typed(_, tpt) =>
             tpt.tpe match {
               case AnnotatedType(underlying, annot) if annot.tpe =:= TypeRepr.of[utest.asserts.Show] =>
-                wrapWithLoggedValue(tree.seal, logger, underlying.widen.seal)
-              case _ => super.transformTerm(tree)
+                underlying.widen.asType match
+                  case '[t] => wrapWithLoggedValue[t](tree.asExpr, logger)
+              case _ => super.transformTerm(tree)(owner)
             }
 
           // Don't recurse and trace the LHS of assignments
-          case t@Assign(lhs, rhs) => Assign.copy(t)(lhs, super.transformTerm(rhs))
+          case t@Assign(lhs, rhs) => Assign.copy(t)(lhs, super.transformTerm(rhs)(owner))
 
-          case _ => super.transformTerm(tree)
+          case _ => super.transformTerm(tree)(owner)
         }
       }
     }
 
-  private def wrapWithLoggedValue(expr: Expr[Any], logger: Expr[TestValue => Unit], tpe: Type[?])(using QuoteContext) = {
+  private def wrapWithLoggedValue[T: Type](expr: Expr[Any], logger: Expr[TestValue => Unit])(using Quotes) = {
+    import quotes.reflect._
     val tpeString =
-      try tpe.show
+      try Type.show[T]
       catch
-        case _ => tpe.toString // Workaround lampepfl/dotty#8858
+        case _ => Type.of[T].toString // Workaround lampepfl/dotty#8858
     expr match {
-      case '{ $x: $T } =>
-        '{
-          val tmp: T = $x
+      case '{ $x: t } =>
+        Term.of('{
+          val tmp: t = $x
           $logger(TestValue(
             ${Expr(expr.show)},
             ${Expr(StringUtilHelpers.stripScalaCorePrefixes(tpeString))},
             tmp
           ))
           tmp
-        }.unseal
+        })
     }
   }
 
-  private def makeAssertEntry[T](expr: Expr[T], code: String)(using QuoteContext, Type[T]) =
+  private def makeAssertEntry[T](expr: Expr[T], code: String)(using Quotes, Type[T]) =
+    import quotes.reflect._
     def entryBody(logger: Expr[TestValue => Unit]) =
-      tracingMap(logger).transformTerm(expr.unseal).seal.cast[T]
+      tracingMap(logger).transformTerm(Term.of(expr))(Symbol.spliceOwner).asExprOf[T]
     '{AssertEntry(
       ${Expr(code)},
       logger => ${entryBody('logger)})}

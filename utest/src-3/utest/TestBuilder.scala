@@ -5,8 +5,8 @@ import scala.quoted.{ Type => QType, _ }
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
 
-class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuilderExtractors[QCtx](using ctx) {
-  import qc.tasty.{ Tree => TasTree, _ }
+class TestBuilder[QCtx <: Quotes & Singleton](ctx: QCtx) extends TestBuilderExtractors[QCtx](using ctx) {
+  import quotes.reflect.{ Tree => TasTree, _ }
 
   def buildTestsTrees(tests: List[Apply], path: Seq[String]): (List[Expr[UTree[String]]], List[Expr[TestCallTree]]) =
     if tests.isEmpty then Nil -> Nil else tests.zipWithIndex.foldLeft((List.empty[Expr[UTree[String]]], List.empty[Expr[TestCallTree]])) {
@@ -17,10 +17,10 @@ class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuild
 
   def TestCallTreeExpr(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[Statement]): Expr[TestCallTree] = '{TestCallTree { ${(
     if (nestedBodyTrees.nonEmpty)
-      Block(setupStats, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.unseal)
+      Block(setupStats, Term.of('{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}))
     else
-      Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].seal})}.unseal)
-    ).seal.cast[Either[Any, IndexedSeq[TestCallTree]]]
+      Block(setupStats.dropRight(1), Term.of('{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].asExpr})}))
+    ).asExprOf[Either[Any, IndexedSeq[TestCallTree]]]
   }}}
 
 
@@ -31,17 +31,17 @@ class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuild
       val (nestedNameTrees, nestedBodyTrees) = buildTestsTrees(nestedTests, path)
 
       object testPathMap extends TreeMap {
-        override def transformTerm(t: Term)(implicit ctx: Context): Term =
+        override def transformTerm(t: Term)(owner: Symbol): Term =
           t.tpe.widen match {
-            case _: MethodType | _: PolyType => super.transformTerm(t)
-            case _ => t.seal match {
-              case '{TestPath.synthetic} => '{TestPath(${Expr(path)})}.unseal
-              case _ => super.transformTerm(t)
+            case _: MethodType | _: PolyType => super.transformTerm(t)(owner)
+            case _ => t.asExpr match {
+              case '{TestPath.synthetic} => Term.of('{TestPath(${Expr(path)})})
+              case _ => super.transformTerm(t)(owner)
             }
           }
       }
 
-      val setupStats = testPathMap.transformStats(setupStatsRaw)
+      val setupStats = testPathMap.transformStats(setupStatsRaw)(Symbol.spliceOwner)
 
       val names: Expr[UTree[String]] = '{UTree[String](${Expr(name)}, ${Expr.ofList(nestedNameTrees)}: _*)}
       val bodies: Expr[TestCallTree] = TestCallTreeExpr(nestedBodyTrees, setupStats)
@@ -59,35 +59,35 @@ class TestBuilder[QCtx <: QuoteContext & Singleton](ctx: QCtx) extends TestBuild
     }
 }
 
-trait TestBuilderExtractors[QCtx <: QuoteContext & Singleton](using val qc: QCtx) {
-  import qc.tasty._
+trait TestBuilderExtractors[QCtx <: Quotes & Singleton](using val qctx: QCtx) {
+  import quotes.reflect._
 
   object TestMethod {
 
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
-      Option(tree).collect { case tree: Term => tree.seal }.collect {
+      Option(tree).collect { case tree: Term => tree.asExpr }.collect {
         // case q"""utest.`package`.*.-($body)""" => (None, body)
-        case '{utest.*.-($body)} => (None, body.unseal)
+        case '{utest.*.-($body)} => (None, Term.of(body))
 
         // case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        // case '{($name: TestableString).apply($body)} => (Some(run(name).value), body.unseal)
-        // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), body.unseal)
+        // case '{($name: TestableString).apply($body)} => (Some(run(name).value), Term.of(body))
+        // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), Term.of(body))
 
         // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        case '{($name: String).-($body)} => (name.unlift, body.unseal)
-        // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), body.unseal)
+        case '{($name: String).-($body)} => (name.unlift, Term.of(body))
+        // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), Term.of(body))
 
         // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String)($body)} => (name.unlift, body.unseal)
+        case '{utest.test($name: String)($body)} => (name.unlift, Term.of(body))
 
         // case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String).-($body)} => (name.unlift, body.unseal)
+        case '{utest.test($name: String).-($body)} => (name.unlift, Term.of(body))
 
         // case q"""utest.`package`.test.-($body)""" => (None, body)
-        case '{utest.test.-($body)} => (None, body.unseal)
+        case '{utest.test.-($body)} => (None, Term.of(body))
 
         // case q"""utest.`package`.test.apply($body)""" => (None, body)
-        case '{utest.test($body: Any)} => (None, body.unseal)
+        case '{utest.test($body: Any)} => (None, Term.of(body))
       }
   }
 
@@ -109,7 +109,6 @@ trait TestBuilderExtractors[QCtx <: QuoteContext & Singleton](using val qc: QCtx
       stats.partitionMap[Apply, Statement] {
         case IsTest(test) => Left (test)
         case stmt: Statement => Right(stmt)
-        case stmt: Import => Right(stmt)
       }
 
     def unapply(tree: Tree): Option[(List[Apply], List[Statement])] = tree match {
