@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import scala.quoted.{ given _, _ }
+import scala.quoted._
 import scala.reflect.ClassTag
 import scala.compiletime.testing._
 
@@ -15,19 +15,19 @@ import scala.collection.mutable
  * message for boolean expression assertion.
  */
 trait AssertsCompanionVersionSpecific {
-  def assertProxy(exprs: Expr[Seq[Boolean]])(using ctx: QuoteContext): Expr[Unit] =
+  def assertProxy(exprs: Expr[Seq[Boolean]])(using ctx: Quotes): Expr[Unit] =
     Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
 
-  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]])(using ctx: QuoteContext): Expr[Unit] = {
+  def assertMatchProxy(t: Expr[Any], pf: Expr[PartialFunction[Any, Unit]])(using ctx: Quotes): Expr[Unit] = {
     val code = s"${Tracer.codeOf(t)} match { ${Tracer.codeOf(pf)} }"
     Tracer.traceOneWithCode[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t, code)
   }
 
-  def interceptProxy[T](exprs: Expr[Unit])(using ctx: QuoteContext, tpe: Type[T]): Expr[T] = {
-    import ctx.tasty.{ given _, _ }
-    val clazz = Literal(Constant.ClassTag[T](using tpe.unseal.tpe))
+  def interceptProxy[T](exprs: Expr[Unit])(using Quotes, Type[T]): Expr[T] = {
+    import quotes.reflect._
+    val clazz = Literal(Constant.ClassOf(TypeRepr.of[T]))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
-      utest.asserts.Asserts.interceptImpl[$tpe](x)(ClassTag(${clazz.seal.cast[Class[T]]})) }, exprs)
+      utest.asserts.Asserts.interceptImpl[T](x)(ClassTag(${clazz.asExprOf[Class[T]]})) }, exprs)
   }
 
   def compileErrorImpl(errors: List[Error], snippet: String): CompileError =
