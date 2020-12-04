@@ -74,14 +74,14 @@ trait TestBuilderExtractors[QCtx <: Quotes & Singleton](using val qctx: QCtx) {
         // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), Term.of(body))
 
         // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        case '{($name: String).-($body)} => (name.unlift, Term.of(body))
+        case '{($name: String).-($body)} => (name.value, Term.of(body))
         // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), Term.of(body))
 
         // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String)($body)} => (name.unlift, Term.of(body))
+        case '{utest.test($name: String)($body)} => (name.value, Term.of(body))
 
         // case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String).-($body)} => (name.unlift, Term.of(body))
+        case '{utest.test($name: String).-($body)} => (name.value, Term.of(body))
 
         // case q"""utest.`package`.test.-($body)""" => (None, body)
         case '{utest.test.-($body)} => (None, Term.of(body))
