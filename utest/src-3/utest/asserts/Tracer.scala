@@ -30,7 +30,7 @@ object Tracer {
 
   def codeOf[T](expr: Expr[T])(using Quotes): String =
     import quotes.reflect._
-    Term.of(expr).pos.sourceCode
+    Term.of(expr).pos.sourceCode.get
 
   private def tracingMap(logger: Expr[TestValue => Unit])(using Quotes) =
     import quotes.reflect._
