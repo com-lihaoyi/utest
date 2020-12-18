@@ -30,7 +30,7 @@ object Tracer {
 
   def codeOf[T](expr: Expr[T])(using Quotes): String =
     import quotes.reflect._
-    Term.of(expr).pos.sourceCode
+    Term.of(expr).pos.sourceCode.get
 
   private def tracingMap(logger: Expr[TestValue => Unit])(using Quotes) =
     import quotes.reflect._
@@ -42,11 +42,10 @@ object Tracer {
 
       override def transformTerm(tree: Term)(owner: Symbol): Term = {
         tree match {
-          case i @ Ident(name) if i.symbol.pos.exists
-            && i.pos.exists
+          case i @ Ident(name) if i.symbol.pos.isDefined
             // only trace identifiers coming from the same file,
             // since those are the ones people probably care about
-            && i.symbol.pos.sourceFile == i.pos.sourceFile
+            && i.symbol.pos.get.sourceFile == i.pos.sourceFile
             // Don't trace methods, since you cannot just print them "standalone"
             // without providing arguments
             && !i.symbol.isDefDef && !i.symbol.isClassConstructor
