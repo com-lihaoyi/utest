@@ -1,5 +1,12 @@
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
 
+val scala211 = "2.11.12"
+val scala212 = "2.12.13"
+val scala213 = "2.13.4"
+val scala3 = "3.0.0-M3"
+val scalaJS06 = "0.6.33"
+val scalaJS1 = "1.4.0"
+val scalaNative04 = "0.4.0"
 
 trait UtestModule extends PublishModule {
   def artifactName = "utest"
@@ -57,7 +64,7 @@ trait UtestTestModule extends ScalaModule with TestModule {
 
 object utest extends Module {
   val dottyVersion = Option(sys.props("dottyVersion"))
-  object jvm extends Cross[JvmUtestModule]((List("2.11.12", "2.12.8", "2.13.0", "3.0.0-M3") ++ dottyVersion): _*)
+  object jvm extends Cross[JvmUtestModule]((List(scala211, scala212, scala213, scala3) ++ dottyVersion): _*)
   class JvmUtestModule(val crossScalaVersion: String)
     extends UtestMainModule with ScalaModule with UtestModule {
     def ivyDeps = Agg(
@@ -81,7 +88,7 @@ object utest extends Module {
   }
 
   object js extends Cross[JsUtestModule](
-    ("2.12.10", "0.6.31"), ("2.13.1", "0.6.31"), ("2.12.10", "1.0.0"), ("2.13.1", "1.0.0")
+    (scala212, scalaJS06), (scala213, scalaJS06), (scala212, scalaJS1), (scala213, scalaJS1)
   )
   class JsUtestModule(val crossScalaVersion: String, crossJSVersion: String)
     extends UtestMainModule with ScalaJSModule with UtestModule {
@@ -98,13 +105,14 @@ object utest extends Module {
     }
   }
 
-  object native extends Cross[NativeUtestModule](("2.11.12", "0.3.9"), ("2.11.12", "0.4.0-M2"))
+  object native extends Cross[NativeUtestModule](
+    (scala211, scalaNative04), (scala212, scalaNative04), (scala213, scalaNative04)
+  )
   class NativeUtestModule(val crossScalaVersion: String, crossScalaNativeVersion: String)
     extends UtestMainModule with ScalaNativeModule with UtestModule {
     def offset = os.up
     def ivyDeps = super.ivyDeps() ++ Agg(
-      ivy"org.scala-native::test-interface::$crossScalaNativeVersion",
-      ivy"org.scala-lang:scala-reflect:$crossScalaVersion",
+      ivy"org.scala-native::test-interface::$crossScalaNativeVersion"
     )
 
     def scalaNativeVersion = crossScalaNativeVersion
