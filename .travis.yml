@@ -1,6 +1,6 @@
+os: linux
 language: scala
-sudo: required
-dist: trusty
+dist: bionic
 addons:
   apt:
     update: true
@@ -9,9 +9,12 @@ before_script:
   - git fetch --tags
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 script:
-  - curl https://raw.githubusercontent.com/scala-native/scala-native/b7851c4dc2a22c9fd9202aea3d97e2a68910b918/scripts/travis_setup.sh | bash -x
   - ./mill -i __.__.test
 
+cache:
+  directories:
+    - $HOME/.cache/coursier
+    - $HOME/.mill
