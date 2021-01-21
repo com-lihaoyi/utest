@@ -18,7 +18,7 @@ val scalaNativeVersions = for {
 trait UtestModule extends PublishModule {
   def artifactName = "utest"
 
-  def publishVersion = "0.7.5"
+  def publishVersion = "0.7.6"
 
   def pomSettings = PomSettings(
     description = artifactName(),
