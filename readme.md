@@ -1,4 +1,4 @@
-µTest 0.7.6 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.7.7 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -80,7 +80,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.2" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.7" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -88,7 +88,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.7.2" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.7.7" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
