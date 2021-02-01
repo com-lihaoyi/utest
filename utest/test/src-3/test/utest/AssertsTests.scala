@@ -32,7 +32,7 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
             """compileError("1" * 2).check("")"""
           ).check("""compileError("1" * 2).check("")
                       |             ^""".stripMargin,
-              "argument to compileError must be a statically known String"
+              """argument to compileError must be a statically known String but was: augmentString("1").*(2)"""
           )
       }
     }
