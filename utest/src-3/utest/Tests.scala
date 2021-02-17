@@ -11,8 +11,9 @@ trait TestsVersionSpecific {
 }
 
 object TestsVersionSpecific {
-  def testsImpl(body: Expr[Any])(using Quotes): Expr[Tests] = {
+  def testsImpl(body: Expr[Any])(using qctx: Quotes): Expr[Tests] = {
+    import qctx.reflect._
     val helpers = new TestBuilder(quotes)
-    helpers.processTests(quotes.reflect.Term.of(body))
+    helpers.processTests(body.asTerm)
   }
 }
