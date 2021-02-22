@@ -17,9 +17,9 @@ class TestBuilder[QCtx <: Quotes & Singleton](ctx: QCtx) extends TestBuilderExtr
 
   def TestCallTreeExpr(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[Statement]): Expr[TestCallTree] = '{TestCallTree { ${(
     if (nestedBodyTrees.nonEmpty)
-      Block(setupStats, Term.of('{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}))
+      Block(setupStats, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.asTerm)
     else
-      Block(setupStats.dropRight(1), Term.of('{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].asExpr})}))
+      Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].asExpr})}.asTerm)
     ).asExprOf[Either[Any, IndexedSeq[TestCallTree]]]
   }}}
 
@@ -35,7 +35,7 @@ class TestBuilder[QCtx <: Quotes & Singleton](ctx: QCtx) extends TestBuilderExtr
           t.tpe.widen match {
             case _: MethodType | _: PolyType => super.transformTerm(t)(owner)
             case _ => t.asExpr match {
-              case '{TestPath.synthetic} => Term.of('{TestPath(${Expr(path)})})
+              case '{TestPath.synthetic} => '{TestPath(${Expr(path)})}.asTerm
               case _ => super.transformTerm(t)(owner)
             }
           }
@@ -67,27 +67,27 @@ trait TestBuilderExtractors[QCtx <: Quotes & Singleton](using val qctx: QCtx) {
     def unapply(tree: Tree): Option[(Option[String], Tree)] =
       Option(tree).collect { case tree: Term => tree.asExpr }.collect {
         // case q"""utest.`package`.*.-($body)""" => (None, body)
-        case '{utest.*.-($body)} => (None, Term.of(body))
+        case '{utest.*.-($body)} => (None, body.asTerm)
 
         // case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        // case '{($name: TestableString).apply($body)} => (Some(run(name).value), Term.of(body))
-        // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), Term.of(body))
+        // case '{($name: TestableString).apply($body)} => (Some(run(name).value), body.asTerm)
+        // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), body.asTerm)
 
         // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        case '{($name: String).-($body)} => (name.value, Term.of(body))
-        // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), Term.of(body))
+        case '{($name: String).-($body)} => (name.value, body.asTerm)
+        // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), body.asTerm)
 
         // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String)($body)} => (name.value, Term.of(body))
+        case '{utest.test($name: String)($body)} => (name.value, body.asTerm)
 
         // case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String).-($body)} => (name.value, Term.of(body))
+        case '{utest.test($name: String).-($body)} => (name.value, body.asTerm)
 
         // case q"""utest.`package`.test.-($body)""" => (None, body)
-        case '{utest.test.-($body)} => (None, Term.of(body))
+        case '{utest.test.-($body)} => (None, body.asTerm)
 
         // case q"""utest.`package`.test.apply($body)""" => (None, body)
-        case '{utest.test($body: Any)} => (None, Term.of(body))
+        case '{utest.test($body: Any)} => (None, body.asTerm)
       }
   }
 
