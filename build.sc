@@ -2,18 +2,32 @@ import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
 
 val dottyVersions = sys.props.get("dottyVersion").toList
 
-val scalaVersions = "2.11.12" :: "2.12.13" :: "2.13.4" :: "3.0.0-RC1" :: dottyVersions
-val scala2Versions = scalaVersions.filter(_.startsWith("2."))
+val scala211 = "2.11.12"
+val scala212 = "2.12.13"
+val scala213 = "2.13.4"
+val scala3 = "3.0.0-RC1"
 
-val scalaJSVersions = for {
-  scalaV <- scala2Versions
-  scalaJSV <- Seq("0.6.33", "1.4.0")
-} yield (scalaV, scalaJSV)
+val scalajs0 = "0.6.33"
+val scalajs1 = "1.5.0"
 
-val scalaNativeVersions = for {
-  scalaV <- scala2Versions
-  scalaNativeV <- Seq("0.4.0")
-} yield (scalaV, scalaNativeV)
+val scalanative = "0.4.0"
+
+val scalaVersions = scala211 :: scala212 :: scala213 :: scala3 :: dottyVersions
+
+val scalaJSVersions = Seq(
+  (scala211, scalajs0),
+  (scala212, scalajs0),
+  (scala213, scalajs0),
+  (scala212, scalajs1),
+  (scala213, scalajs1),
+  (scala3, scalajs1)
+) ++ dottyVersions.map(version => (version, scalajs1))
+
+val scalaNativeVersions = Seq(
+  (scala211, scalanative),
+  (scala212, scalanative),
+  (scala213, scalanative)
+)
 
 trait UtestModule extends PublishModule {
   def artifactName = "utest"
