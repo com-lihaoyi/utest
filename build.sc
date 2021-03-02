@@ -6,8 +6,9 @@ val scalaVersions = "2.11.12" :: "2.12.13" :: "2.13.4" :: "3.0.0-RC1" :: dottyVe
 val scala2Versions = scalaVersions.filter(_.startsWith("2."))
 
 val scalaJSVersions = for {
-  scalaV <- scala2Versions
+  scalaV <- scalaVersions
   scalaJSV <- Seq("0.6.33", "1.4.0")
+  if scalaV.startsWith("2.") || scalaJSV.startsWith("1.")
 } yield (scalaV, scalaJSV)
 
 val scalaNativeVersions = for {
