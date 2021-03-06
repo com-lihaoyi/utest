@@ -1,4 +1,6 @@
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version_mill0.9:0.1.1`
+import de.tobiasroeser.mill.vcs.version.VcsVersion
 
 val dottyVersions = sys.props.get("dottyVersion").toList
 
@@ -19,7 +21,7 @@ val scalaNativeVersions = for {
 trait UtestModule extends PublishModule {
   def artifactName = "utest"
 
-  def publishVersion = "0.7.7"
+  def publishVersion = VcsVersion.vcsState().format()
 
   def pomSettings = PomSettings(
     description = artifactName(),
