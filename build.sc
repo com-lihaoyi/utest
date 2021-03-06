@@ -99,10 +99,11 @@ object utest extends Module {
     extends UtestMainModule with ScalaJSModule with UtestModule {
     def offset = os.up
     def ivyDeps = Agg(
-      ivy"org.scala-js::scalajs-test-interface:$crossJSVersion",
-      ivy"org.portable-scala::portable-scala-reflect::0.1.1",
+      ivy"org.scala-js::scalajs-test-interface:$crossJSVersion".withDottyCompat(crossScalaVersion),
+      ivy"org.portable-scala::portable-scala-reflect::0.1.1".withDottyCompat(crossScalaVersion)
+    ) ++ (if(crossScalaVersion.startsWith("2")) Agg(
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
-    )
+    ) else Agg())
     def scalaJSVersion = crossJSVersion
     object test extends Tests with UtestTestModule{
       def offset = os.up
