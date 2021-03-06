@@ -1,0 +1,93 @@
+name: actions
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Mill cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.mill
+          key: mill-${{ hashFiles('mill') }}
+
+      - name: Ivy cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/coursier
+          key: ivy-${{ hashFiles('build.sc') }}
+          restore-keys: |
+            ivy-${{ hashFiles('build.sc') }}
+            ivy
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+
+      - name: Run tests
+        run: |
+          ./mill -i -j $(nproc) __.test __.publishArtifacts
+
+  publish-sonatype:
+    if: github.repository == 'com-lihaoyi/utest' && contains(github.ref, 'refs/tags/')
+    needs: test
+
+    runs-on: ubuntu-latest
+
+    env:
+      SONATYPE_PGP_SECRET: ${{ secrets.SONATYPE_PGP_SECRET }}
+      SONATYPE_DEPLOY_USER: ${{ secrets.SONATYPE_DEPLOY_USER }}
+      SONATYPE_DEPLOY_PASSWORD: ${{ secrets.SONATYPE_DEPLOY_PASSWORD }}
+      SONATYPE_PGP_PASSWORD: ${{ secrets.SONATYPE_PGP_PASSWORD }}
+      LANG: "en_US.UTF-8"
+      LC_MESSAGES: "en_US.UTF-8"
+      LC_ALL: "en_US.UTF-8"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Mill cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.mill
+          key: mill-${{ hashFiles('mill') }}
+
+      - name: Ivy cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/coursier
+          key: ivy-${{ hashFiles('build.sc') }}
+          restore-keys: |
+            ivy-${{ hashFiles('build.sc') }}
+            ivy
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+
+      - name: Set HEAD_TAG env variable
+        run: echo "::set-env name=HEAD_TAG::$(git tag --points-at HEAD)"
+
+      - name: Publish to Maven Central
+        if: env.HEAD_TAG != '' 
+        run: |
+          echo "$SONATYPE_PGP_SECRET" | base64 --decode | gpg --import
+          ./mill -i mill.scalalib.PublishModule/publishAll \
+            --sonatypeCreds $SONATYPE_DEPLOY_USER:$SONATYPE_DEPLOY_PASSWORD \
+            --gpgArgs --passphrase=$SONATYPE_PGP_PASSWORD,--no-tty,--pinentry-mode,loopback,--batch,--yes,-a,-b \
+            --publishArtifacts __.publishArtifacts \
+            --readTimeout 600000 \
+            --awaitTimeout 600000 \
+            --release true \
+            --signed true
