@@ -40,7 +40,7 @@ jobs:
           ./mill -i -j $(nproc) __.test __.publishArtifacts
 
   publish-sonatype:
-    if: github.repository == 'com-lihaoyi/utest' && contains(github.ref, 'refs/tags/')
+    if: github.repository == 'lolgab/utest' && contains(github.ref, 'refs/tags/')
     needs: test
 
     runs-on: ubuntu-latest
