@@ -15,7 +15,7 @@ jobs:
         with:
           java-version: 8
       - name: Run tests
-        run: ./mill -i -j $(nproc) __.publishArtifacts __.test
+        run: ./mill -i __.publishArtifacts __.test
 
   publish-sonatype:
     if: github.repository == 'com-lihaoyi/utest' && contains(github.ref, 'refs/tags/')
