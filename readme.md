@@ -1329,6 +1329,18 @@ libraries are currently at.
 Changelog
 =========
 
+0.7.8
+-----
+
+- Add support for Scala 3-RC2
+- Support Scala 3 on Scala.js
+
+0.7.7
+-----
+
+- Re-publish to maven central only. The version 0.7.6 broke binary compatibility
+  with JDK 8.
+
 0.7.6
 -----
 
