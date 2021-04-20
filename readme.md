@@ -80,7 +80,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.7" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.9" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -88,7 +88,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.7.7" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.7.9" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1329,10 +1329,16 @@ libraries are currently at.
 Changelog
 =========
 
+0.7.9
+-----
+
+- Add support for Scala 3.0.0-RC3
+- Bump Scala.js from 1.4.0 to 1.5.1
+
 0.7.8
 -----
 
-- Add support for Scala 3-RC2
+- Add support for Scala 3.0.0-RC2
 - Support Scala 3 on Scala.js
 
 0.7.7
