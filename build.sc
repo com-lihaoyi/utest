@@ -1,7 +1,7 @@
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version_mill0.9:0.1.1`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
-import $ivy.`com.github.lolgab::mill-mima_mill0.9:0.0.2`
+import $ivy.`com.github.lolgab::mill-mima_mill0.9:0.0.4`
 import com.github.lolgab.mill.mima._
 
 val dottyVersions = sys.props.get("dottyVersion").toList
@@ -23,12 +23,7 @@ val scalaNativeVersions = for {
 trait UtestModule extends PublishModule with Mima {
   def artifactName = "utest"
 
-  def mimaPreviousArtifacts = Agg.from(
-    VcsVersion
-      .vcsState()
-      .lastTag
-      .map(lastTag => ivy"com.lihaoyi::utest::$lastTag")
-  )
+  def mimaPreviousVersions = VcsVersion.vcsState().lastTag.toSeq
 
   def publishVersion = VcsVersion.vcsState().format()
 
