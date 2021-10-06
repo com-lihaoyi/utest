@@ -9,40 +9,46 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
       test("failure"){
         // Use compileError to check itself to verify that when it
         // doesn't throw an error, it actually does (super meta!)
-        * - compileError("""
-            compileError("1 + 1").check(
-              ""
-            )
-          """).check(
-          """
-            compileError("1 + 1").check(
-                        ^
-          """,
-          "compileError check failed to have a compilation error"
-        )
-        * - compileError("""
-            val x = 0
-            compileError("x + x").check(
-            ""
+        test("1") {
+          compileError("""
+              compileError("1 + 1").check(
+                ""
+              )
+            """).check(
+            """
+              compileError("1 + 1").check(
+                          ^
+            """,
+            "compileError check failed to have a compilation error"
           )
-          """).check(
-          """
-            compileError("x + x").check(
-                        ^
-          """,
-          "compileError check failed to have a compilation error"
-        )
-        * - compileError("""
-            compileError("1" * 2).check(
+        }
+        test("2") {
+          compileError("""
+              val x = 0
+              compileError("x + x").check(
               ""
             )
-        """).check(
-          """
-            compileError("1" * 2).check(
-                             ^
-          """,
-          "You can only have literal strings in compileError"
-        )
+            """).check(
+            """
+              compileError("x + x").check(
+                          ^
+            """,
+            "compileError check failed to have a compilation error"
+          )
+        }
+        test("3") {
+          compileError("""
+              compileError("1" * 2).check(
+                ""
+              )
+          """).check(
+            """
+              compileError("1" * 2).check(
+                               ^
+            """,
+            "You can only have literal strings in compileError"
+          )
+        }
 
       }
       test("compileTimeOnly"){
