@@ -1,23 +1,23 @@
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version_mill0.9:0.1.1`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.1.4`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
-import $ivy.`com.github.lolgab::mill-mima_mill0.9:0.0.4`
+import $ivy.`com.github.lolgab::mill-mima::0.0.9`
 import com.github.lolgab.mill.mima._
 
 val dottyVersions = sys.props.get("dottyVersion").toList
 
-val scalaVersions = "2.11.12" :: "2.12.13" :: "2.13.4" :: "3.0.0" :: dottyVersions
-val scala2Versions = scalaVersions.filter(_.startsWith("2."))
+val scala2VersionsAndDotty = "2.11.12" :: "2.12.13" :: "2.13.4" :: dottyVersions
+val scala30 = "3.0.0"
 
 val scalaJSVersions = for {
-  scalaV <- scalaVersions
+  scalaV <- scala30 :: scala2VersionsAndDotty
   scalaJSV <- Seq("0.6.33", "1.5.1")
   if scalaV.startsWith("2.") || scalaJSV.startsWith("1.")
 } yield (scalaV, scalaJSV)
 
 val scalaNativeVersions = for {
-  scalaV <- scala2Versions
-  scalaNativeV <- Seq("0.4.0")
+  scalaV <- "3.1.1" :: scala2VersionsAndDotty
+  scalaNativeV <- Seq("0.4.3")
 } yield (scalaV, scalaNativeV)
 
 trait UtestModule extends PublishModule with Mima {
@@ -32,10 +32,7 @@ trait UtestModule extends PublishModule with Mima {
     organization = "com.lihaoyi",
     url = "https://github.com/lihaoyi/utest",
     licenses = Seq(License.MIT),
-    scm = SCM(
-      "git://github.com/lihaoyi/utest.git",
-      "scm:git://github.com/lihaoyi/utest.git"
-    ),
+    versionControl = VersionControl.github(owner = "com-lihaoyi", repo = "utest"),
     developers = Seq(
       Developer("lihaoyi", "Li Haoyi", "https://github.com/lihaoyi")
     )
@@ -67,7 +64,7 @@ abstract class UtestMainModule(crossScalaVersion: String) extends CrossScalaModu
 
 trait UtestTestModule extends ScalaModule with TestModule {
   def crossScalaVersion: String
-  def testFrameworks = Seq("test.utest.CustomFramework")
+  def testFramework = "test.utest.CustomFramework"
   def offset: os.RelPath = os.rel
   def millSourcePath = super.millSourcePath / os.up
 
@@ -85,7 +82,7 @@ trait UtestTestModule extends ScalaModule with TestModule {
 }
 
 object utest extends Module {
-  object jvm extends Cross[JvmUtestModule](scalaVersions: _*)
+  object jvm extends Cross[JvmUtestModule](scala30 :: scala2VersionsAndDotty: _*)
   class JvmUtestModule(val crossScalaVersion: String)
     extends UtestMainModule(crossScalaVersion) with ScalaModule with UtestModule {
     def ivyDeps = Agg(

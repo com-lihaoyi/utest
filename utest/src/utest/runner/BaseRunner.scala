@@ -34,7 +34,7 @@ object BaseRunner{
 }
 
 abstract class BaseRunner(val args: Array[String],
-                          val remoteArgs: Array[String],
+                          _remoteArgs: Array[String],
                           testClassLoader: ClassLoader,
                           useSbtLoggers: Boolean,
                           formatter: utest.framework.Formatter,
@@ -47,6 +47,8 @@ abstract class BaseRunner(val args: Array[String],
     useSbtLoggers: Boolean,
     formatter: utest.framework.Formatter) =
       this(args, remoteArgs, testClassLoader, useSbtLoggers, formatter, None)
+
+  def remoteArgs(): Array[String] = _remoteArgs
 
   lazy val path = args.headOption.filter(_(0) != '-')
   lazy val query = path
@@ -186,6 +188,6 @@ abstract class BaseRunner(val args: Array[String],
     makeTask(deserializer(task))
 
   def serializeTask(task: sbt.testing.Task, serializer: TaskDef => String): String =
-    serializer(task.taskDef)
+    serializer(task.taskDef())
 
 }
