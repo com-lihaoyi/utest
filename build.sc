@@ -6,16 +6,17 @@ import com.github.lolgab.mill.mima._
 
 val dottyVersions = sys.props.get("dottyVersion").toList
 
-val scalaVersions = "2.11.12" :: "2.12.13" :: "2.13.4" :: "3.1.0" :: dottyVersions
+val scala2VersionsAndDotty = "2.11.12" :: "2.12.13" :: "2.13.4" :: dottyVersions
+val scala30 = "3.0.0"
 
 val scalaJSVersions = for {
-  scalaV <- scalaVersions
+  scalaV <- scala30 :: scala2VersionsAndDotty
   scalaJSV <- Seq("0.6.33", "1.5.1")
   if scalaV.startsWith("2.") || scalaJSV.startsWith("1.")
 } yield (scalaV, scalaJSV)
 
 val scalaNativeVersions = for {
-  scalaV <- scalaVersions
+  scalaV <- "3.1.1" :: scala2VersionsAndDotty
   scalaNativeV <- Seq("0.4.3")
 } yield (scalaV, scalaNativeV)
 
@@ -81,7 +82,7 @@ trait UtestTestModule extends ScalaModule with TestModule {
 }
 
 object utest extends Module {
-  object jvm extends Cross[JvmUtestModule](scalaVersions: _*)
+  object jvm extends Cross[JvmUtestModule](scala30 :: scala2VersionsAndDotty: _*)
   class JvmUtestModule(val crossScalaVersion: String)
     extends UtestMainModule(crossScalaVersion) with ScalaModule with UtestModule {
     def ivyDeps = Agg(
