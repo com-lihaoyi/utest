@@ -1,4 +1,4 @@
-µTest 0.7.10 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.8.0 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -43,6 +43,8 @@ If you use uTest and like it, please support it by donating to our Patreon:
 Contents
 --------
 
+- [µTest 0.8.0 ![Build Status](#µtest-080-build-statustravis-link-gitter-chatgitter-badgegitter-link)
+  - [Contents](#contents)
 - [Getting Started](#getting-started)
 - [Defining and Running a Test Suite](#defining-and-running-a-test-suite)
   - [Nesting Tests](#nesting-tests)
@@ -60,16 +62,57 @@ Contents
   - [TestPath](#testpath)
   - [Local Retries](#local-retries)
 - [Configuring uTest](#configuring-utest)
+  - [Per-Run Setup/Teardown, and other test-running Config](#per-run-setupteardown-and-other-test-running-config)
   - [Output Formatting](#output-formatting)
   - [Suite Retries](#suite-retries)
   - [Running code before and after test cases](#running-code-before-and-after-test-cases)
   - [Running code before and after test suites](#running-code-before-and-after-test-suites)
   - [Test Wrapping](#test-wrapping)
-  - [Per-Run Setup/Teardown, and other test-running Config](#per-run-setupteardown-and-other-test-running-config)
 - [Scala.js and Scala-Native](#scalajs-and-scala-native)
 - [Running uTest Standalone](#running-utest-standalone)
 - [Why uTest](#why-utest)
 - [Changelog](#changelog)
+  - [0.8.0](#080)
+  - [0.7.11](#0711)
+  - [0.7.10](#0710)
+  - [0.7.9](#079)
+  - [0.7.8](#078)
+  - [0.7.7](#077)
+  - [0.7.6](#076)
+  - [0.7.4](#074)
+  - [0.7.3](#073)
+  - [0.7.2](#072)
+  - [0.7.1](#071)
+  - [0.6.9](#069)
+  - [0.6.7](#067)
+  - [0.6.6](#066)
+  - [0.6.5](#065)
+  - [0.6.4](#064)
+  - [0.6.3](#063)
+  - [0.6.2](#062)
+  - [0.6.0](#060)
+  - [0.5.4](#054)
+  - [0.5.3](#053)
+  - [0.4.8](#048)
+  - [0.4.7](#047)
+  - [0.4.6](#046)
+  - [0.4.5](#045)
+  - [0.4.4](#044)
+  - [0.4.3](#043)
+  - [0.4.2](#042)
+  - [0.4.1](#041)
+  - [0.4.0](#040)
+  - [0.3.1](#031)
+  - [0.3.0](#030)
+  - [0.2.4](#024)
+  - [0.2.3](#023)
+  - [0.2.2](#022)
+  - [0.2.1](#021)
+  - [0.2.0](#020)
+  - [0.1.9](#019)
+  - [0.1.8](#018)
+  - [0.1.7](#017)
+  - [0.1.6](#016)
 
 Getting Started
 ===============
@@ -80,7 +123,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.7.10" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.0" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -88,7 +131,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.7.10" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.0" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1329,6 +1372,18 @@ libraries are currently at.
 Changelog
 =========
 
+0.8.0
+-----
+
+- Drop support for Scala.js 0.6
+- Bump Scala.js to 1.10 (minimum version supported is 1.8)
+- Bump Scala versions to latest (2.12.16, 2.13.8, 3.1.3)
+
+0.7.11
+-----
+
+- Add support for Scala 3 on Scala Native
+
 0.7.10
 -----
 
@@ -1399,7 +1454,7 @@ Changelog
 - Upgrade Scala Native 0.3.6 to 0.3.7
 - Replace Scala.JS' deprecated `TestUtils` with portable-scala-reflect
 
-0.6.6
+0.6.5
 -----
 - Bugfix where sometimes all tests would pass but report as failed (thanks @eatkins)
 - By default, don't cut-off and wrap output
