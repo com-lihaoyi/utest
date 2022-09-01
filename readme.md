@@ -1372,6 +1372,12 @@ libraries are currently at.
 Changelog
 =========
 
+0.8.1
+-----
+
+* Add `++` to `Tests` so that test suites can be concatenated
+* Add `.prefix(name: String)` to `Tests` to nest all of its tests under a single test group with a given name
+
 0.8.0
 -----
 

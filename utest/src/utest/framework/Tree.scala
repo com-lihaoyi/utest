@@ -59,4 +59,7 @@ case class Tree[+T](value: T, children: Tree[T]*){
     else children.toIterator.flatMap(_.leaves)
   }
 
+  def prefix[A >: T](p: A): Tree[A] =
+    Tree(p, this)
+
 }
