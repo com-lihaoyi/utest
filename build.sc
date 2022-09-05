@@ -10,7 +10,7 @@ val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 val scalaVersions = "2.11.12" :: "2.12.16" :: "2.13.8" :: "3.1.3" :: communityBuildDottyVersion
 
 val scalaJSVersions = scalaVersions.map((_, "1.10.1"))
-val scalaNativeVersions = scalaVersions.map((_, "0.4.5"))
+val scalaNativeVersions = scalaVersions.map((_, "0.4.7"))
 
 val scalaReflectVersion = "1.1.2"
 
