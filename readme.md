@@ -1,4 +1,4 @@
-µTest 0.8.0 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.8.1 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -43,7 +43,7 @@ If you use uTest and like it, please support it by donating to our Patreon:
 Contents
 --------
 
-- [µTest 0.8.0 ![Build Status](#µtest-080-build-statustravis-link-gitter-chatgitter-badgegitter-link)
+- [µTest 0.8.1 ![Build Status](#µtest-081-build-statustravis-link-gitter-chatgitter-badgegitter-link)
   - [Contents](#contents)
 - [Getting Started](#getting-started)
 - [Defining and Running a Test Suite](#defining-and-running-a-test-suite)
@@ -72,6 +72,7 @@ Contents
 - [Running uTest Standalone](#running-utest-standalone)
 - [Why uTest](#why-utest)
 - [Changelog](#changelog)
+  - [0.8.1](#081)
   - [0.8.0](#080)
   - [0.7.11](#0711)
   - [0.7.10](#0710)
@@ -123,7 +124,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.0" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.1" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -131,7 +132,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.0" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.1" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
