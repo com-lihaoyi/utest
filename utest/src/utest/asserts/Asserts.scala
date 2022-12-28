@@ -5,6 +5,7 @@ import utest.framework.StackMarker
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Random, Success, Try}
 import scala.reflect.ClassTag
 
@@ -89,6 +90,26 @@ trait Asserts extends AssertsVersionSpecific {
           case (lhs, rhs) =>
             Predef.assert(lhs == rhs, s"==> assertion failed: $lhs != $rhs")
         }
+    }
+  }
+
+  implicit class ArrowFutureAssert(lhs: Future[Any])(implicit ec: ExecutionContext) {
+    def ==*[V](rhs: V): Future[Unit] = {
+      (lhs, rhs) match {
+        // Hack to make Arrays compare sanely; at some point we may want some
+        // custom, extensible, typesafe equality check but for now this will do
+        case (lhs: Future[_], rhs: Array[_]) =>
+          lhs.map {
+            case lhs: Array[_] =>
+              Predef.assert(
+                lhs.toSeq == rhs.toSeq, s"==> assertion failed: ${lhs.toSeq} != ${rhs.toSeq}"
+              )
+          }
+        case (lhs, rhs)                      =>
+          lhs.map(lhs =>
+            Predef.assert(lhs == rhs, s"==> assertion failed: $lhs != $rhs")
+          )
+      }
     }
   }
 

@@ -627,6 +627,27 @@ try{
 You can use `a ==> b` as a shorthand for `assert(a == b)`. This results in
 pretty code you can easily copy-paste into documentation.
 
+Test multiple Futures in a for-comprehension:
+
+```scala
+for {
+  _ <- Future(1).map(_ ==> 1)
+  _ <- Future(Array(1, 2, 3)).map(_ ==> Array(1, 2, 3))        
+  _ <- Future(1 ==> 2)
+    .map(_ ==> "Unexpected success")
+    .recover(_.getCause.getMessage ==> "assertion failed: ==> assertion failed: 1 != 2")
+} yield ()
+```
+
+Or use the less verbose `==*` arrow assert for Futures:
+
+```scala
+Future(1) ==* 1
+Future(Array(1, 2, 3)) ==* Array(1, 2, 3)
+(Future(1) ==* 2).recover(_.getCause.getMessage ==> "assertion failed: ==> assertion failed: 1 != 2")
+```
+
+
 Intercept
 ---------
 

@@ -1,4 +1,6 @@
 package test.utest
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import utest._
 import TestUtil.isDotty
 
@@ -130,6 +132,20 @@ object AssertsTests extends utest.TestSuite{
       }catch{case e: java.lang.AssertionError =>
         e
       }
+    }
+    test("arrowAssert with Futures"){
+      for {
+        _ <- Future(1).map(_ ==> 1)
+        _ <- Future(Array(1, 2, 3)).map(_ ==> Array(1, 2, 3))
+        _ <- Future(1 ==> 2)
+          .map(_ ==> "Unexpected success")
+          .recover(_.getCause.getMessage ==> "assertion failed: ==> assertion failed: 1 != 2")
+      } yield ()
+    }
+    test("arrowAssertFuture"){
+      Future(1) ==* 1
+      Future(Array(1, 2, 3)) ==* Array(1, 2, 3)
+      (Future(1) ==* 2).recover(_.getCause.getMessage ==> "assertion failed: ==> assertion failed: 1 != 2")
     }
     test("intercept"){
       test("success"){
