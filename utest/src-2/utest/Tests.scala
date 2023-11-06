@@ -71,7 +71,7 @@ object TestsVersionSpecific {
           override def transform(t: c.Tree) = {
             t match{
               case q"framework.this.TestPath.synthetic" =>
-                c.typeCheck(q"_root_.utest.framework.TestPath(_root_.scala.Array(..$path))")
+                c.typeCheck(q"_root_.utest.framework.TestPath(_root_.scala.IndexedSeq(..$path))")
               case _ => super.transform(t)
             }
           }

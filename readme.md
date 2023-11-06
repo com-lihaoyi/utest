@@ -1,4 +1,4 @@
-µTest 0.8.1 [![Build Status][travis-badge]][travis-link] [![Gitter Chat][gitter-badge]][gitter-link]
+µTest 0.8.2
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -43,8 +43,6 @@ If you use uTest and like it, please support it by donating to our Patreon:
 Contents
 --------
 
-- [µTest 0.8.1 ![Build Status](#µtest-081-build-statustravis-link-gitter-chatgitter-badgegitter-link)
-  - [Contents](#contents)
 - [Getting Started](#getting-started)
 - [Defining and Running a Test Suite](#defining-and-running-a-test-suite)
   - [Nesting Tests](#nesting-tests)
@@ -124,7 +122,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.1" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.2" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -132,7 +130,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.1" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.2" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1372,6 +1370,11 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.8.2
+-----
+
+* Fix compiler warning when using `utest.framework.TestPath` [#309](https://github.com/com-lihaoyi/utest/pull/309)
 
 0.8.1
 -----
