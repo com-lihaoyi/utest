@@ -73,7 +73,6 @@ object utest extends Module {
     ) else Agg())
     def scalaJSVersion = crossJSVersion
     object test extends ScalaJSTests with UtestTestModule{
-      def offset = os.up
       val crossScalaVersion = JsUtestModule.this.crossScalaVersion
     }
   }
