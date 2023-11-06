@@ -19,11 +19,6 @@ trait UtestModule extends PublishModule with MimaCheck with PlatformScalaModule{
 
   def crossScalaVersion: String
 
-  // Temporary until the next version of Mima gets released with
-  // https://github.com/lightbend/mima/issues/693 included in the release.
-  def mimaPreviousArtifacts =
-    if(crossScalaVersion.startsWith("3.")) Agg.empty[Dep] else super.mimaPreviousArtifacts()
-
   def publishVersion = VcsVersion.vcsState().format()
 
   def pomSettings = PomSettings(
