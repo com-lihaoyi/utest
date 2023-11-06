@@ -17,8 +17,6 @@ trait MimaCheck extends Mima {
 trait UtestModule extends PublishModule with MimaCheck with PlatformScalaModule{
   def artifactName = "utest"
 
-  def crossScalaVersion: String
-
   def publishVersion = VcsVersion.vcsState().format()
 
   def pomSettings = PomSettings(
