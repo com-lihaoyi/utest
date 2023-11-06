@@ -40,7 +40,7 @@ trait UtestModule extends PublishModule with MimaCheck with PlatformScalaModule{
     )
   )
 }
-trait UtestMainModule extends CrossScalaModule
+trait UtestMainModule extends CrossScalaModule with UtestModule
 
 
 trait UtestTestModule extends ScalaModule with TestModule {
@@ -50,7 +50,7 @@ trait UtestTestModule extends ScalaModule with TestModule {
 object utest extends Module {
   object jvm extends Cross[JvmUtestModule](scalaVersions)
   trait JvmUtestModule
-    extends UtestMainModule with ScalaModule with UtestModule {
+    extends UtestMainModule with ScalaModule {
     def ivyDeps = Agg(
       ivy"org.scala-sbt:test-interface::1.0"
     ) ++ (if (crossScalaVersion.startsWith("2")) Agg(
@@ -63,7 +63,7 @@ object utest extends Module {
   }
 
   object js extends Cross[JsUtestModule](scalaJSVersions)
-  trait JsUtestModule extends UtestMainModule with ScalaJSModule with UtestModule with Cross.Module2[String, String]{
+  trait JsUtestModule extends UtestMainModule with ScalaJSModule with Cross.Module2[String, String]{
     def crossJSVersion = crossValue2
     def ivyDeps = Agg(
       ivy"org.scala-js::scalajs-test-interface:$crossJSVersion".withDottyCompat(crossScalaVersion),
@@ -79,7 +79,7 @@ object utest extends Module {
   }
 
   object native extends Cross[NativeUtestModule](scalaNativeVersions)
-  trait NativeUtestModule extends UtestMainModule with ScalaNativeModule with UtestModule with Cross.Module2[String, String]{
+  trait NativeUtestModule extends UtestMainModule with ScalaNativeModule with Cross.Module2[String, String]{
     def crossScalaNativeVersion = crossValue2
     def ivyDeps = super.ivyDeps() ++ Agg(
       ivy"org.scala-native::test-interface::$crossScalaNativeVersion"
