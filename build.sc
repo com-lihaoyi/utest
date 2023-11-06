@@ -8,9 +8,6 @@ val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
 val scalaVersions = "2.12.17" :: "2.13.10" :: "3.3.1" :: communityBuildDottyVersion
 
-val scalaJSVersions = scalaVersions.map((_, "1.12.0"))
-val scalaNativeVersions = scalaVersions.map((_, "0.4.16"))
-
 val scalaReflectVersion = "1.1.2"
 
 trait MimaCheck extends Mima {
@@ -43,50 +40,42 @@ trait UtestModule extends PublishModule with MimaCheck with PlatformScalaModule{
 trait UtestMainModule extends CrossScalaModule with UtestModule
 
 
-trait UtestTestModule extends ScalaModule with TestModule {
+trait UtestTestModule extends TestModule {
   def testFramework = "test.utest.CustomFramework"
 }
 
 object utest extends Module {
   object jvm extends Cross[JvmUtestModule](scalaVersions)
   trait JvmUtestModule
-    extends UtestMainModule with ScalaModule {
+    extends UtestMainModule {
     def ivyDeps = Agg(
       ivy"org.scala-sbt:test-interface::1.0"
     ) ++ (if (crossScalaVersion.startsWith("2")) Agg(
       ivy"org.portable-scala::portable-scala-reflect::$scalaReflectVersion",
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
     ) else Agg())
-    object test extends ScalaTests with UtestTestModule{
-      val crossScalaVersion = JvmUtestModule.this.crossScalaVersion
-    }
+    object test extends ScalaTests with UtestTestModule
   }
 
-  object js extends Cross[JsUtestModule](scalaJSVersions)
-  trait JsUtestModule extends UtestMainModule with ScalaJSModule with Cross.Module2[String, String]{
-    def crossJSVersion = crossValue2
+  object js extends Cross[JsUtestModule](scalaVersions)
+  trait JsUtestModule extends UtestMainModule with ScalaJSModule{
     def ivyDeps = Agg(
-      ivy"org.scala-js::scalajs-test-interface:$crossJSVersion".withDottyCompat(crossScalaVersion),
+      ivy"org.scala-js::scalajs-test-interface:${scalaJSVersion()}".withDottyCompat(crossScalaVersion),
       ivy"org.portable-scala::portable-scala-reflect::$scalaReflectVersion".withDottyCompat(crossScalaVersion)
     ) ++ (if(crossScalaVersion.startsWith("2")) Agg(
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
     ) else Agg())
-    def scalaJSVersion = crossJSVersion
-    object test extends ScalaJSTests with UtestTestModule{
-      val crossScalaVersion = JsUtestModule.this.crossScalaVersion
-    }
+    def scalaJSVersion = "1.12.0"
+    object test extends ScalaJSTests with UtestTestModule
   }
 
-  object native extends Cross[NativeUtestModule](scalaNativeVersions)
-  trait NativeUtestModule extends UtestMainModule with ScalaNativeModule with Cross.Module2[String, String]{
-    def crossScalaNativeVersion = crossValue2
+  object native extends Cross[NativeUtestModule](scalaVersions)
+  trait NativeUtestModule extends UtestMainModule with ScalaNativeModule {
     def ivyDeps = super.ivyDeps() ++ Agg(
-      ivy"org.scala-native::test-interface::$crossScalaNativeVersion"
+      ivy"org.scala-native::test-interface::${scalaNativeVersion()}"
     )
 
-    def scalaNativeVersion = crossScalaNativeVersion
-    object test extends ScalaNativeTests with UtestTestModule{
-      val crossScalaVersion = NativeUtestModule.this.crossScalaVersion
-    }
+    def scalaNativeVersion = "0.4.16"
+    object test extends ScalaNativeTests with UtestTestModule
   }
 }
