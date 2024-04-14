@@ -1371,6 +1371,11 @@ libraries are currently at.
 Changelog
 =========
 
+master
+-----
+
+* Support for Scala-Native 0.5.0
+
 0.8.2
 -----
 
