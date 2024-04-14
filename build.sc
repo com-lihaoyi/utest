@@ -14,7 +14,7 @@ trait MimaCheck extends Mima {
   def mimaPreviousVersions = VcsVersion.vcsState().lastTag.toSeq
 }
 
-trait UtestModule extends PublishModule /*with MimaCheck*/ with PlatformScalaModule{
+trait UtestModule extends PublishModule with MimaCheck with PlatformScalaModule{
   def artifactName = "utest"
 
   def publishVersion = VcsVersion.vcsState().format()
