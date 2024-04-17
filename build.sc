@@ -68,7 +68,7 @@ object utest extends Module {
       ivy"org.scala-native::test-interface::${scalaNativeVersion()}"
     )
 
-    def scalaNativeVersion = "0.5.0"
+    def scalaNativeVersion = "0.5.1"
     object test extends ScalaNativeTests with UtestTestModule
   }
 }
