@@ -6,7 +6,7 @@ import com.github.lolgab.mill.mima._
 
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
-val scalaVersions = "2.12.17" :: "2.13.10" :: "3.3.1" :: communityBuildDottyVersion
+val scalaVersions = "2.12.19" :: "2.13.10" :: "3.3.1" :: communityBuildDottyVersion
 
 val scalaReflectVersion = "1.1.3"
 
