@@ -8,7 +8,7 @@ val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
 val scalaVersions = "2.12.17" :: "2.13.10" :: "3.3.1" :: communityBuildDottyVersion
 
-val scalaReflectVersion = "1.1.2"
+val scalaReflectVersion = "1.1.3"
 
 trait MimaCheck extends Mima {
   def mimaPreviousVersions = VcsVersion.vcsState().lastTag.toSeq
