@@ -1,14 +1,14 @@
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
-import $ivy.`com.github.lolgab::mill-mima::0.1.0`
+import $ivy.`com.github.lolgab::mill-mima::0.1.1`
 import com.github.lolgab.mill.mima._
 
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
-val scalaVersions = "2.12.17" :: "2.13.10" :: "3.3.3" :: communityBuildDottyVersion
+val scalaVersions = "2.12.19" :: "2.13.10" :: "3.3.3" :: communityBuildDottyVersion
 
-val scalaReflectVersion = "1.1.2"
+val scalaReflectVersion = "1.1.3"
 
 trait MimaCheck extends Mima {
   def mimaPreviousVersions = VcsVersion.vcsState().lastTag.toSeq
@@ -58,7 +58,7 @@ object utest extends Module {
     ) ++ (if(crossScalaVersion.startsWith("2")) Agg(
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
     ) else Agg())
-    def scalaJSVersion = "1.12.0"
+    def scalaJSVersion = "1.16.0"
     object test extends ScalaJSTests with UtestTestModule
   }
 
@@ -68,7 +68,7 @@ object utest extends Module {
       ivy"org.scala-native::test-interface::${scalaNativeVersion()}"
     )
 
-    def scalaNativeVersion = "0.4.16"
+    def scalaNativeVersion = "0.5.4"
     object test extends ScalaNativeTests with UtestTestModule
   }
 }
