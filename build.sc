@@ -58,7 +58,7 @@ object utest extends Module {
     ) ++ (if(crossScalaVersion.startsWith("2")) Agg(
       ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
     ) else Agg())
-    def scalaJSVersion = "1.16.0"
+    def scalaJSVersion = "1.17.0"
     object test extends ScalaJSTests with UtestTestModule
   }
 
