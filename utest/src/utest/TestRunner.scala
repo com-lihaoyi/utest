@@ -171,7 +171,9 @@ object TestRunner {
       case HTree.Leaf(f) => f().map(HTree.Leaf(_))
       case HTree.Node(v, children @ _*) =>
         for{
-          childValues <- Future.traverse(children.toSeq)(evaluateFutureTree(_))
+          childValues <- children.foldLeft(Future.successful(List.newBuilder[HTree[N, L]])) { (fb, c) =>
+            fb.flatMap(b => evaluateFutureTree(c).map(b += _))
+          }.map(_.result())
         } yield HTree.Node(v, childValues:_*)
     }
 
