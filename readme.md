@@ -1,4 +1,4 @@
-µTest 0.8.4
+µTest 0.8.5
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -70,6 +70,7 @@ Contents
 - [Running uTest Standalone](#running-utest-standalone)
 - [Why uTest](#why-utest)
 - [Changelog](#changelog)
+  - [0.8.5](#085)
   - [0.8.4](#084)
   - [0.8.3](#083)
   - [0.8.2](#082)
@@ -125,7 +126,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.4" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.5" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -133,7 +134,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.4" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.5" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1373,6 +1374,11 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.8.5
+-----
+
+* Run `Future` tests sequentially, not concurrently [#359](https://github.com/com-lihaoyi/utest/pull/359)
 
 0.8.4
 -----
