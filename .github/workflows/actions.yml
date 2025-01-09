@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['8', '17']
+        java: ['11', '17']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
@@ -35,45 +35,45 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
 
       - name: Check Binary Compatibility
         run: ./mill -i __.mimaReportBinaryIssues
-
   publish-sonatype:
+    # when in master repo, publish all tags and manual runs on main
     if: github.repository == 'com-lihaoyi/utest' && contains(github.ref, 'refs/tags/')
-    needs: test
     runs-on: ubuntu-latest
+
+    # only run one publish job for the same sha at the same time
+    # e.g. when a main-branch push is also tagged
+    concurrency: publish-sonatype-${{ github.sha }}
+
     env:
-      SONATYPE_PGP_PRIVATE_KEY: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY }}
-      SONATYPE_PGP_PRIVATE_KEY_PASSWORD: ${{ secrets.SONATYPE_PGP_PRIVATE_KEY_PASSWORD }}
-      SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      MILL_STABLE_VERSION: 1
+      MILL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      MILL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      MILL_PGP_SECRET_BASE64: ${{ secrets.SONATYPE_PGP_SECRET }}
+      MILL_PGP_PASSPHRASE: ${{ secrets.SONATYPE_PGP_PASSWORD }}
       LANG: "en_US.UTF-8"
       LC_MESSAGES: "en_US.UTF-8"
       LC_ALL: "en_US.UTF-8"
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: 8
 
-      - name: Publish to Maven Central
-        run: |
-          if [[ $(git tag --points-at HEAD) != '' ]]; then
-            echo $SONATYPE_PGP_PRIVATE_KEY | base64 --decode > gpg_key
-            gpg --import --no-tty --batch --yes gpg_key
-            rm gpg_key
-            ./mill -i mill.scalalib.PublishModule/publishAll \
-              --sonatypeCreds $SONATYPE_USER:$SONATYPE_PASSWORD \
-              --gpgArgs --passphrase=$SONATYPE_PGP_PRIVATE_KEY_PASSWORD,--no-tty,--pinentry-mode,loopback,--batch,--yes,-a,-b \
-              --publishArtifacts __.publishArtifacts \
-              --readTimeout 600000 \
-              --awaitTimeout 600000 \
-              --release true \
-              --signed true
-          fi
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: .
+          name: publish-artifacts
+
+      - run: git reset --hard
+
+      - uses: coursier/cache-action@v6
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: temurin
+
+      - run: ./mill -i mill.scalalib.PublishModule/
       - name: Create GitHub Release
         id: create_gh_release
         uses: actions/create-release@v1.1.4
