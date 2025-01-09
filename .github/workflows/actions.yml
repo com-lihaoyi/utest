@@ -49,7 +49,6 @@ jobs:
     concurrency: publish-sonatype-${{ github.sha }}
 
     env:
-      MILL_STABLE_VERSION: 1
       MILL_SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       MILL_SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       MILL_PGP_SECRET_BASE64: ${{ secrets.SONATYPE_PGP_SECRET }}
@@ -59,12 +58,9 @@ jobs:
       LC_ALL: "en_US.UTF-8"
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v3
         with:
-          path: .
-          name: publish-artifacts
-
-      - run: git reset --hard
+          fetch-depth: 0
 
       - uses: coursier/cache-action@v6
 
