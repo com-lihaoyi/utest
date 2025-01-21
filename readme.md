@@ -1379,6 +1379,7 @@ Changelog
 -----
 
 * Run `Future` tests sequentially, not concurrently [#359](https://github.com/com-lihaoyi/utest/pull/359)
+* Minimum version of Java bumped from 8 to 11
 
 0.8.4
 -----
