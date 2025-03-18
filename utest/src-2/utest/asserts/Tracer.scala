@@ -70,7 +70,8 @@ object Tracer{
     val trees = exprs.map(expr =>
       q"""utest.asserts.AssertEntry(
         ${expr.tree.pos.lineContent.trim},
-        (($loggerName: ${tq""}) => ${tracingTransformer.transform(expr.tree)})
+        (($loggerName: ${tq""}) => ${tracingTransformer.transform(expr.tree)}),
+        ${expr.tree.pos.source.path}+":"+${expr.tree.pos.line},
       )"""
     )
 

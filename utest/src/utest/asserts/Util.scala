@@ -6,7 +6,7 @@ import utest.{AssertionError, TestValue}
 import scala.collection.mutable.ArrayBuffer
 import scala.util.{Failure, Success, Try}
 
-case class AssertEntry[T](label: String, thunk: (TestValue => Unit) => T)
+case class AssertEntry[T](label: String, thunk: (TestValue => Unit) => T, pos: String)
 /**
   * Created by lihaoyi on 9/9/17.
   */
@@ -32,13 +32,13 @@ object Util {
     * Executes this AssertEntry and returns the raw results
     */
   def runAssertionEntry[T](t: AssertEntry[T]) = {
-    val AssertEntry(src, func) = t
+    val AssertEntry(src, func, pos) = t
     val logged = ArrayBuffer.empty[TestValue]
     val res =
       try Success(func(logged.append(_)))
       catch{case e: Throwable => Failure(e)}
 
-    (res, logged, src)
+    (res, logged, src, pos)
   }
 
 }

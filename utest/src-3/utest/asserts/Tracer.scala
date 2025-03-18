@@ -99,9 +99,12 @@ object Tracer {
     import quotes.reflect._
     def entryBody(logger: Expr[TestValue => Unit]) =
       tracingMap(logger).transformTerm(expr.asTerm)(Symbol.spliceOwner).asExprOf[T]
+
+    val pos = s"${expr.asTerm.pos.sourceFile}:${expr.asTerm.pos.startLine+1}"
     '{AssertEntry(
       ${Expr(code)},
-      logger => ${entryBody('logger)})}
+      logger => ${entryBody('logger)},
+      ${Expr(pos)})}
 }
 
 object StringUtilHelpers {

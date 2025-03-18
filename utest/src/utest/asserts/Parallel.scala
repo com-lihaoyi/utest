@@ -27,7 +27,7 @@ object Parallel extends ParallelVersionSpecific {
     @tailrec def rec(): Unit = {
       val result = funcs.map(Util.runAssertionEntry)
 
-      val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src) => (logged, src) }
+      val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src, _) => (logged, src) }
       die match{
         case None =>
         case Some((logged, src)) =>
@@ -50,7 +50,7 @@ object Parallel extends ParallelVersionSpecific {
     val start = Deadline.now
     @tailrec def rec(): Unit = {
       val result = funcs.map(Util.runAssertionEntry)
-      val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src) => (logged, src) }
+      val die = result.collectFirst{ case (Failure(_) | Success(false), logged, src, _) => (logged, src) }
       die match{
         case Some((logged, src)) =>
           Util.assertError(

@@ -22,13 +22,15 @@ object Asserts extends AssertsCompanionVersionSpecific {
     // gets annoying to a user who is trying to look at the call stack and
     // figure out what's going on
     while(i < funcs.length){
-      val (res, logged, src) = Util.runAssertionEntry(funcs(i))
+      val (res, logged, src, pos) = Util.runAssertionEntry(funcs(i))
 
       def prefix = if (funcs.length == 1) "" else s"#${i+1}: "
       res match{
         case Success(value) =>
-          if (!value) throw Util.makeAssertError(prefix + src, logged, null)
-        case Failure(e) => throw Util.makeAssertError(prefix + src, logged, e)
+          if (!value) {
+            throw Util.makeAssertError(s"$prefix$src\nat $pos", logged, null)
+          }
+        case Failure(e) => throw Util.makeAssertError(s"$prefix$src\nat $pos", logged, e)
       }
 
       i += 1
@@ -42,11 +44,11 @@ object Asserts extends AssertsCompanionVersionSpecific {
    * exception does not appear.
    */
   def interceptImpl[T: ClassTag](entry: AssertEntry[Unit]): T = {
-    val (res, logged, src) = Util.runAssertionEntry(entry)
+    val (res, logged, src, pos) = Util.runAssertionEntry(entry)
     res match{
       case Failure(e: T) => e
       case Failure(e: Throwable) => Util.assertError(src, logged, e)
-      case Success(v) => Util.assertError(src, logged, null)
+      case Success(v) => Util.assertError(s"$src\nat $pos", logged, null)
     }
   }
 
@@ -57,7 +59,7 @@ object Asserts extends AssertsCompanionVersionSpecific {
    */
   def assertMatchImpl(entry: AssertEntry[Any])
                      (pf: PartialFunction[Any, Unit]): Unit = StackMarker.dropInside{
-    val (res, logged, src) = Util.runAssertionEntry(entry)
+    val (res, logged, src, pos) = Util.runAssertionEntry(entry)
     res match{
       case Success(value) =>
         if (!pf.isDefinedAt(value)) throw Util.makeAssertError(
@@ -68,7 +70,7 @@ object Asserts extends AssertsCompanionVersionSpecific {
           // capture any `val`s involved
           try{pf(value);???}catch{case e: Throwable => e}
         )
-      case Failure(e) => throw Util.makeAssertError(src, logged, e)
+      case Failure(e) => throw Util.makeAssertError(s"$src\nat $pos", logged, e)
     }
   }
 }
