@@ -1,6 +1,6 @@
 //| mill-version: 1.0.0-RC1-24-d74b52
 //| mvnDeps:
-//| - com.github.lolgab::mill-mima_mill1.0.0-RC1:0.2.0-M1
+//| - com.github.lolgab::mill-mima_mill1.0.0-RC1:0.2.0-M2
 package build
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
 import mill.main.VcsVersion
