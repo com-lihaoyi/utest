@@ -29,7 +29,10 @@ object TestBuilder:
     import quotes.reflect._
     val inner =
       if nestedBodyTrees.nonEmpty then Block(setupStats, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.asTerm)
-      else Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].asExpr})}.asTerm)
+      else
+        val term = setupStats.takeRight(1).head.asInstanceOf[Term]
+        val inlinedTerm = Inlined(None,Nil,term) //Inlined results in proper line number generation
+        Block(setupStats.dropRight(1), '{Left(${inlinedTerm.asExpr})}.asTerm)
     '{ TestCallTree(${inner.asExprOf[Either[Any, IndexedSeq[TestCallTree]]]}) }
 
   private def processTest(using Quotes)(test: quotes.reflect.Apply, pathOld: Seq[String], index: Int): (Expr[UTree[String]], Expr[TestCallTree]) =
@@ -66,6 +69,7 @@ object TestBuilder:
 
     def unapply(using Quotes)(tree: quotes.reflect.Tree): Option[(Option[String], quotes.reflect.Tree)] =
       import quotes.reflect._
+      import quotes.reflect.given
 
       Option(tree).collect { case tree: Term => tree.asExpr }.collect {
         // case q"""utest.`package`.*.-($body)""" => (None, body)
