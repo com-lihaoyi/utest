@@ -17,12 +17,27 @@ object Tracer {
     Expr.betaReduce('{ $func($tree)})
   }
 
-  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using Quotes, Type[T]): Expr[Unit] = {
+
+  //direct call to betareduce provides different context (quotes) in case of Inlined terms,this results in borken linenumbers
+  private def betaReduceKeepLineNumbers(using quotes: Quotes)(tree: quotes.reflect.Term): quotes.reflect.Term = {
     import quotes.reflect._
+    new TreeMap {
+      override def transformTerm(tree: quotes.reflect.Term)(owner: quotes.reflect.Symbol): quotes.reflect.Term = tree match {
+        case Inlined(_, Nil, _) =>
+          super.transformTerm(tree)(owner)
+        case _ =>
+          Term.betaReduce(tree).getOrElse(tree)
+      }
+    }
+      .transformTerm(tree)(Symbol.spliceOwner)
+  }
+
+  def apply[T](func: Expr[Seq[AssertEntry[T]] => Unit], exprs: Expr[Seq[T]])(using Quotes, Type[T]): Expr[Unit] = {
+    import quotes.reflect.*
     exprs match {
       case Varargs(ess) =>
         val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(ess.map(e => makeAssertEntry(e, codeOf(e))))
-        Expr.betaReduce('{ $func($trees)})
+        betaReduceKeepLineNumbers('{ $func($trees)}.asTerm).asExprOf[Unit]
 
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.asTerm}")
     }
