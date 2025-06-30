@@ -69,7 +69,7 @@ jobs:
           java-version: '11'
           distribution: temurin
 
-      - run: ./mill -i mill.scalalib.PublishModule/
+      - run: ./mill -i mill.scalalib.SonatypeCentralPublishModule/
       - name: Create GitHub Release
         id: create_gh_release
         uses: actions/create-release@v1.1.4
