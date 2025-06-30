@@ -28,6 +28,19 @@ object LineNumbersTests extends utest.TestSuite {
         assert(1 == 2)
       }
     }
+    test("test6") {
+      val result = "testing".trim()
+      assert(result == "notMatching")
+      result
+    }
+    test("test7") {
+      val result = "testing".trim()
+      assert(result == "notMatching")
+      test("innerTest5") {
+        assert(1 == 1)
+      }
+      result
+    }
   }
 
   val testBody = {
@@ -44,7 +57,8 @@ object LineNumbersTests extends utest.TestSuite {
       stackTraceLinesFromThisFile(2).exists(_.getLineNumber == 17),
       stackTraceLinesFromThisFile(3).exists(_.getLineNumber == 21),
       stackTraceLinesFromThisFile(4).exists(_.getLineNumber == 28),
-
+      stackTraceLinesFromThisFile(5).exists(_.getLineNumber == 33),
+      stackTraceLinesFromThisFile(6).exists(_.getLineNumber == 38),
     )
 
   }

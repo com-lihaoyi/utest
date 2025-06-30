@@ -27,12 +27,17 @@ object TestBuilder:
 
   private def testCallTreeExpr(using Quotes)(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[quotes.reflect.Statement]): Expr[TestCallTree] =
     import quotes.reflect._
+    val statsWithInlinedAsserts:List[Statement] = setupStats.map {
+      case term:Term => term.asExpr match{
+        case '{utest.assert($_)} => Inlined(None,Nil,term) //Inlined results in proper line number generation
+        case _ => term
+      }
+      case other => other
+    }
     val inner =
-      if nestedBodyTrees.nonEmpty then Block(setupStats, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.asTerm)
+      if nestedBodyTrees.nonEmpty then Block(statsWithInlinedAsserts, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.asTerm)
       else
-        val term = setupStats.takeRight(1).head.asInstanceOf[Term]
-        val inlinedTerm = Inlined(None,Nil,term) //Inlined results in proper line number generation
-        Block(setupStats.dropRight(1), '{Left(${inlinedTerm.asExpr})}.asTerm)
+        Block(statsWithInlinedAsserts.dropRight(1), '{Left(${statsWithInlinedAsserts.last.asExpr})}.asTerm)
     '{ TestCallTree(${inner.asExprOf[Either[Any, IndexedSeq[TestCallTree]]]}) }
 
   private def processTest(using Quotes)(test: quotes.reflect.Apply, pathOld: Seq[String], index: Int): (Expr[UTree[String]], Expr[TestCallTree]) =
