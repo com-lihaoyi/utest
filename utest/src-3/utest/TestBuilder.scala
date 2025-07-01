@@ -1,6 +1,7 @@
 package utest
 
 import scala.quoted.{ Type => QType, _ }
+import scala.util.Success
 
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
@@ -27,13 +28,15 @@ object TestBuilder:
 
   private def testCallTreeExpr(using Quotes)(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[quotes.reflect.Statement]): Expr[TestCallTree] =
     import quotes.reflect._
-    val statsWithInlinedAsserts:List[Statement] = setupStats.map {
-      case term:Term => term.asExpr match{
-        case '{utest.assert($_)} => Inlined(None,Nil,term) //Inlined results in proper line number generation
-        case _ => term
+    val assertInliner = new TreeMap {
+      override def transformTerm(term: Term)(owner: Symbol): Term = scala.util.Try(term.asExpr) match {
+          case Success(expr) => expr match
+            case '{utest.assert($_)} => Inlined(None,Nil,term) //Inlined results in proper line number generation
+            case _ => super.transformTerm(term)(owner)
+          case _ => super.transformTerm(term)(owner)
       }
-      case other => other
     }
+    val statsWithInlinedAsserts = assertInliner.transformStats(setupStats)(Symbol.spliceOwner)
     val inner =
       if nestedBodyTrees.nonEmpty then Block(statsWithInlinedAsserts, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.asTerm)
       else
