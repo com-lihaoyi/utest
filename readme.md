@@ -1,4 +1,4 @@
-µTest 0.8.8
+µTest 0.8.9
 ====================================================================================================
 
 [travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
@@ -70,6 +70,7 @@ Contents
 - [Running uTest Standalone](#running-utest-standalone)
 - [Why uTest](#why-utest)
 - [Changelog](#changelog)
+  - [0.8.9](#089)
   - [0.8.8](#088)
   - [0.8.7](#087)
   - [0.8.5](#085)
@@ -128,7 +129,7 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.8" % "test"
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.8.9" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -136,7 +137,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 To use it with Scala.js or Scala-Native:
 
 ```scala
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.8" % "test"
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.8.9" % "test"
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -1376,6 +1377,12 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.8.9
+-----
+
+* More fixes for failed assertion line numbers [#382](https://github.com/com-lihaoyi/utest/pull/382)
+
 
 0.8.8
 -----
