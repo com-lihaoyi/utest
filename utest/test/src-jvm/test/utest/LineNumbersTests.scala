@@ -84,6 +84,33 @@ object LineNumbersTests extends utest.TestSuite {
         partiallyAppliedByName(2)
         ()
     }
+    test("test13") {
+      object module
+      val obj2 = new Object()
+      Obj(1).method { eval =>
+
+
+        var header = "header"
+        assert(
+          1 == 1,
+          header == "//GPL"
+        )
+
+        println("")
+
+        assert(
+          1 == 2,
+          header == "//MIT "
+        )
+      }
+    }
+    test("test14") {
+      val result = "testing".trim()
+      assert(
+        result == "notMatching",
+        1 == 2)
+      result
+    }
   }
 
   private case class Obj(arg:Int) {
@@ -111,6 +138,8 @@ object LineNumbersTests extends utest.TestSuite {
       stackTraceLinesFromThisFile(9).exists(_.getLineNumber == 66),
       stackTraceLinesFromThisFile(10).exists(_.getLineNumber == 71),
       stackTraceLinesFromThisFile(11).exists(_.getLineNumber == 80),
+      stackTraceLinesFromThisFile(12).exists(_.getLineNumber == 94),
+      stackTraceLinesFromThisFile(13).exists(_.getLineNumber == 109),
     )
 
   }
