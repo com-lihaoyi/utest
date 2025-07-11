@@ -1,9 +1,9 @@
-//| mill-version: 1.0.0-RC1-24-d74b52
+//| mill-version: 1.0.0
 //| mvnDeps:
-//| - com.github.lolgab::mill-mima_mill1.0.0-RC1:0.2.0-M1
+//| - com.github.lolgab::mill-mima_mill1:0.2.0
 package build
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
-import mill.main.VcsVersion
+import mill.util.VcsVersion
 import com.github.lolgab.mill.mima._
 
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
@@ -43,30 +43,30 @@ object utest extends Module {
   object jvm extends Cross[JvmUtestModule](scalaVersions)
   trait JvmUtestModule
     extends UtestMainModule {
-    def mvnDeps = Agg(
+    def mvnDeps = Seq(
       mvn"org.scala-sbt:test-interface::1.0"
-    ) ++ (if (crossScalaVersion.startsWith("2")) Agg(
+    ) ++ (if (crossScalaVersion.startsWith("2")) Seq(
       mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion",
       mvn"org.scala-lang:scala-reflect:$crossScalaVersion"
-    ) else Agg())
+    ) else Seq())
     object test extends ScalaTests with UtestTestModule
   }
 
   object js extends Cross[JsUtestModule](scalaVersions)
   trait JsUtestModule extends UtestMainModule with ScalaJSModule{
-    def mvnDeps = Agg(
+    def mvnDeps = Seq(
       mvn"org.scala-js::scalajs-test-interface:${scalaJSVersion()}".withDottyCompat(crossScalaVersion),
       mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion".withDottyCompat(crossScalaVersion)
-    ) ++ (if(crossScalaVersion.startsWith("2")) Agg(
+    ) ++ (if(crossScalaVersion.startsWith("2")) Seq(
       mvn"org.scala-lang:scala-reflect:$crossScalaVersion"
-    ) else Agg())
+    ) else Seq())
     def scalaJSVersion = "1.16.0"
     object test extends ScalaJSTests with UtestTestModule
   }
 
   object native extends Cross[NativeUtestModule](scalaVersions)
   trait NativeUtestModule extends UtestMainModule with ScalaNativeModule {
-    def mvnDeps = super.mvnDeps() ++ Agg(
+    def mvnDeps = super.mvnDeps() ++ Seq(
       mvn"org.scala-native::test-interface::${scalaNativeVersion()}"
     )
 
