@@ -1,8 +1,9 @@
+//| mill-version: 1.0.0
+//| mvnDeps:
+//| - com.github.lolgab::mill-mima_mill1:0.2.0
 package build
 import mill._, scalalib._, scalajslib._, scalanativelib._, publish._
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
-import de.tobiasroeser.mill.vcs.version.VcsVersion
-import $ivy.`com.github.lolgab::mill-mima::0.1.1`
+import mill.util.VcsVersion
 import com.github.lolgab.mill.mima._
 
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
@@ -42,31 +43,31 @@ object utest extends Module {
   object jvm extends Cross[JvmUtestModule](scalaVersions)
   trait JvmUtestModule
     extends UtestMainModule {
-    def ivyDeps = Agg(
-      ivy"org.scala-sbt:test-interface::1.0"
-    ) ++ (if (crossScalaVersion.startsWith("2")) Agg(
-      ivy"org.portable-scala::portable-scala-reflect::$scalaReflectVersion",
-      ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
-    ) else Agg())
+    def mvnDeps = Seq(
+      mvn"org.scala-sbt:test-interface::1.0"
+    ) ++ (if (crossScalaVersion.startsWith("2")) Seq(
+      mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion",
+      mvn"org.scala-lang:scala-reflect:$crossScalaVersion"
+    ) else Seq())
     object test extends ScalaTests with UtestTestModule
   }
 
   object js extends Cross[JsUtestModule](scalaVersions)
   trait JsUtestModule extends UtestMainModule with ScalaJSModule{
-    def ivyDeps = Agg(
-      ivy"org.scala-js::scalajs-test-interface:${scalaJSVersion()}".withDottyCompat(crossScalaVersion),
-      ivy"org.portable-scala::portable-scala-reflect::$scalaReflectVersion".withDottyCompat(crossScalaVersion)
-    ) ++ (if(crossScalaVersion.startsWith("2")) Agg(
-      ivy"org.scala-lang:scala-reflect:$crossScalaVersion"
-    ) else Agg())
+    def mvnDeps = Seq(
+      mvn"org.scala-js::scalajs-test-interface:${scalaJSVersion()}".withDottyCompat(crossScalaVersion),
+      mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion".withDottyCompat(crossScalaVersion)
+    ) ++ (if(crossScalaVersion.startsWith("2")) Seq(
+      mvn"org.scala-lang:scala-reflect:$crossScalaVersion"
+    ) else Seq())
     def scalaJSVersion = "1.16.0"
     object test extends ScalaJSTests with UtestTestModule
   }
 
   object native extends Cross[NativeUtestModule](scalaVersions)
   trait NativeUtestModule extends UtestMainModule with ScalaNativeModule {
-    def ivyDeps = super.ivyDeps() ++ Agg(
-      ivy"org.scala-native::test-interface::${scalaNativeVersion()}"
+    def mvnDeps = super.mvnDeps() ++ Seq(
+      mvn"org.scala-native::test-interface::${scalaNativeVersion()}"
     )
 
     def scalaNativeVersion = "0.5.4"

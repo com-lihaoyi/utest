@@ -1,0 +1,1 @@
+{"name":"mill-bsp","argv":["/Users/lihaoyi/Github/utest/mill","--bsp","--ticker","false","--color","false","--jobs","1"],"millVersion":"0.12.14","bspVersion":"2.2.0-M2","languages":["java","scala","kotlin"]}
