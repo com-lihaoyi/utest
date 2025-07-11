@@ -1,6 +1,7 @@
 package utest
 
 import scala.quoted.{ Type => QType, _ }
+import scala.util.Success
 
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
@@ -27,9 +28,19 @@ object TestBuilder:
 
   private def testCallTreeExpr(using Quotes)(nestedBodyTrees: List[Expr[TestCallTree]], setupStats: List[quotes.reflect.Statement]): Expr[TestCallTree] =
     import quotes.reflect._
+    val assertInliner = new TreeMap {
+      override def transformTerm(term: Term)(owner: Symbol): Term = scala.util.Try(term.asExpr) match {
+          case Success(expr) => expr match
+            case '{utest.assert(${_}*) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
+            case _ => super.transformTerm(term)(owner)
+          case _ => super.transformTerm(term)(owner)
+      }
+    }
+    val statsWithInlinedAsserts = assertInliner.transformStats(setupStats)(Symbol.spliceOwner)
     val inner =
-      if nestedBodyTrees.nonEmpty then Block(setupStats, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.asTerm)
-      else Block(setupStats.dropRight(1), '{Left(${setupStats.takeRight(1).head.asInstanceOf[Term].asExpr})}.asTerm)
+      if nestedBodyTrees.nonEmpty then Block(statsWithInlinedAsserts, '{Right(${Expr.ofList(nestedBodyTrees)}.toIndexedSeq)}.asTerm)
+      else
+        Block(statsWithInlinedAsserts.dropRight(1), '{Left(${statsWithInlinedAsserts.last.asExpr})}.asTerm)
     '{ TestCallTree(${inner.asExprOf[Either[Any, IndexedSeq[TestCallTree]]]}) }
 
   private def processTest(using Quotes)(test: quotes.reflect.Apply, pathOld: Seq[String], index: Int): (Expr[UTree[String]], Expr[TestCallTree]) =
@@ -66,6 +77,7 @@ object TestBuilder:
 
     def unapply(using Quotes)(tree: quotes.reflect.Tree): Option[(Option[String], quotes.reflect.Tree)] =
       import quotes.reflect._
+      import quotes.reflect.given
 
       Option(tree).collect { case tree: Term => tree.asExpr }.collect {
         // case q"""utest.`package`.*.-($body)""" => (None, body)
