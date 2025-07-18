@@ -104,7 +104,7 @@ abstract class BaseRunner(val args: Array[String],
                taskDef: TaskDef,
                fullQuery: TestQueryParser#Trees): Future[Unit] = {
 
-    startHeader.foreach(h => println(h(path.fold("")(" " + _))))
+    startHeader.foreach(h => log(h(path.fold("")(" " + _))))
 
     def handleEvent(op: OptionalThrowable,
                     st: Status,
