@@ -16,7 +16,7 @@ trait MimaCheck extends Mima {
   def mimaPreviousVersions = VcsVersion.vcsState().lastTag.toSeq
 }
 
-trait UtestModule extends PublishModule with MimaCheck with PlatformScalaModule{
+trait UtestModule extends PublishModule with MimaCheck {
   def artifactName = "utest"
 
   def publishVersion = VcsVersion.vcsState().format()
@@ -32,7 +32,38 @@ trait UtestModule extends PublishModule with MimaCheck with PlatformScalaModule{
     )
   )
 }
-trait UtestMainModule extends CrossScalaModule with UtestModule
+trait UtestMainModule extends CrossScalaModule with UtestModule with PlatformScalaModule{
+  def resolveUnpackShade(filtered: Seq[PathRef])(implicit ctx: mill.api.TaskCtx) = {
+    for(jar <- filtered) os.unzip(jar.path, Task.dest)
+
+    for(file <- os.walk(Task.dest) if file.ext == "scala"){
+      val text = os.read(file)
+      if (!text.contains("package scala")){
+        os.write.over(file, "package utest\n" + text.replace("assert(", "Predef.assert("))
+      }
+    }
+    // Remove these parts we're not using that are difficult to compile
+    os.remove(Task.dest / "TPrintImpl.scala")
+    os.remove(Task.dest / "pprint/TPrint.scala")
+    os.remove(Task.dest / "pprint/package.scala")
+
+    Seq(PathRef(Task.dest))
+  }
+
+  def mvnDeps = Seq(mvn"com.lihaoyi::sourcecode:0.4.3-M5")
+  def generatedSources = Task{
+    resolveUnpackShade(
+      defaultResolver().classpath(
+        Seq(mvn"com.lihaoyi::pprint:0.9.1", mvn"com.lihaoyi::fansi:0.5.1"),
+        sources = true
+      ).filter(_.path.last match{
+        case s"fansi$versionSuffix.jar" => true
+        case s"pprint$versionSuffix.jar" => true
+        case _ => false
+      })
+    )
+  }
+}
 
 
 trait UtestTestModule extends TestModule {
@@ -43,7 +74,7 @@ object utest extends Module {
   object jvm extends Cross[JvmUtestModule](scalaVersions)
   trait JvmUtestModule
     extends UtestMainModule {
-    def mvnDeps = Seq(
+    def mvnDeps = super.mvnDeps() ++ Seq(
       mvn"org.scala-sbt:test-interface::1.0"
     ) ++ (if (crossScalaVersion.startsWith("2")) Seq(
       mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion",
@@ -54,7 +85,7 @@ object utest extends Module {
 
   object js extends Cross[JsUtestModule](scalaVersions)
   trait JsUtestModule extends UtestMainModule with ScalaJSModule{
-    def mvnDeps = Seq(
+    def mvnDeps = super.mvnDeps() ++ Seq(
       mvn"org.scala-js::scalajs-test-interface:${scalaJSVersion()}".withDottyCompat(crossScalaVersion),
       mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion".withDottyCompat(crossScalaVersion)
     ) ++ (if(crossScalaVersion.startsWith("2")) Seq(
