@@ -16,7 +16,7 @@ case class AssertionError(msgPrefix: String, captured: Seq[TestValue], cause: Th
 // Referring to non-existent method java.lang.AssertionError.<init>(java.lang.String,java.lang.Throwable) in Scala.js 1.0.0-M1
 //                          extends java.lang.AssertionError(msg, cause) {
 extends java.lang.AssertionError(
-  msgPrefix + captured.map(x => s"\n${x.name}: ${x.tpeName} = ${x.value}").mkString
+  msgPrefix + captured.map(x => s"\n${x.name}: ${x.tpeName} = ${pprint.apply(x.value)}").mkString
 ) {
   super.initCause(cause)
 }
