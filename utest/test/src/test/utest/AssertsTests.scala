@@ -1,6 +1,5 @@
 package test.utest
 import utest._
-import TestUtil.isDotty
 
 /**
 * Test suite for all the assertions that uTest comes bundled with.
@@ -191,36 +190,36 @@ object AssertsTests extends utest.TestSuite{
         // a variety of inputs
         val qq = "\"" * 3
         test - compileError("1 + abc").check(
-          if (isDotty) """|1 + abc
+          if (BuildInfo.scalaVersion.startsWith("3.")) """|1 + abc
                           |    ^  """.stripMargin
           else """
         test - compileError("1 + abc").check(
                                  ^
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
         test - compileError(""" 1 + abc""").check(
-          if (isDotty) """ 1 + abc
+          if (BuildInfo.scalaVersion.startsWith("3.")) """ 1 + abc
                          |     ^""".stripMargin
           else s"""
         test - compileError($qq 1 + abc$qq).check(
                                     ^
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
         test - compileError("""
             1 + abc
           """).check(
-          if (isDotty) """
+          if (BuildInfo.scalaVersion.startsWith("3.")) """
             1 + abc
                 ^""".tail
           else """
             1 + abc
                 ^
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
         test - compileError("""
@@ -231,7 +230,7 @@ object AssertsTests extends utest.TestSuite{
 
 
         """).check(
-          if (isDotty) """
+          if (BuildInfo.scalaVersion.startsWith("3.")) """
             1 + abc
                 ^
           """.tail
@@ -240,11 +239,11 @@ object AssertsTests extends utest.TestSuite{
                 ^
 
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
         test - compileError("true * false").check(
-          if (isDotty) """true * false
+          if (BuildInfo.scalaVersion.startsWith("3.")) """true * false
                          |     ^""".stripMargin
           else """
         test - compileError("true * false").check(
@@ -255,7 +254,7 @@ object AssertsTests extends utest.TestSuite{
         // need to work around inability to use """ in string
 
         test - compileError(""" true * false""").check(
-          if (isDotty) """ true * false
+          if (BuildInfo.scalaVersion.startsWith("3.")) """ true * false
                          |      ^""".stripMargin
           else s"""
         test - compileError($qq true * false$qq).check(
@@ -265,7 +264,7 @@ object AssertsTests extends utest.TestSuite{
         )
         test - compileError("ab ( cd }").check(
           """""",
-          if (isDotty) "')' expected, but '}' found"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "')' expected, but '}' found"
           else "')' expected but '}' found."
 
         )
