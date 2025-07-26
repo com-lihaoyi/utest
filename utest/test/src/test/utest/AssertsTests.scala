@@ -49,8 +49,9 @@ object AssertsTests extends utest.TestSuite{
         }
 
         test{
+          val exText = fansi.Str(e.toString).plainText
           Predef.assert(
-            e.toString.contains("y: String = 2") && e.toString.contains("x: Int = 1"),
+            exText.contains("y: String = \"2\"") && exText.contains("x: Int = 1"),
             "Logging doesn't display local values properly " + e.toString
           )
         }
