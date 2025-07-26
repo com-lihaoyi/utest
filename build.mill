@@ -57,9 +57,11 @@ trait UtestMainModule extends CrossScalaModule with UtestModule with PlatformSca
   }
 
   def generatedSources = Task{
+    // Locally-build and shade versions of pprint and fansi to avoid classpath
+    // conflicts and circular dependencies between utest and those projects
     resolveUnpackShade(
       defaultResolver().classpath(
-        Seq(mvn"com.lihaoyi::pprint:0.9.1", mvn"com.lihaoyi::fansi:0.5.1"),
+        Seq(mvn"com.lihaoyi::pprint:0.9.3", mvn"com.lihaoyi::fansi:0.5.1"),
         sources = true
       ).filter(_.path.last match{
         case s"fansi$versionSuffix.jar" => true
