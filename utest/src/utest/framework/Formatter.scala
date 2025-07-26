@@ -141,13 +141,8 @@ trait Formatter {
     r.value match{
       case Success(()) => ""
       case Success(v) =>
-
-        val wrapped = lineWrapInput(formatValue(v), leftIndent)
-        val truncated =
-          if (wrapped.length <= formatTruncateHeight) wrapped
-          else wrapped.take(formatTruncateHeight) :+ testValueColor("...")
-
-        joinLineStr(truncated, leftIndent)
+        val wrapped = lineWrapInput(pprint.apply(v, height = formatTruncateHeight), leftIndent)
+        joinLineStr(wrapped, leftIndent)
 
       case Failure(e) => formatException(e, leftIndent)
     }

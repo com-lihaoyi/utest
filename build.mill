@@ -47,7 +47,11 @@ trait UtestMainModule extends CrossScalaModule with UtestModule with PlatformSca
     // Remove these parts we're not using that are difficult to compile
     os.remove(Task.dest / "TPrintImpl.scala")
     os.remove(Task.dest / "pprint/TPrint.scala")
-    os.remove(Task.dest / "pprint/package.scala")
+    os.write.over(
+      Task.dest / "pprint/package.scala",
+      os.read(Task.dest / "pprint/package.scala")
+        .replaceAll("(?s)\\{.*\\}", "")
+    )
 
     Seq(PathRef(Task.dest))
   }
