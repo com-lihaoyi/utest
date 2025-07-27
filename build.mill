@@ -1,5 +1,6 @@
 //| mill-version: 1.0.0
 //| mill-jvm-version: 11
+//| mill-opts: ["--jobs=0.5C"]
 //| mvnDeps:
 //| - com.github.lolgab::mill-mima_mill1:0.2.0
 //| - com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION
