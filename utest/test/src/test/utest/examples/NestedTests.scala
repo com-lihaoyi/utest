@@ -10,7 +10,7 @@ object NestedTests extends TestSuite{
       val y = x + 1
 
       test("inner1"){
-        assert(x == 1, y == 2)
+        assertAll(x == 1, y == 2)
         (x, y)
       }
       test("inner2"){

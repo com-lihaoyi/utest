@@ -12,14 +12,14 @@ import scala.util.{Failure, Success, Try}
  */
 trait ParallelVersionSpecific {
 
-  def eventuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
+  def eventuallyProxy(c: Context)(expr: c.Expr[Boolean]): c.Expr[Unit] = {
     import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Parallel.eventuallyImpl", exprs:_*)
+    Tracer[Boolean](c)(q"utest.asserts.Parallel.eventuallyImpl", expr)
   }
 
-  def continuallyProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
+  def continuallyProxy(c: Context)(expr: c.Expr[Boolean]): c.Expr[Unit] = {
     import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Parallel.continuallyImpl", exprs:_*)
+    Tracer[Boolean](c)(q"utest.asserts.Parallel.continuallyImpl", expr)
   }
 }
 

@@ -577,14 +577,17 @@ Smart Asserts
 ```scala
 val x = 1
 val y = "2"
-assert(
-  x > 0,
-  x == y
-)
+assert(x > 0)
+assert(x == y)
 
 // utest.AssertionError: x == y
 // x: Int = 1
 // y: String = 2
+
+assertAll( // Helper to perform multiple asserts at once
+  x > 0,
+  x == y
+)
 ```
 
 uTest comes with a macro-powered smart `assert`s that provide useful debugging

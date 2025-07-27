@@ -12,10 +12,10 @@ import scala.util.{Failure, Success, Try}
  */
 trait ParallelVersionSpecific {
 
-  def eventuallyProxy(exprs: Expr[Seq[Boolean]], ri: Expr[RetryInterval], rm: Expr[RetryMax])(using ctx: Quotes): Expr[Unit] =
-    Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Parallel.eventuallyImpl(esx: _*)(using $ri, $rm) }, exprs)
+  def eventuallyProxy(expr: Expr[Boolean], ri: Expr[RetryInterval], rm: Expr[RetryMax])(using ctx: Quotes): Expr[Unit] =
+    Tracer.single[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Parallel.eventuallyImpl(esx: _*)(using $ri, $rm) }, expr)
 
-  def continuallyProxy(exprs: Expr[Seq[Boolean]], ri: Expr[RetryInterval], rm: Expr[RetryMax])(using ctx: Quotes): Expr[Unit] =
-    Tracer[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Parallel.continuallyImpl(esx: _*)(using $ri, $rm) }, exprs)
+  def continuallyProxy(expr: Expr[Boolean], ri: Expr[RetryInterval], rm: Expr[RetryMax])(using ctx: Quotes): Expr[Unit] =
+    Tracer.single[Boolean]('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Parallel.continuallyImpl(esx: _*)(using $ri, $rm) }, expr)
 
 }

@@ -31,7 +31,8 @@ object TestBuilder:
     val assertInliner = new TreeMap {
       override def transformTerm(term: Term)(owner: Symbol): Term = scala.util.Try(term.asExpr) match {
           case Success(expr) => expr match
-            case '{utest.assert(${_}*) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
+            case '{utest.assert(${_}) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
+            case '{utest.assertAll(${_}*) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
             case _ => super.transformTerm(term)(owner)
           case _ => super.transformTerm(term)(owner)
       }
