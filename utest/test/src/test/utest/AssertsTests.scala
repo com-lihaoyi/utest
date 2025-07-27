@@ -136,7 +136,7 @@ object AssertsTests extends utest.TestSuite{
         try assert(filtered == expected)
         catch {
           case e: utest.AssertionError =>
-            val expected ==
+            val expected =
             """filtered: Seq[String] = List(
               |  "HandleRunThread",
               |  "JsonArrayLogger mill-chrome-profile.json",
