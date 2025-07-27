@@ -4,6 +4,7 @@ package framework
 
 import scala.collection.mutable
 import scala.util.{Failure, Success}
+import utest.shaded._
 
 object Formatter extends Formatter
 /**
@@ -18,26 +19,26 @@ trait Formatter {
 
   def formatValue(x: Any) = testValueColor("" + x)
 
-  def toggledColor(t: utest.shaded.fansi.Attrs) = if(formatColor) t else utest.shaded.fansi.Attrs.Empty
-  def testValueColor = toggledColor(utest.shaded.fansi.Color.Blue)
-  def exceptionClassColor = toggledColor(utest.shaded.fansi.Underlined.On ++ utest.shaded.fansi.Color.LightRed)
-  def exceptionMsgColor = toggledColor(utest.shaded.fansi.Attrs.Empty)
-  def exceptionPrefixColor = toggledColor(utest.shaded.fansi.Color.Red)
-  def exceptionMethodColor = toggledColor(utest.shaded.fansi.Color.LightRed)
-  def exceptionPunctuationColor = toggledColor(utest.shaded.fansi.Attrs.Empty)
-  def exceptionLineNumberColor = toggledColor(utest.shaded.fansi.Color.LightRed)
+  def toggledColor(t: fansi.Attrs) = if(formatColor) t else fansi.Attrs.Empty
+  def testValueColor = toggledColor(fansi.Color.Blue)
+  def exceptionClassColor = toggledColor(fansi.Underlined.On ++ fansi.Color.LightRed)
+  def exceptionMsgColor = toggledColor(fansi.Attrs.Empty)
+  def exceptionPrefixColor = toggledColor(fansi.Color.Red)
+  def exceptionMethodColor = toggledColor(fansi.Color.LightRed)
+  def exceptionPunctuationColor = toggledColor(fansi.Attrs.Empty)
+  def exceptionLineNumberColor = toggledColor(fansi.Color.LightRed)
 
   def formatResultColor(success: Boolean) = toggledColor(
-    if (success) utest.shaded.fansi.Color.Green
-    else utest.shaded.fansi.Color.Red
+    if (success) fansi.Color.Green
+    else fansi.Color.Red
   )
 
-  def formatMillisColor = toggledColor(utest.shaded.fansi.Bold.Faint)
+  def formatMillisColor = toggledColor(fansi.Bold.Faint)
 
   def exceptionStackFrameHighlighter(s: StackTraceElement): Boolean = true
 
   def formatException(x: Throwable, leftIndent: String) = {
-    val output = mutable.Buffer.empty[utest.shaded.fansi.Str]
+    val output = mutable.Buffer.empty[fansi.Str]
     var current = x
     while(current != null){
       val exCls = exceptionClassColor(current.getClass.getName)
@@ -46,11 +47,11 @@ trait Formatter {
           lineWrapInput(
             current match{
               case colored: ColorMessageError =>
-                utest.shaded.fansi.Str.join(Seq(exCls, ": ", colored.coloredMessage))
+                fansi.Str.join(Seq(exCls, ": ", colored.coloredMessage))
               case _ =>
                 current.getMessage match{
                   case null => exCls
-                  case nonNull => utest.shaded.fansi.Str.join(Seq(exCls, ": ", exceptionMsgColor(nonNull)))
+                  case nonNull => fansi.Str.join(Seq(exCls, ": ", exceptionMsgColor(nonNull)))
                 }
             }
             ,
@@ -72,14 +73,14 @@ trait Formatter {
           // being impossible to read. We thus manually drop the earlier
           // portion of the file path and keep only the last segment
 
-          val filenameFrag: utest.shaded.fansi.Str = e.getFileName match{
+          val filenameFrag: fansi.Str = e.getFileName match{
             case null => exceptionLineNumberColor("Unknown")
             case fileName =>
               val shortenedFilename = fileName.lastIndexOf('/') match{
                 case -1 => fileName
                 case n => fileName.drop(n + 1)
               }
-              utest.shaded.fansi.Str.join(Seq(
+              fansi.Str.join(Seq(
                 exceptionLineNumberColor(shortenedFilename),
                 exceptionPunctuationColor(":"),
                 exceptionLineNumberColor(e.getLineNumber.toString)
@@ -88,15 +89,15 @@ trait Formatter {
 
           val frameIndent = leftIndent + "  "
           val wrapper =
-            if(exceptionStackFrameHighlighter(e)) utest.shaded.fansi.Attrs.Empty
-            else utest.shaded.fansi.Bold.Faint
+            if(exceptionStackFrameHighlighter(e)) fansi.Attrs.Empty
+            else fansi.Bold.Faint
 
           output.append(
             "\n", frameIndent,
             joinLineStr(
               lineWrapInput(
                 wrapper(
-                  utest.shaded.fansi.Str.join(Seq(
+                  fansi.Str.join(Seq(
                     exceptionPrefixColor(e.getClassName + "."),
                     exceptionMethodColor(e.getMethodName),
                     exceptionPunctuationColor("("),
@@ -114,11 +115,11 @@ trait Formatter {
       if (current != null) output.append("\n", leftIndent)
     }
 
-    utest.shaded.fansi.Str.join(output.toSeq)
+    fansi.Str.join(output.toSeq)
   }
 
-  def lineWrapInput(input: utest.shaded.fansi.Str, leftIndent: String): Seq[utest.shaded.fansi.Str] = {
-    val output = mutable.Buffer.empty[utest.shaded.fansi.Str]
+  def lineWrapInput(input: fansi.Str, leftIndent: String): Seq[fansi.Str] = {
+    val output = mutable.Buffer.empty[fansi.Str]
     val plainText = input.plainText
     var index = 0
     while(index < plainText.length){
@@ -139,11 +140,11 @@ trait Formatter {
     output.toSeq
   }
 
-  def joinLineStr(lines: Seq[utest.shaded.fansi.Str], leftIndent: String) = {
-    utest.shaded.fansi.Str.join(lines.flatMap(Seq[utest.shaded.fansi.Str]("\n", leftIndent, _)).drop(2))
+  def joinLineStr(lines: Seq[fansi.Str], leftIndent: String) = {
+    fansi.Str.join(lines.flatMap(Seq[fansi.Str]("\n", leftIndent, _)).drop(2))
   }
 
-  private[this] def prettyTruncate(r: Result, leftIndent: String): utest.shaded.fansi.Str = {
+  private[this] def prettyTruncate(r: Result, leftIndent: String): fansi.Str = {
     r.value match{
       case Success(()) => ""
       case Success(v) =>
@@ -154,9 +155,9 @@ trait Formatter {
     }
   }
 
-  def wrapLabel(leftIndentCount: Int, r: Result, label: String): utest.shaded.fansi.Str = {
+  def wrapLabel(leftIndentCount: Int, r: Result, label: String): fansi.Str = {
     val leftIndent = "  " * leftIndentCount
-    val lhs = utest.shaded.fansi.Str.join(Seq(
+    val lhs = fansi.Str.join(Seq(
       leftIndent,
       formatIcon(r.value.isInstanceOf[Success[_]]), " ",
       label, " ",
@@ -172,15 +173,15 @@ trait Formatter {
     lhs ++ sep ++ rhs
   }
 
-  def formatSingle(path: Seq[String], r: Result): Option[utest.shaded.fansi.Str] = Some{
+  def formatSingle(path: Seq[String], r: Result): Option[fansi.Str] = Some{
     wrapLabel(0, r, path.mkString("."))
   }
 
-  def formatIcon(success: Boolean): utest.shaded.fansi.Str = {
+  def formatIcon(success: Boolean): fansi.Str = {
     formatResultColor(success)(if (success) "+" else "X")
   }
 
-  def formatSummary(topLevelName: String, results: HTree[String, Result]): Option[utest.shaded.fansi.Str] = Some{
+  def formatSummary(topLevelName: String, results: HTree[String, Result]): Option[fansi.Str] = Some{
 
     val relabelled = results match{
       case HTree.Node(v, c@_*) => HTree.Node(topLevelName, c:_*)
@@ -188,7 +189,7 @@ trait Formatter {
     }
     val (rendered, totalTime) = rec(0, relabelled){
       case (depth, Left((name, millis))) =>
-        utest.shaded.fansi.Str("  " * depth + "- " + name + " ") ++ formatMillisColor(millis + "ms")
+        fansi.Str("  " * depth + "- " + name + " ") ++ formatMillisColor(millis + "ms")
       case (depth, Right(r)) => wrapLabel(depth, r, r.name)
     }
 
@@ -196,7 +197,7 @@ trait Formatter {
   }
 
   private[this] def rec(depth: Int, r: HTree[String, Result])
-                       (f: (Int, Either[(String, Long), Result]) => utest.shaded.fansi.Str): (Seq[utest.shaded.fansi.Str], Long) = {
+                       (f: (Int, Either[(String, Long), Result]) => fansi.Str): (Seq[fansi.Str], Long) = {
     r match{
       case HTree.Leaf(l) => (Seq(f(depth, Right(l))), l.milliDuration)
       case HTree.Node(v, c@_*) =>
