@@ -42,7 +42,7 @@ object FormatterTests extends utest.TestSuite {
       )
 
       utest.framework.Formatter.formatSummary("MyTestSuite", results).foreach(printStream.println)
-      val trimmedOutput = trim(utest.fansi.Str(new String(boa.toByteArray)).plainText)
+      val trimmedOutput = trim(utest.shaded.fansi.Str(new String(boa.toByteArray)).plainText)
 
       // This is very confusing to debug, with all the inner and outer test
       // traces being printed everywhere. Easier to paste it into the test `main`
@@ -54,6 +54,9 @@ object FormatterTests extends utest.TestSuite {
           |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
+          |  x != 2:
+          |  - 1
+          |  + 2
           |    utest.asserts.Asserts$.assertImpl(Asserts.scala:)
           |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:)
           |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
@@ -71,6 +74,9 @@ object FormatterTests extends utest.TestSuite {
           |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
+          |    x != 2:
+          |    - 1
+          |    + 2
           |      utest.asserts.Asserts$.assertImpl(Asserts.scala:)
           |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:)
           |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
@@ -100,7 +106,7 @@ object FormatterTests extends utest.TestSuite {
         printStream = printStream
       )
       wrappingFormatter.formatSummary("MyTestSuite", results).foreach(printStream.println)
-      val trimmedOutput = trim(utest.fansi.Str(new String(boa.toByteArray)).plainText)
+      val trimmedOutput = trim(utest.shaded.fansi.Str(new String(boa.toByteArray)).plainText)
 
       // This is very confusing to debug, with all the inner and outer test
       // traces being printed everywhere. Easier to paste it into the test `main`
@@ -114,6 +120,9 @@ object FormatterTests extends utest.TestSuite {
           |    rmatterTests.scala:)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
+          |  x != 2:
+          |  - 1
+          |  + 2
           |    utest.asserts.Asserts$.assertImpl(Asserts.scal
           |    a:)
           |    test.utest.FormatterTests$.liftedTree1$1(Forma
@@ -140,6 +149,9 @@ object FormatterTests extends utest.TestSuite {
           |      FormatterTests.scala:)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
+          |    x != 2:
+          |    - 1
+          |    + 2
           |      utest.asserts.Asserts$.assertImpl(Asserts.sc
           |      ala:)
           |      test.utest.FormatterTests$.liftedTree1$1(For
