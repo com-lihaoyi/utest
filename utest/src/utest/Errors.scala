@@ -1,5 +1,7 @@
 package utest
 
+import utest.shaded.fansi.Str
+
 //import acyclic.file
 
 /**
@@ -15,10 +17,23 @@ case class NoSuchTestException(path: Seq[String]*)
 case class AssertionError(msgPrefix: String, captured: Seq[TestValue], cause: Throwable = null)
 // Referring to non-existent method java.lang.AssertionError.<init>(java.lang.String,java.lang.Throwable) in Scala.js 1.0.0-M1
 //                          extends java.lang.AssertionError(msg, cause) {
-extends java.lang.AssertionError(
-  msgPrefix + captured.map(x => s"\n${x.name}: ${x.tpeName} = ${pprint.apply(x.value)}").mkString
-) {
+extends java.lang.AssertionError(AssertionError.render(msgPrefix, captured).plainText)
+  with ColorMessageError {
   super.initCause(cause)
+
+  override def coloredMessage: Str = AssertionError.render(msgPrefix, captured)
+}
+
+object AssertionError {
+  def render(msgPrefix: String, captured: Seq[TestValue]) = {
+    shaded.fansi.Str.join(
+      Seq[shaded.fansi.Str](msgPrefix) ++ captured.flatMap[shaded.fansi.Str](x => Seq(s"\n${x.name}: ${x.tpeName} = ", shaded.pprint.apply(x.value)))
+    )
+  }
+}
+
+trait ColorMessageError {
+  def coloredMessage: shaded.fansi.Str
 }
 
 /**

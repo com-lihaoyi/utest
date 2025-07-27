@@ -1,4 +1,5 @@
 //| mill-version: 1.0.0
+//| mill-jvm-version: 11
 //| mvnDeps:
 //| - com.github.lolgab::mill-mima_mill1:0.2.0
 //| - com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION
@@ -41,7 +42,7 @@ trait UtestMainModule extends CrossScalaModule with UtestModule with PlatformSca
     for(file <- os.walk(Task.dest) if file.ext == "scala"){
       val text = os.read(file)
       if (!text.contains("package scala")){
-        os.write.over(file, "package utest\n" + text.replace("assert(", "Predef.assert("))
+        os.write.over(file, "package utest.shaded\n" + text.replace("assert(", "Predef.assert("))
       }
     }
     // Remove these parts we're not using that are difficult to compile
@@ -61,11 +62,15 @@ trait UtestMainModule extends CrossScalaModule with UtestModule with PlatformSca
     // conflicts and circular dependencies between utest and those projects
     resolveUnpackShade(
       defaultResolver().classpath(
-        Seq(mvn"com.lihaoyi::pprint:0.9.3", mvn"com.lihaoyi::fansi:0.5.1"),
+        Seq(
+          mvn"com.lihaoyi::pprint:0.9.3",
+          mvn"com.lihaoyi::fansi:0.5.1",
+          mvn"io.bullet::spliff:0.8.0"),
         sources = true
       ).filter(_.path.last match{
         case s"fansi$versionSuffix.jar" => true
         case s"pprint$versionSuffix.jar" => true
+        case s"spliff$versionSuffix.jar" => true
         case _ => false
       })
     )
