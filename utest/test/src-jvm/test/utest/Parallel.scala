@@ -50,12 +50,12 @@ object Parallel extends TestSuite{
 //      "Speedup: " + speedup
 //    }
 
-    "eventually"-{
+    "assertEventually"-{
       "failure"-{
         val x = Seq(12)
         val y = 1
         val error = assertThrows[AssertionError]{
-          eventually(x == Nil && y == 1)
+          assertEventually(x == Nil && y == 1)
         }
 
         val expected = Seq(
@@ -81,7 +81,7 @@ object Parallel extends TestSuite{
       "success"-{
         val i = Counter()
 
-        eventually(
+        assertEventually(
           i() > 5
         )
 
@@ -94,7 +94,7 @@ object Parallel extends TestSuite{
         val i = Counter()
 
         assertThrows[AssertionError]{
-          eventually{
+          assertEventually{
             i() > 5
           }
         }
@@ -107,19 +107,19 @@ object Parallel extends TestSuite{
         val i = Counter()
 
         assertThrows[AssertionError]{
-          eventually{
+          assertEventually{
             i() > 5
           }
         }
       }
     }
 
-    "continually"-{
+    "assertContinually"-{
       "failure"-{
 
         val i = Counter()
         val error = assertThrows[AssertionError]{
-          continually(
+          assertContinually(
             i() < 4
           )
         }
@@ -133,7 +133,7 @@ object Parallel extends TestSuite{
         val x = Seq(12)
         val y = 1
 
-        continually(x == Seq(12) && y == 1)
+        assertContinually(x == Seq(12) && y == 1)
       }
     }
   }

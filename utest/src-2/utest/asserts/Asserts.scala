@@ -18,7 +18,7 @@ import scala.language.experimental.macros
  * message for boolean expression assertion.
  */
 trait AssertsCompanionVersionSpecific {
-  def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
+  def assertCompileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
     val macrocompat = new MacroCompat(c)
     import macrocompat._
@@ -73,7 +73,7 @@ trait AssertsCompanionVersionSpecific {
             case None =>
               c.abort(
                 c.enclosingPosition,
-                "compileError check failed to have a compilation error"
+                "assertCompileError check failed to have a compilation error"
               )
           }
 
@@ -89,7 +89,7 @@ trait AssertsCompanionVersionSpecific {
       case e =>
         c.abort(
           expr.tree.pos,
-          s"You can only have literal strings in compileError, not ${expr.tree}"
+          s"You can only have literal strings in assertCompileError, not ${expr.tree}"
         )
     }
   }
@@ -132,7 +132,7 @@ trait AssertsVersionSpecific {
     * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
-  def compileError(expr: String): CompileError = macro Asserts.compileError
+  def assertCompileError(expr: String): CompileError = macro Asserts.assertCompileError
 
   /**
    * Forwarder for `Predef.assert`, for when you want to explicitly write the
@@ -155,12 +155,12 @@ trait AssertsVersionSpecific {
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def eventually(expr: Boolean): Unit = macro Parallel.eventuallyProxy
+  def assertEventually(expr: Boolean): Unit = macro Parallel.eventuallyProxy
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def continually(expr: Boolean): Unit = macro Parallel.continuallyProxy
+  def assertContinually(expr: Boolean): Unit = macro Parallel.continuallyProxy
 
   /**
     * Asserts that the given value matches the PartialFunction. Useful for using

@@ -88,7 +88,7 @@ object TestValue {
 
 /**
  * Simplified versions of the errors thrown during compilation, for use with the
- * [[utest.asserts.Asserts.compileError]] macro. Contains only a single message and no position since
+ * [[utest.asserts.Asserts.assertCompileError]] macro. Contains only a single message and no position since
  * things compiled using macros don't really have source positions.
  */
 trait CompileError extends CompileErrorVersionSpecific {

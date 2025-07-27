@@ -1,5 +1,6 @@
 //| mill-version: 1.0.0
 //| mill-jvm-version: 11
+//| mill-opts: ["--jobs=0.5C"]
 //| mvnDeps:
 //| - com.github.lolgab::mill-mima_mill1:0.2.0
 //| - com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION
@@ -11,7 +12,7 @@ import com.github.lolgab.mill.mima._
 
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
-val scalaVersions = "2.12.20" :: "2.13.14" :: "3.3.3" :: communityBuildDottyVersion
+val scalaVersions = "2.12.20" :: "2.13.16" :: "3.3.6" :: communityBuildDottyVersion
 
 val scalaReflectVersion = "1.1.3"
 

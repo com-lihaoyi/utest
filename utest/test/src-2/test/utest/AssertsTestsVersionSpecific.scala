@@ -5,67 +5,67 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
 
   implicit val colors = shaded.pprint.TPrintColors.Colors
   def tests = Tests{
-    test("compileError"){
+    test("assertCompileError"){
       test("failure"){
-        // Use compileError to check itself to verify that when it
+        // Use assertCompileError to check itself to verify that when it
         // doesn't throw an error, it actually does (super meta!)
         test("1") {
-          compileError("""
-              compileError("1 + 1").check(
+          assertCompileError("""
+              assertCompileError("1 + 1").check(
                 ""
               )
             """).check(
             """
-              compileError("1 + 1").check(
-                          ^
+              assertCompileError("1 + 1").check(
+                                ^
             """,
-            "compileError check failed to have a compilation error"
+            "assertCompileError check failed to have a compilation error"
           )
         }
         test("2") {
-          compileError("""
+          assertCompileError("""
               val x = 0
-              compileError("x + x").check(
+              assertCompileError("x + x").check(
               ""
             )
             """).check(
             """
-              compileError("x + x").check(
-                          ^
+              assertCompileError("x + x").check(
+                                ^
             """,
-            "compileError check failed to have a compilation error"
+            "assertCompileError check failed to have a compilation error"
           )
         }
         test("3") {
-          compileError("""
-              compileError("1" * 2).check(
+          assertCompileError("""
+              assertCompileError("1" * 2).check(
                 ""
               )
           """).check(
             """
-              compileError("1" * 2).check(
-                               ^
+              assertCompileError("1" * 2).check(
+                                     ^
             """,
-            "You can only have literal strings in compileError"
+            "You can only have literal strings in assertCompileError"
           )
         }
 
       }
       test("compileTimeOnly"){
         // Make sure that when the body contains a `@compileTimeOnly`, it
-        // gets counted as a valid compile error and `compileError` passes
-        compileError("compileTimeOnlyVal").check(
+        // gets counted as a valid compile error and `assertCompileError` passes
+        assertCompileError("compileTimeOnlyVal").check(
           """
-        compileError("compileTimeOnlyVal").check(
-                      ^
+        assertCompileError("compileTimeOnlyVal").check(
+                            ^
           """,
           "compileTimeOnlyVal should be a compile error if used!"
         )
 
-        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
+        assertCompileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
           """
-        compileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-                                                                       ^
+        assertCompileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
+                                                                             ^
           """,
           "compileTimeOnlyVal should be a compile error if used!"
         )

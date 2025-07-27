@@ -44,7 +44,7 @@ trait AssertsCompanionVersionSpecific {
       err.kind match
         case ErrorKind.Parser => CompileError.Parse(posStr, err.message)
         case ErrorKind.Typer => CompileError.Type(posStr, err.message)
-    }.getOrElse(Util.assertError(s"compileError check failed to have a compilation error when compiling\n$snippet", Nil))
+    }.getOrElse(Util.assertError(s"assertCompileError check failed to have a compilation error when compiling\n$snippet", Nil))
 }
 
 
@@ -56,7 +56,7 @@ trait AssertsVersionSpecific {
     * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
-  transparent inline def compileError(inline expr: String): CompileError = compileErrorImpl(typeCheckErrors(expr), expr)
+  transparent inline def assertCompileError(inline expr: String): CompileError = compileErrorImpl(typeCheckErrors(expr), expr)
 
   /**
    * Checks that the expression is true; otherwise raises an
@@ -80,13 +80,13 @@ trait AssertsVersionSpecific {
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def eventually(inline expr: Boolean)(using ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def assertEventually(inline expr: Boolean)(using ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.eventuallyProxy('expr, 'ri, 'rm)}
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  inline def continually(inline expr: Boolean)(using ri: => RetryInterval, rm: => RetryMax): Unit =
+  inline def assertContinually(inline expr: Boolean)(using ri: => RetryInterval, rm: => RetryMax): Unit =
     ${Parallel.continuallyProxy('expr, 'ri, 'rm)}
 
   /**
