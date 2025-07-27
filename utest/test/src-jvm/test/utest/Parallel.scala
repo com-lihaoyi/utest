@@ -50,8 +50,8 @@ object Parallel extends TestSuite{
 //      "Speedup: " + speedup
 //    }
 
-    "assertEventually"-{
-      "failure"-{
+    test("assertEventually"){
+      test("failure"){
         val x = Seq(12)
         val y = 1
         val error = assertThrows[AssertionError]{
@@ -78,7 +78,7 @@ object Parallel extends TestSuite{
         error.captured
       }
 
-      "success"-{
+      test("success"){
         val i = Counter()
 
         assertEventually(
@@ -87,7 +87,7 @@ object Parallel extends TestSuite{
 
         i()
       }
-      "adjustInterval"-{
+      test("adjustInterval"){
         import concurrent.duration._
         implicit val retryInterval: RetryInterval = RetryInterval(300.millis)
 
@@ -100,7 +100,7 @@ object Parallel extends TestSuite{
         }
       }
 
-      "adjustMax"-{
+      test("adjustMax"){
         import concurrent.duration._
         implicit val retryMax: RetryMax = RetryMax(300.millis)
 
@@ -114,8 +114,8 @@ object Parallel extends TestSuite{
       }
     }
 
-    "assertContinually"-{
-      "failure"-{
+    test("assertContinually"){
+      test("failure"){
 
         val i = Counter()
         val error = assertThrows[AssertionError]{
@@ -129,7 +129,7 @@ object Parallel extends TestSuite{
         assert(error.captured.contains(expected))
         expected
       }
-      "success"-{
+      test("success"){
         val x = Seq(12)
         val y = 1
 

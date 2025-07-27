@@ -6,16 +6,16 @@ import utest._
 abstract class MergeSubTests1 extends TestSuite {
   var run = Vector.empty[Int]
   override def tests = Tests {
-    "one" - { run :+= 1 }
+    test("one") { run :+= 1 }
     test("two") { run :+= 2 }
-    "three" - { run :+= 3 }
+    test("three") { run :+= 3 }
   }
 }
 
 abstract class MergeSubTests2 extends TestSuite {
   var run = Vector.empty[Int]
   override def tests = Tests {
-    "one" - { run :+= 1 }
+    test("one") { run :+= 1 }
     test("two") { run :+= 2 }
   }
 }
@@ -26,7 +26,7 @@ object MergeTestsTest extends TestSuite {
   val y = new MergeSubTests2 {}
 
   val local = Tests {
-    "makeSureTestsRan" - {
+    test("makeSureTestsRan") {
       test("x") { assert(x.run == Vector(1, 2, 3) ) }
       test("y") { assert(y.run == Vector(1, 2) ) }
     }

@@ -80,29 +80,22 @@ object TestBuilder:
       import quotes.reflect._
       import quotes.reflect.given
 
-      Option(tree).collect { case tree: Term => tree.asExpr }.collect {
-        // case q"""utest.`package`.*.-($body)""" => (None, body)
-        case '{utest.*.-($body)} => (None, body.asTerm)
-
-        // case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        // case '{($name: TestableString).apply($body)} => (Some(run(name).value), body.asTerm)
-        // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), body.asTerm)
-
-        // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        case '{($name: String).-($body)} => (name.value, body.asTerm)
-        // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), body.asTerm)
-
-        // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String)($body)} => (name.value, body.asTerm)
-
-        // case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String).-($body)} => (name.value, body.asTerm)
-
-        // case q"""utest.`package`.test.-($body)""" => (None, body)
-        case '{utest.test.-($body)} => (None, body.asTerm)
-
-        // case q"""utest.`package`.test.apply($body)""" => (None, body)
-        case '{utest.test($body: Any)} => (None, body.asTerm)
+      Option(tree).flatMap{
+        case tree: Term =>
+          tree match{
+            // Somehow this pattern match on the quoted expr doesn't work, so instead
+            // match on the tree directly
+            //  case '{utest.test($body: Any)} => (None, body.asTerm)
+            case Apply(Select(Ident("test"), "apply"), Seq(body)) => Some((None, body))
+            case _ =>
+              tree.asExpr match{
+                case '{utest.test($name: String)($body)} => Some((name.value, body.asTerm))
+                case '{utest.test($name: String).-($body)} => Some((name.value, body.asTerm))
+                case '{utest.test.-($body)} => Some((None, body.asTerm))
+                case expr => None
+              }
+          }
+        case _ => None
       }
   }
 
