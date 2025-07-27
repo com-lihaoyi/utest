@@ -99,14 +99,14 @@ trait AssertsCompanionVersionSpecific {
     Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
   }
 
-  def interceptProxy[T: c.WeakTypeTag]
+  def assertThrowsProxy[T: c.WeakTypeTag]
                     (c: Context)
                     (exprs: c.Expr[Unit])
                     (t: c.Expr[ClassTag[T]]): c.Expr[T] = {
     import c.universe._
     val typeTree = implicitly[c.WeakTypeTag[T]]
 
-    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
+    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.assertThrowsImpl[$typeTree]", exprs)
     c.Expr[T](q"$x($t)")
   }
 
@@ -155,6 +155,6 @@ trait AssertsVersionSpecific {
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
+  def assertThrows[T: ClassTag](exprs: Unit): T = macro Asserts.assertThrowsProxy[T]
 }
 

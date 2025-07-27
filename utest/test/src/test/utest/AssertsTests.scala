@@ -258,9 +258,9 @@ object AssertsTests extends utest.TestSuite{
         e
       }
     }
-    test("intercept"){
+    test("assertThrows"){
       test("success"){
-        val e = intercept[MatchError]{
+        val e = assertThrows[MatchError]{
           (0: Any) match { case _: String => }
         }
         Predef.assert(e.toString.contains("MatchError"))
@@ -270,7 +270,7 @@ object AssertsTests extends utest.TestSuite{
         try {
           val x = 1
           val y = 2.0
-          intercept[NumberFormatException]{
+          assertThrows[NumberFormatException]{
             (x: Any) match { case _: String => y + 1 }
           }
           Predef.assert(false) // error wasn't thrown???
@@ -288,7 +288,7 @@ object AssertsTests extends utest.TestSuite{
         try{
           val x = 1
           val y = 2.0
-          intercept[NullPointerException]{
+          assertThrows[NullPointerException]{
             123 + x + y
           }
         }catch {case e: utest.AssertionError =>
@@ -297,9 +297,9 @@ object AssertsTests extends utest.TestSuite{
           e.getMessage
         }
       }
-      test("interceptWithAssignment"){
+      test("assertThrowsWithAssignment"){
         var W = 1
-        try utest.intercept[Exception] { W = 2 }
+        try utest.assertThrows[Exception] { W = 2 }
         catch{case e: utest.AssertionError => e.getMessage}
       }
     }

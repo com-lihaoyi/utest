@@ -54,7 +54,7 @@ object Parallel extends TestSuite{
       "failure"-{
         val x = Seq(12)
         val y = 1
-        val error = intercept[AssertionError]{
+        val error = assertThrows[AssertionError]{
           eventually(
             x == Nil,
             y == 1
@@ -96,7 +96,7 @@ object Parallel extends TestSuite{
 
         val i = Counter()
 
-        intercept[AssertionError]{
+        assertThrows[AssertionError]{
           eventually{
             i() > 5
           }
@@ -109,7 +109,7 @@ object Parallel extends TestSuite{
 
         val i = Counter()
 
-        intercept[AssertionError]{
+        assertThrows[AssertionError]{
           eventually{
             i() > 5
           }
@@ -121,7 +121,7 @@ object Parallel extends TestSuite{
       "failure"-{
 
         val i = Counter()
-        val error = intercept[AssertionError]{
+        val error = assertThrows[AssertionError]{
           continually(
             i() < 4
           )
