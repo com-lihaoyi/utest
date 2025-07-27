@@ -7,12 +7,12 @@ import scala.util.{Failure, Success, Try}
 
 /**
  * Used to specify a retry-interval for the `eventually` and
- * `continually` asserts.
+ * `assertContinually` asserts.
  */
 case class RetryInterval(d: FiniteDuration)
 /**
  * Used to specify a maximum retry duration for the `eventually`
- * and `continually` asserts.
+ * and `assertContinually` asserts.
  */
 case class RetryMax(d: FiniteDuration)
 
@@ -54,7 +54,7 @@ object Parallel extends ParallelVersionSpecific {
       die match{
         case Some((logged, src)) =>
           Util.assertError(
-            "continually " + src,
+            "assertContinually " + src,
             logged
           )
         case None if Deadline.now < start + max.d =>

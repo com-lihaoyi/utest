@@ -660,19 +660,19 @@ Eventually and Continually
 
 ```scala
 val x = Seq(12)
-eventually(x == Nil)
+assertEventually(x == Nil)
 
-// utest.AssertionError: eventually(x == Nil)
+// utest.AssertionError: assertEventually(x == Nil)
 // x: Seq[Int] = List(12)
 ```
 
 In addition to a macro-powered `assert`, uTest also provides macro-powered
-versions of `eventually` and `continually`. These are used to test asynchronous
+versions of `assertEventually` and `assertContinually`. These are used to test asynchronous
 concurrent operations:
 
-- `eventually(tests: Boolean*)`: ensure that the boolean values of `tests` all
+- `assertEventually(tests: Boolean*)`: ensure that the boolean values of `tests` all
   become true at least once within a certain period of time.
-- `continually(tests: Boolean*)`: ensure that the boolean values of `tests` all
+- `assertContinually(tests: Boolean*)`: ensure that the boolean values of `tests` all
   remain true and never become false within a certain period of time.
 
 These are implemented via a retry-loop, with a default retry interval of 0.1
@@ -691,7 +691,7 @@ Together, these two operations allow you to easily test asynchronous operations.
 You can use them to help verify Liveness properties (that condition must
 eventually be met) and Safety properties (that a condition is never met)
 
-As with `assert`, `eventually` and `continually` add debugging information to
+As with `assert`, `assertEventually` and `assertContinually` add debugging information to
 the error messages if they fail.
 
 Assert Match
@@ -716,39 +716,39 @@ Compile Error
 -------------
 
 ```scala
-compileError("true * false")
+assertCompileError("true * false")
 // CompileError.Type("value * is not a member of Boolean")
 
-compileError("(}")
+assertCompileError("(}")
 // CompileError.Parse("')' expected but '}' found.")
 ```
 
-`compileError` is a macro that can be used to assert that a fragment of code
+`assertCompileError` is a macro that can be used to assert that a fragment of code
 (given as a literal String) fails to compile.
 
-- If the code compiles successfully, `compileError` will fail the compilation
+- If the code compiles successfully, `assertCompileError` will fail the compilation
   run with a message.
-- If the code fails to compile, `compileError` will return an instance of
+- If the code fails to compile, `assertCompileError` will return an instance of
   `CompileError`, one of `CompileError.Type(pos: String, msgs: String*)` or
   `CompileError.Parse(pos: String, msgs: String*)` to represent typechecker
   errors or parser errors
 
-In general, `compileError` works similarly to `assertThrows`, except it does its
+In general, `assertCompileError` works similarly to `assertThrows`, except it does its
 checks (that a snippet of code fails) and errors (if it doesn't fail) at
 compile-time rather than run-time. If the code fails as expected, the failure
 message is propagated to runtime in the form of a `CompileError` object. You can
 then do whatever additional checks you want on the failure message, such as
 verifying that the failure message contains some string you expect to be there.
 
-The `compileError` macro compiles the given string in the local scope and
+The `assertCompileError` macro compiles the given string in the local scope and
 context. This means that you can refer to variables in the enclosing scope, i.e.
 the following example will fail to compile because the variable `x` exists.
 
 ```scala
 val x = 0
 
-compileError("x + x"),
-// [error] compileError check failed to have a compilation error
+assertCompileError("x + x"),
+// [error] assertCompileError check failed to have a compilation error
 ```
 
 The returned `CompileError` object also has a handy `.check` method, which takes
@@ -757,9 +757,9 @@ zero-or-more messages which are expected to be part of the final error message.
 This is used as follows:
 
 ```scala
-compileError("true * false").check(
+assertCompileError("true * false").check(
   """
-compileError("true * false").check(
+assertCompileError("true * false").check(
                    ^
   """,
   "value * is not a member of Boolean"
@@ -768,7 +768,7 @@ compileError("true * false").check(
 
 Note that the position-string needs to exactly match the line of code the
 compile-error occured on. This includes any whitespace on the left, as well as
-any unrelated code or comments sharing the same line as the `compileError`
+any unrelated code or comments sharing the same line as the `assertCompileError`
 expression.
 
 Test Utilities
