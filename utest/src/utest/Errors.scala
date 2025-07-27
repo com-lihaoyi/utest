@@ -22,6 +22,41 @@ extends java.lang.AssertionError(AssertionError.render(msgPrefix, captured).plai
 }
 
 object AssertionError {
+  def diff(lhs: fansi.Str, rhs: fansi.Str) = {
+    def splitLines(str: fansi.Str): IndexedSeq[fansi.Str] = {
+      val lineLengths = str.plainText.linesWithSeparators.map(_.length).toList
+      (Seq(0) ++ lineLengths).inits.toList.reverse
+        .sliding(2)
+        .drop(1)
+        .collect { case Seq(start, end) => str.substring(start.sum, end.sum) }
+        .toIndexedSeq
+    }
+
+    import app.tulz.diff._
+    val lhsLines = splitLines(lhs)
+    val rhsLines = splitLines(rhs)
+    val diffElements = SeqDiff.seq(lhsLines, rhsLines)
+
+    def wrap(s: fansi.Str): Seq[fansi.Str] = {
+      if (s.plainText.lastOption == Some('\n')) Seq[fansi.Str](s) else Seq(s ++ fansi.Str("\n"))
+    }
+
+    def render0(prefix: String, x: Seq[fansi.Str], color: fansi.Attrs) =
+      x.flatMap(s => Seq(color(prefix)) ++ wrap(color(s)))
+
+    def renderRed(x: Seq[fansi.Str]) =
+      render0("- ", x, fansi.Attrs(fansi.Color.Reset, fansi.Back.Red))
+
+    def renderGreen(x: Seq[fansi.Str]) =
+      render0("+ ", x, fansi.Attrs(fansi.Color.Reset, fansi.Back.Green))
+
+    diffElements.flatMap {
+      case DiffElement.InBoth(x) => render0("  ", x, fansi.Attrs.Empty)
+      case DiffElement.InFirst(x) => renderRed(x)
+      case DiffElement.InSecond(x) => renderGreen(x)
+      case DiffElement.Diff(x, y) => renderRed(x) ++ renderGreen(y)
+    }
+  }
   def render(msgPrefix: String, captured: Seq[TestValue]) = {
     shaded.fansi.Str.join(
       Seq[shaded.fansi.Str](msgPrefix) ++
@@ -30,38 +65,8 @@ object AssertionError {
             Seq[fansi.Str]("\n", fansi.Color.Cyan(x.name), ": ", x.tpeName.getOrElse(""), " = ", shaded.pprint.apply(x.value))
 
           case x: TestValue.Equality =>
-            def splitLines(str: fansi.Str): IndexedSeq[fansi.Str] = {
-              val lineLengths = str.plainText.linesWithSeparators.map(_.length).toList
-              (Seq(0) ++ lineLengths).inits.toList.reverse
-                .sliding(2)
-                .collect{case Seq(start, end) => str.substring(start.sum, end.sum)}
-                .toIndexedSeq
-            }
-
-            import app.tulz.diff._
-            val lhsLines = splitLines(shaded.pprint.apply(x.lhs.value))
-            val rhsLines = splitLines(shaded.pprint.apply(x.rhs.value))
-            val diffElements = SeqDiff.seq(lhsLines, rhsLines)
-
-            def wrap(s: fansi.Str): Seq[fansi.Str] = {
-              if (s.plainText.lastOption == Some('\n')) Seq[fansi.Str](s) else Seq(s ++ fansi.Str("\n"))
-            }
-
-            def render0(prefix: String, x: Seq[fansi.Str], color: fansi.Attrs) =
-              x.flatMap(s => Seq(color(prefix)) ++ wrap(color(s)))
-
-            def renderRed(x: Seq[fansi.Str]) =
-              render0("- ", x, fansi.Attrs(fansi.Color.Reset, fansi.Back.Red))
-
-            def renderGreen(x: Seq[fansi.Str]) =
-              render0("+ ", x, fansi.Attrs(fansi.Color.Reset, fansi.Back.Green))
-
-            Seq[fansi.Str](fansi.Color.Cyan(s"\n${x.lhs.name} != ${x.rhs.name}"), ":") ++ diffElements.flatMap{
-              case DiffElement.InBoth(x) => render0("  ", x, fansi.Attrs.Empty)
-              case DiffElement.InFirst(x) => renderRed(x)
-              case DiffElement.InSecond(x) => renderGreen(x)
-              case DiffElement.Diff(x, y) => renderRed(x) ++ renderGreen(y)
-            }
+            Seq[fansi.Str](fansi.Color.Cyan(s"\n${x.lhs.name} != ${x.rhs.name}"), ":\n") ++
+              diff(shaded.pprint.apply(x.lhs.value), shaded.pprint.apply(x.rhs.value))
         }
     )
   }

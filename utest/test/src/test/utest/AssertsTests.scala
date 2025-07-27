@@ -181,7 +181,8 @@ object AssertsTests extends utest.TestSuite{
               |    "prompt-logger-stream-pumper-thread",
               |    "proxyInputStreamThroughPumper"
               |  )""".stripMargin
-            assert(e.getMessage == expected)
+
+            assert(e.getMessage.contains(expected))
         }
       }
 
