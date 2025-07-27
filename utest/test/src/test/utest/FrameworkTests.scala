@@ -28,13 +28,13 @@ object FrameworkTests extends utest.TestSuite{
     }
     test("helloWorld"){
       val tests = Tests{
-        "test1"-{
+        test("test1"){
           throw new Exception("test1")
         }
-        "test2"-{
+        test("test2"){
           1
         }
-        "test3"-{
+        test("test3"){
           val a = List[Byte](1, 2)
           a(10)
         }
@@ -88,7 +88,7 @@ object FrameworkTests extends utest.TestSuite{
       }
       test("weirdTestName"){
         val tests = Tests{
-          "t est1~!@#$%^&*()_+{}|:';<>?,/'"-{
+          test("t est1~!@#$%^&*()_+{}|:';<>?,/'"){
             1
           }
         }

@@ -9,7 +9,7 @@ object FutureCrashTest extends TestSuite {
   implicit val queue: ExecutionContext = utest.framework.ExecutionContext.RunNow
 
   def tests = TestSuite {
-    "Crash the compiler when I spew a future" - {
+    test("Crash the compiler when I spew a future") {
       wrapping { val fut = Future { 1 } }
       // println("This prevents the crash")
     }
