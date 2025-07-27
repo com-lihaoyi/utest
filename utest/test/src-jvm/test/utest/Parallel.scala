@@ -55,10 +55,7 @@ object Parallel extends TestSuite{
         val x = Seq(12)
         val y = 1
         val error = assertThrows[AssertionError]{
-          eventually(
-            x == Nil,
-            y == 1
-          )
+          eventually(x == Nil && y == 1)
         }
 
         val expected = Seq(
@@ -136,10 +133,7 @@ object Parallel extends TestSuite{
         val x = Seq(12)
         val y = 1
 
-        continually(
-          x == Seq(12),
-          y == 1
-        )
+        continually(x == Seq(12) && y == 1)
       }
     }
   }

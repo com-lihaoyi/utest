@@ -42,6 +42,13 @@ object Tracer {
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.asTerm}")
     }
   }
+  def single[T](func: Expr[Seq[AssertEntry[T]] => Unit], expr: Expr[T])(using Quotes, Type[T]): Expr[Unit] = {
+    import quotes.reflect.*
+
+    val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(Seq(expr).map(e => makeAssertEntry(e, codeOf(e))))
+    betaReduceKeepLineNumbers('{ $func($trees)}.asTerm).asExprOf[Unit]
+
+  }
 
   def codeOf[T](expr: Expr[T])(using Quotes): String =
     import quotes.reflect._

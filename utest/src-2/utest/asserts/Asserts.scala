@@ -94,19 +94,25 @@ trait AssertsCompanionVersionSpecific {
     }
   }
 
-  def assertProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
+  def assertProxy(c: Context)(expr: c.Expr[Boolean]): c.Expr[Unit] = {
     import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
+    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", expr)
+  }
+
+
+  def assertAllProxy(c: Context)(expr: c.Expr[Boolean]*): c.Expr[Unit] = {
+    import c.universe._
+    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", expr:_*)
   }
 
   def assertThrowsProxy[T: c.WeakTypeTag]
                     (c: Context)
-                    (exprs: c.Expr[Unit])
+                    (expr: c.Expr[Unit])
                     (t: c.Expr[ClassTag[T]]): c.Expr[T] = {
     import c.universe._
     val typeTree = implicitly[c.WeakTypeTag[T]]
 
-    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.assertThrowsImpl[$typeTree]", exprs)
+    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.assertThrowsImpl[$typeTree]", expr)
     c.Expr[T](q"$x($t)")
   }
 
@@ -127,11 +133,6 @@ trait AssertsVersionSpecific {
     * compile successfully, this macro itself will raise a compilation error.
     */
   def compileError(expr: String): CompileError = macro Asserts.compileError
-  /**
-    * Checks that one or more expressions are true; otherwises raises an
-    * exception with some debugging info
-    */
-  def assert(exprs: Boolean*): Unit = macro Asserts.assertProxy
 
   /**
    * Forwarder for `Predef.assert`, for when you want to explicitly write the
@@ -140,15 +141,26 @@ trait AssertsVersionSpecific {
   def assert(expr: Boolean, msg: => Any) = Predef.assert(expr, msg)
 
   /**
+   * Checks that the expression is true; otherwise raises an
+   * exception with some debugging info
+   */
+  def assert(expr: Boolean): Unit = macro Asserts.assertProxy
+
+  /**
+    * Checks that one or more expressions are true; otherwise raises an
+    * exception with some debugging info
+    */
+  def assertAll(expr: Boolean*): Unit = macro Asserts.assertAllProxy
+  /**
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def eventually(exprs: Boolean*): Unit = macro Parallel.eventuallyProxy
+  def eventually(expr: Boolean): Unit = macro Parallel.eventuallyProxy
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def continually(exprs: Boolean*): Unit = macro Parallel.continuallyProxy
+  def continually(expr: Boolean): Unit = macro Parallel.continuallyProxy
 
   /**
     * Asserts that the given value matches the PartialFunction. Useful for using
@@ -162,6 +174,6 @@ trait AssertsVersionSpecific {
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  def assertThrows[T: ClassTag](exprs: Unit): T = macro Asserts.assertThrowsProxy[T]
+  def assertThrows[T: ClassTag](expr: Unit): T = macro Asserts.assertThrowsProxy[T]
 }
 

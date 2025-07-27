@@ -91,14 +91,14 @@ object LineNumbersTests extends utest.TestSuite {
 
 
         var header = "header"
-        assert(
+        assertAll(
           1 == 1,
           header == "//GPL"
         )
 
         println("")
 
-        assert(
+        assertAll(
           1 == 2,
           header == "//MIT "
         )
@@ -106,7 +106,7 @@ object LineNumbersTests extends utest.TestSuite {
     }
     test("test14") {
       val result = "testing".trim()
-      assert(
+      assertAll(
         result == "notMatching",
         1 == 2)
       result
@@ -125,7 +125,7 @@ object LineNumbersTests extends utest.TestSuite {
 
     val stackTraceLinesFromThisFile = results.mapLeaves(_.value.failed.get.getStackTrace.toList.filter(_.getFileName == "LineNumbersTests.scala").toList).leaves.toList
 
-    assert(
+    assertAll(
       stackTraceLinesFromThisFile(0).exists(_.getLineNumber == 11),
       stackTraceLinesFromThisFile(1).exists(_.getLineNumber == 14),
       stackTraceLinesFromThisFile(2).exists(_.getLineNumber == 17),
