@@ -32,7 +32,7 @@ object AssertsTests extends utest.TestSuite{
         } catch { case e @ utest.AssertionError(_, logged, cause) =>
           (e, logged, cause)
         }
-        val expected = Seq(utest.TestValue("x", "Int", 1), TestValue("y", "String", "2"))
+        val expected = Seq(utest.TestValue.Single("x", "Int", 1), TestValue.Single("y", "String", "2"))
         test{
           Predef.assert(
             cause == null,
@@ -63,6 +63,39 @@ object AssertsTests extends utest.TestSuite{
           )
         }
       }
+
+      test("failureEquals") {
+        def x = true
+        def y = false
+        try assert(x == y)
+        catch{ case e: utest.AssertionError =>
+          Predef.assert(e.getMessage.contains(
+            """- true
+              |+ false""".stripMargin
+          ))
+        }
+
+        def a = Seq("1" * 15, "2" * 15, "3" * 15, "4" * 15, "5" * 15, "6" * 15)
+        def b = Seq("0" * 15, "1" * 15, "b" * 15, "3" * 15, "4" * 15, "5" * 15)
+        try assert(a == b)
+        catch{ case e: utest.AssertionError =>
+          Predef.assert(e.getMessage.contains(
+            """  List(
+              |+   "000000000000000",
+              |    "111111111111111",
+              |-   "222222222222222",
+              |+   "bbbbbbbbbbbbbbb",
+              |    "333333333333333",
+              |    "444444444444444",
+              |-   "555555555555555",
+              |-   "666666666666666"
+              |+   "555555555555555"
+              |  )""".stripMargin
+          ))
+        }
+      }
+
+
       test("failureWithException"){
         try {
           assert(Iterator.empty.next() == 10)
@@ -115,7 +148,7 @@ object AssertsTests extends utest.TestSuite{
         try assert((math.max(1 + 1, 2): @Show) == 3) catch{
           case utest.AssertionError(
             _,
-            Seq(lv @ TestValue(_, "Int", 2)),
+            Seq(lv @ TestValue.Single(_, "Int", 2)),
             null
           ) =>
             lv
@@ -152,7 +185,7 @@ object AssertsTests extends utest.TestSuite{
           // This is subtle: only `x` should be logged as an interesting value, for
           // `y` was not evaluated at all and could not have played a part in the
           // throwing of the exception
-          Predef.assert(e.captured == Seq(TestValue("x", "Int", 1)))
+          Predef.assert(e.captured == Seq(TestValue.Single("x", "Int", 1)))
           Predef.assert(e.cause.isInstanceOf[MatchError])
           e.getMessage
         }
@@ -166,7 +199,7 @@ object AssertsTests extends utest.TestSuite{
           }
         }catch {case e: utest.AssertionError =>
           Predef.assert(e.getMessage.contains("123 + x + y"))
-          Predef.assert(e.captured == Seq(TestValue("x", "Int", 1), TestValue("y", "Double", 2.0)))
+          Predef.assert(e.captured == Seq(TestValue.Single("x", "Int", 1), TestValue.Single("y", "Double", 2.0)))
           e.getMessage
         }
       }

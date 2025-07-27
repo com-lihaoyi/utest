@@ -1,6 +1,6 @@
 package utest
 
-import utest.shaded.fansi.Str
+import utest.shaded._
 
 //import acyclic.file
 
@@ -20,14 +20,41 @@ case class AssertionError(msgPrefix: String, captured: Seq[TestValue], cause: Th
 extends java.lang.AssertionError(AssertionError.render(msgPrefix, captured).plainText)
   with ColorMessageError {
   super.initCause(cause)
-
-  override def coloredMessage: Str = AssertionError.render(msgPrefix, captured)
+  override def coloredMessage: fansi.Str = AssertionError.render(msgPrefix, captured)
 }
 
 object AssertionError {
   def render(msgPrefix: String, captured: Seq[TestValue]) = {
     shaded.fansi.Str.join(
-      Seq[shaded.fansi.Str](msgPrefix) ++ captured.flatMap[shaded.fansi.Str](x => Seq(s"\n${x.name}: ${x.tpeName} = ", shaded.pprint.apply(x.value)))
+      Seq[shaded.fansi.Str](msgPrefix) ++
+        captured.flatMap[shaded.fansi.Str]{
+          case x: TestValue.Single =>
+            Seq(s"\n${x.name}: ${x.tpeName} = ", shaded.pprint.apply(x.value))
+          case x: TestValue.Equality =>
+            def splitLines(str: fansi.Str): IndexedSeq[fansi.Str] = {
+              val lineLengths = str.plainText.linesWithSeparators.map(_.length).toList
+              (Seq(0) ++ lineLengths).inits.toList.reverse
+                .sliding(2)
+                .collect{case Seq(start, end) => str.substring(start.sum, end.sum)}
+                .toIndexedSeq
+            }
+
+            import app.tulz.diff._
+            val lhsLines = splitLines(shaded.pprint.apply(x.lhs.value))
+            val rhsLines = splitLines(shaded.pprint.apply(x.rhs.value))
+            val diffElements = SeqDiff.seq(lhsLines, rhsLines)
+
+            def wrap(s: fansi.Str): Seq[fansi.Str] = {
+              if (s.plainText.lastOption == Some('\n')) Seq(s) else Seq(s ++ fansi.Str("\n"))
+            }
+
+            Seq(fansi.Str("\n")) ++ diffElements.flatMap[fansi.Str]{
+              case DiffElement.InBoth(x) => x.flatMap(Seq(fansi.Str("  ")) ++ wrap(_))
+              case DiffElement.InFirst(x) => x.flatMap(Seq(fansi.Color.Red("-"), fansi.Str(" ")) ++ wrap(_))
+              case DiffElement.InSecond(x) => x.flatMap(Seq(fansi.Color.Green("+"), fansi.Str(" ")) ++ wrap(_))
+              case DiffElement.Diff(x, y) => x.flatMap(Seq(fansi.Color.Red("-"), fansi.Str(" ")) ++ wrap(_)) ++ y.flatMap(Seq(fansi.Color.Green("+"), fansi.Str(" ")) ++ wrap(_))
+            }
+        }
     )
   }
 }
@@ -40,7 +67,11 @@ trait ColorMessageError {
  * Information about a value that was logged in one of the macro-powered
  * `assert` functions
  */
-case class TestValue(name: String, tpeName: String, value: Any)
+sealed trait TestValue
+object TestValue {
+  case class Single(name: String, tpeName: String, value: Any) extends TestValue
+  case class Equality(lhs: Single, rhs: Single) extends TestValue
+}
 
 /**
  * Simplified versions of the errors thrown during compilation, for use with the

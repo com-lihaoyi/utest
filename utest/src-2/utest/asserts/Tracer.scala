@@ -14,7 +14,7 @@ object Tracer{
     val tempName = c.fresh(newTermName("$temp"))
     q"""{
       val $tempName = $tree
-      $loggerName(utest.TestValue(
+      $loggerName(utest.TestValue.Single(
         ${tree.toString()},
         ${show(tpe)},
         $tempName
@@ -22,6 +22,7 @@ object Tracer{
       $tempName
     }"""
   }
+
   def apply[T](c: Context)(func: c.Tree, exprs: c.Expr[T]*): c.Expr[Unit] = {
     import c.universe._
     val loggerName = c.fresh(newTermName("$log"))
@@ -31,6 +32,21 @@ object Tracer{
       override def transform(tree: Tree): Tree = {
 
         tree match {
+          case i @ Apply(Select(lhs, TermName("$eq$eq")), Seq(rhs)) =>
+            val tempLhs = c.fresh(newTermName("$lhs"))
+            val tempRhs = c.fresh(newTermName("$rhs"))
+            val isEquals = c.fresh(newTermName("isEquals"))
+
+            q"""
+            val $tempLhs = sourcecode.Text($lhs)
+            val $tempRhs = sourcecode.Text($rhs)
+            val $isEquals = $tempLhs.value == $tempRhs.value
+            if (!$isEquals) $loggerName(utest.TestValue.Equality(
+              utest.TestValue.Single($tempLhs.source, "", $tempLhs.value),
+              utest.TestValue.Single($tempRhs.source, "", $tempRhs.value)
+            ))
+            $isEquals
+            """
           case i @ Ident(name)
             if i.symbol.pos != NoPosition
             && i.pos != NoPosition

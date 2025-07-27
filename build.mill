@@ -65,12 +65,13 @@ trait UtestMainModule extends CrossScalaModule with UtestModule with PlatformSca
         Seq(
           mvn"com.lihaoyi::pprint:0.9.3",
           mvn"com.lihaoyi::fansi:0.5.1",
-          mvn"io.bullet::spliff:0.8.0"),
+          mvn"app.tulz::stringdiff:0.3.4"
+        ),
         sources = true
       ).filter(_.path.last match{
         case s"fansi$versionSuffix.jar" => true
         case s"pprint$versionSuffix.jar" => true
-        case s"spliff$versionSuffix.jar" => true
+        case s"stringdiff$versionSuffix.jar" => true
         case _ => false
       })
     )
@@ -91,9 +92,17 @@ object utest extends Module {
   object jvm extends Cross[JvmUtestModule](scalaVersions)
   trait JvmUtestModule
     extends UtestMainModule {
+    def compileMvnDeps =
+      if (crossScalaVersion.startsWith("2")) Seq(
+        mvn"org.scala-lang:scala-reflect:${crossScalaVersion}",
+        mvn"org.scala-lang:scala-compiler:${crossScalaVersion}"
+      )
+      else Seq.empty[Dep]
+
     def mvnDeps = Seq(
       mvn"com.lihaoyi::sourcecode::0.4.3-M5",
-      mvn"org.scala-sbt:test-interface::1.0"
+      mvn"org.scala-sbt:test-interface::1.0",
+      mvn"org.scala-lang.modules::scala-collection-compat::2.4.4",
     ) ++ (if (crossScalaVersion.startsWith("2")) Seq(
       mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion",
       mvn"org.scala-lang:scala-reflect:$crossScalaVersion"
@@ -105,10 +114,17 @@ object utest extends Module {
 
   object js extends Cross[JsUtestModule](scalaVersions)
   trait JsUtestModule extends UtestMainModule with ScalaJSModule{
+    def compileMvnDeps =
+      if (crossScalaVersion.startsWith("2")) Seq(
+        mvn"org.scala-lang:scala-reflect:${crossScalaVersion}",
+        mvn"org.scala-lang:scala-compiler:${crossScalaVersion}"
+      )
+      else Seq.empty[Dep]
     def mvnDeps = Seq(
       mvn"com.lihaoyi::sourcecode::0.4.3-M5",
       mvn"org.scala-js::scalajs-test-interface:${scalaJSVersion()}".withDottyCompat(crossScalaVersion),
-      mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion".withDottyCompat(crossScalaVersion)
+      mvn"org.portable-scala::portable-scala-reflect::$scalaReflectVersion".withDottyCompat(crossScalaVersion),
+      mvn"org.scala-lang.modules::scala-collection-compat::2.4.4",
     ) ++ (if(crossScalaVersion.startsWith("2")) Seq(
       mvn"org.scala-lang:scala-reflect:$crossScalaVersion"
     ) else Seq())
@@ -120,9 +136,16 @@ object utest extends Module {
 
   object native extends Cross[NativeUtestModule](scalaVersions)
   trait NativeUtestModule extends UtestMainModule with ScalaNativeModule {
+    def compileMvnDeps =
+      if (crossScalaVersion.startsWith("2")) Seq(
+        mvn"org.scala-lang:scala-reflect:${crossScalaVersion}",
+        mvn"org.scala-lang:scala-compiler:${crossScalaVersion}"
+      )
+      else Seq.empty[Dep]
     def mvnDeps = Seq(
       mvn"com.lihaoyi::sourcecode::0.4.3-M5",
-      mvn"org.scala-native::test-interface::${scalaNativeVersion()}"
+      mvn"org.scala-native::test-interface::${scalaNativeVersion()}",
+      mvn"org.scala-lang.modules::scala-collection-compat::2.4.4",
     )
 
     def scalaNativeVersion = "0.5.8"

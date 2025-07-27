@@ -47,7 +47,7 @@ object Tracer {
     import quotes.reflect._
     expr.asTerm.pos.sourceCode.get
 
-  private def tracingMap(logger: Expr[TestValue => Unit])(using Quotes) =
+  private def tracingMap(logger: Expr[TestValue => Unit])(using quotes: Quotes) =
     import quotes.reflect._
     new TreeMap {
       // Do not descend into definitions inside blocks since their arguments are unbound
@@ -57,6 +57,17 @@ object Tracer {
 
       override def transformTerm(tree: Term)(owner: Symbol): Term = {
         tree match {
+          case i @ Apply(Select(lhs, "=="), Seq(rhs)) =>
+            '{
+              val tmpLhs = ${lhs.asExpr}
+              val tmpRhs = ${rhs.asExpr}
+              if (tmpLhs != tmpRhs) $logger(TestValue.Equality(
+                utest.TestValue.Single(${Expr(lhs.show)}, "", tmpLhs),
+                utest.TestValue.Single(${Expr(rhs.show)}, "", tmpRhs)
+              ))
+              tmpLhs == tmpRhs
+            }.asTerm
+
           case i @ Ident(name) if i.symbol.pos.isDefined
             // only trace identifiers coming from the same file,
             // since those are the ones people probably care about
@@ -100,7 +111,7 @@ object Tracer {
       case '{ $x: t } =>
         '{
           val tmp: t = $x
-          $logger(TestValue(
+          $logger(TestValue.Single(
             ${Expr(expr.show)},
             ${Expr(StringUtilHelpers.stripScalaCorePrefixes(tpeString))},
             tmp

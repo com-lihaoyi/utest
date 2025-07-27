@@ -59,7 +59,7 @@ object Parallel extends TestSuite{
             y == 1
           )
         }
-        val expected = Seq(utest.TestValue("x", "Seq[Int]", Seq(12)))
+        val expected = Seq(utest.TestValue.Single("x", "Seq[Int]", Seq(12)))
         assert(error.captured == expected)
         error.captured
       }
@@ -110,7 +110,7 @@ object Parallel extends TestSuite{
           )
         }
 
-        val expected = utest.TestValue("i", "test.utest.Parallel.Counter", Counter())
+        val expected = utest.TestValue.Single("i", "test.utest.Parallel.Counter", Counter())
 
         assert(error.captured.contains(expected))
         expected
