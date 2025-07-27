@@ -59,6 +59,12 @@ trait AssertsVersionSpecific {
   inline def assert(inline exprs: Boolean*): Unit = ${Asserts.assertProxy('exprs)}
 
   /**
+   * Forwarder for `Predef.assert`, for when you want to explicitly write the
+   * assert message and don't want or need the fancy smart asserts
+   */
+  def assert(expr: Boolean, msg: => Any) = Predef.assert(expr, msg)
+
+  /**
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
