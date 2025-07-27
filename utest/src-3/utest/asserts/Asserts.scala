@@ -25,11 +25,11 @@ trait AssertsCompanionVersionSpecific {
     Tracer.traceOneWithCode[Any, Unit]('{ (x: AssertEntry[Any]) => utest.asserts.Asserts.assertMatchImpl(x)($pf) }, t, code)
   }
 
-  def interceptProxy[T](exprs: Expr[Unit])(using Quotes, Type[T]): Expr[T] = {
+  def assertThrowsProxy[T](exprs: Expr[Unit])(using Quotes, Type[T]): Expr[T] = {
     import quotes.reflect._
     val clazz = Literal(ClassOfConstant(TypeRepr.of[T]))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
-      utest.asserts.Asserts.interceptImpl[T](x)(ClassTag(${clazz.asExprOf[Class[T]]})) }, exprs)
+      utest.asserts.Asserts.assertThrowsImpl[T](x)(ClassTag(${clazz.asExprOf[Class[T]]})) }, exprs)
   }
 
   def compileErrorImpl(errors: List[Error], snippet: String): CompileError =
@@ -82,6 +82,6 @@ trait AssertsVersionSpecific {
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  inline def intercept[T](inline exprs: Unit): T = ${Asserts.interceptProxy[T]('exprs)}
+  inline def assertThrows[T](inline exprs: Unit): T = ${Asserts.assertThrowsProxy[T]('exprs)}
 }
 

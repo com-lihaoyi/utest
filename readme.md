@@ -52,7 +52,7 @@ Contents
   - [Asynchronous Tests](#asynchronous-tests)
 - [Smart Asserts](#smart-asserts)
   - [Arrow Asserts](#arrow-asserts)
-  - [Intercept](#intercept)
+  - [assertThrows](#assertThrows)
   - [Eventually and Continually](#eventually-and-continually)
   - [Assert Match](#assert-match)
   - [Compile Error](#compile-error)
@@ -632,11 +632,11 @@ try{
 You can use `a ==> b` as a shorthand for `assert(a == b)`. This results in
 pretty code you can easily copy-paste into documentation.
 
-Intercept
+assertThrows
 ---------
 
 ```scala
-val e = intercept[MatchError]{
+val e = assertThrows[MatchError]{
   (0: Any) match { case _: String => }
 }
 println(e)
@@ -644,13 +644,13 @@ println(e)
 // scala.MatchError: 0 (of class java.lang.Integer)
 ```
 
-`intercept` allows you to verify that a block raises an exception. This
+`assertThrows` allows you to verify that a block raises an exception. This
 exception is caught and returned so you can perform further validation on it,
 e.g. checking that the message is what you expect. If the block does not raise
 one, an `AssertionError` is raised.
 
-As with `assert`, `intercept` adds debugging information to the error messages
-if the `intercept` fails or throws an unexpected Exception.
+As with `assert`, `assertThrows` adds debugging information to the error messages
+if the `assertThrows` fails or throws an unexpected Exception.
 
 Eventually and Continually
 --------------------------
@@ -730,7 +730,7 @@ compileError("(}")
   `CompileError.Parse(pos: String, msgs: String*)` to represent typechecker
   errors or parser errors
 
-In general, `compileError` works similarly to `intercept`, except it does its
+In general, `compileError` works similarly to `assertThrows`, except it does its
 checks (that a snippet of code fails) and errors (if it doesn't fail) at
 compile-time rather than run-time. If the code fails as expected, the failure
 message is propagated to runtime in the form of a `CompileError` object. You can
