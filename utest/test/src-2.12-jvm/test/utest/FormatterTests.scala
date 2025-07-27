@@ -54,6 +54,9 @@ object FormatterTests extends utest.TestSuite {
           |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
+          |  x != 2:
+          |  - 1
+          |  + 2
           |    utest.asserts.Asserts$.assertImpl(Asserts.scala:)
           |    test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:)
           |    test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
@@ -71,6 +74,9 @@ object FormatterTests extends utest.TestSuite {
           |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
+          |    x != 2:
+          |    - 1
+          |    + 2
           |      utest.asserts.Asserts$.assertImpl(Asserts.scala:)
           |      test.utest.FormatterTests$.liftedTree1$1(FormatterTests.scala:)
           |      test.utest.FormatterTests$.$anonfun$tests$3(FormatterTests.scala:)
@@ -114,6 +120,9 @@ object FormatterTests extends utest.TestSuite {
           |    rmatterTests.scala:)
           |  utest.AssertionError: try assert(x == 2)
           |  x: Int = 1
+          |  x != 2:
+          |  - 1
+          |  + 2
           |    utest.asserts.Asserts$.assertImpl(Asserts.scal
           |    a:)
           |    test.utest.FormatterTests$.liftedTree1$1(Forma
@@ -140,6 +149,9 @@ object FormatterTests extends utest.TestSuite {
           |      FormatterTests.scala:)
           |    utest.AssertionError: try assert(x == 2)
           |    x: Int = 1
+          |    x != 2:
+          |    - 1
+          |    + 2
           |      utest.asserts.Asserts$.assertImpl(Asserts.sc
           |      ala:)
           |      test.utest.FormatterTests$.liftedTree1$1(For

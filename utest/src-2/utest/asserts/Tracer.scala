@@ -11,10 +11,11 @@ object Tracer{
   def textRange(c: Context)(tree: c.Tree) = {
 
     val fileContent = new String(tree.pos.source.content)
-    val res = tree.pos match{
-      case r: RangePosition => fileContent.slice(r.start, r.end)
-      case _ => ""
-    }
+    val res = if (tree.pos.isInstanceOf[RangePosition]){
+      val r = tree.pos.asInstanceOf[RangePosition]
+      fileContent.slice(r.start, r.end)
+    } else ""
+
     res
   }
   def wrapWithLoggedValue(c: Context)(tree: c.Tree,

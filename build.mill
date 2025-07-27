@@ -11,7 +11,7 @@ import com.github.lolgab.mill.mima._
 
 val communityBuildDottyVersion = sys.props.get("dottyVersion").toList
 
-val scalaVersions = "2.13.14" :: "3.3.3" :: communityBuildDottyVersion
+val scalaVersions = "2.12.20" :: "2.13.14" :: "3.3.3" :: communityBuildDottyVersion
 
 val scalaReflectVersion = "1.1.3"
 
@@ -107,6 +107,7 @@ object utest extends Module {
     ) else Seq())
     object test extends ScalaTests with UtestTestModule{
       def resources = super[UtestTestModule].resources() ++ super[ScalaTests].resources()
+      def scalacOptions = Seq("-Yrangepos")
     }
   }
 
@@ -129,6 +130,7 @@ object utest extends Module {
     def scalaJSVersion = "1.19.0"
     object test extends ScalaJSTests with UtestTestModule{
       def resources = super[UtestTestModule].resources() ++ super[ScalaJSTests].resources()
+      def scalacOptions = Seq("-Yrangepos")
     }
   }
 
@@ -149,6 +151,7 @@ object utest extends Module {
     def scalaNativeVersion = "0.5.8"
     object test extends ScalaNativeTests with UtestTestModule{
       def resources = super[UtestTestModule].resources() ++ super[ScalaNativeTests].resources()
+      def scalacOptions = Seq("-Yrangepos")
     }
   }
 }

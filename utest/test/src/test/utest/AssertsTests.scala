@@ -182,7 +182,7 @@ object AssertsTests extends utest.TestSuite{
               |    "proxyInputStreamThroughPumper"
               |  )""".stripMargin
 
-            assert(e.getMessage.contains(expected))
+            Predef.assert(e.getMessage.contains(expected))
         }
       }
 
