@@ -1,5 +1,6 @@
 package utest
 package asserts
+import scala.reflect.internal.util.{RangePosition}
 import scala.reflect.macros.Context
 //import acyclic.file
 /**
@@ -7,6 +8,15 @@ import scala.reflect.macros.Context
  * converting it into an [[AssertEntry]] and inserting debug loggers.
  */
 object Tracer{
+  def textRange(c: Context)(tree: c.Tree) = {
+
+    val fileContent = new String(tree.pos.source.content)
+    val res = tree.pos match{
+      case r: RangePosition => fileContent.slice(r.start, r.end)
+      case _ => ""
+    }
+    res
+  }
   def wrapWithLoggedValue(c: Context)(tree: c.Tree,
                                       loggerName: c.TermName,
                                       tpe: c.Type) = {
@@ -15,8 +25,8 @@ object Tracer{
     q"""{
       val $tempName = $tree
       $loggerName(utest.TestValue.Single(
-        ${tree.toString()},
-        ${show(tpe)},
+        ${textRange(c)(tree)},
+        Some(implicitly[utest.shaded.pprint.TPrint[$tpe]].render(utest.shaded.pprint.TPrintColors.Colors)),
         $tempName
       ))
       $tempName
@@ -38,12 +48,12 @@ object Tracer{
             val isEquals = c.fresh(newTermName("isEquals"))
 
             q"""
-            val $tempLhs = sourcecode.Text($lhs)
-            val $tempRhs = sourcecode.Text($rhs)
-            val $isEquals = $tempLhs.value == $tempRhs.value
+            val $tempLhs = ${transform(lhs)}
+            val $tempRhs = ${transform(rhs)}
+            val $isEquals = $tempLhs == $tempRhs
             if (!$isEquals) $loggerName(utest.TestValue.Equality(
-              utest.TestValue.Single($tempLhs.source, "", $tempLhs.value),
-              utest.TestValue.Single($tempRhs.source, "", $tempRhs.value)
+              utest.TestValue.Single(${textRange(c)(lhs)}, None, $tempLhs),
+              utest.TestValue.Single(${textRange(c)(rhs)}, None, $tempRhs)
             ))
             $isEquals
             """

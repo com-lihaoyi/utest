@@ -4,6 +4,7 @@ import utest.asserts.{RetryInterval, RetryMax}
 
 
 object Parallel extends TestSuite{
+  implicit val colors: shaded.pprint.TPrintColors = shaded.pprint.TPrintColors.Colors
   case class Counter(){
     var i = 0
     def apply() = {
@@ -59,12 +60,28 @@ object Parallel extends TestSuite{
             y == 1
           )
         }
-        val expected = Seq(utest.TestValue.Single("x", "Seq[Int]", Seq(12)))
-        assert(error.captured == expected)
+
+        val expected = Seq(
+          utest.TestValue.Single("x", Some(shaded.pprint.tprint[Seq[Int]]), Seq(12)),
+          utest.TestValue.Equality(
+            utest.TestValue.Single("x", None, Seq(12)),
+            utest.TestValue.Single("Nil", None, Seq())
+          )
+        )
+        val expectedScala3 = Seq(
+          utest.TestValue.Single("x", Some(shaded.pprint.tprint[Seq[Int]]), Seq(12)),
+          utest.TestValue.Equality(
+            utest.TestValue.Single("x", None, Seq(12)),
+            utest.TestValue.Single("Nil", None, Seq())
+          )
+        )
+
+
+        assert(error.captured == expected || error.captured == expectedScala3)
         error.captured
       }
-      "success"-{
 
+      "success"-{
         val i = Counter()
 
         eventually(
@@ -110,7 +127,7 @@ object Parallel extends TestSuite{
           )
         }
 
-        val expected = utest.TestValue.Single("i", "test.utest.Parallel.Counter", Counter())
+        val expected = utest.TestValue.Single("i", Some(shaded.pprint.tprint[Parallel.Counter]), Counter())
 
         assert(error.captured.contains(expected))
         expected

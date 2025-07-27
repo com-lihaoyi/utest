@@ -15,8 +15,6 @@ case class NoSuchTestException(path: Seq[String]*)
  * contains metadata about local variables used in the assert expression.
  */
 case class AssertionError(msgPrefix: String, captured: Seq[TestValue], cause: Throwable = null)
-// Referring to non-existent method java.lang.AssertionError.<init>(java.lang.String,java.lang.Throwable) in Scala.js 1.0.0-M1
-//                          extends java.lang.AssertionError(msg, cause) {
 extends java.lang.AssertionError(AssertionError.render(msgPrefix, captured).plainText)
   with ColorMessageError {
   super.initCause(cause)
@@ -27,9 +25,10 @@ object AssertionError {
   def render(msgPrefix: String, captured: Seq[TestValue]) = {
     shaded.fansi.Str.join(
       Seq[shaded.fansi.Str](msgPrefix) ++
-        captured.flatMap[shaded.fansi.Str]{
+        captured.flatMap{
           case x: TestValue.Single =>
-            Seq(s"\n${x.name}: ${x.tpeName} = ", shaded.pprint.apply(x.value))
+            Seq[fansi.Str]("\n", fansi.Color.Cyan(x.name), ": ", x.tpeName.getOrElse(""), " = ", shaded.pprint.apply(x.value))
+
           case x: TestValue.Equality =>
             def splitLines(str: fansi.Str): IndexedSeq[fansi.Str] = {
               val lineLengths = str.plainText.linesWithSeparators.map(_.length).toList
@@ -45,14 +44,23 @@ object AssertionError {
             val diffElements = SeqDiff.seq(lhsLines, rhsLines)
 
             def wrap(s: fansi.Str): Seq[fansi.Str] = {
-              if (s.plainText.lastOption == Some('\n')) Seq(s) else Seq(s ++ fansi.Str("\n"))
+              if (s.plainText.lastOption == Some('\n')) Seq[fansi.Str](s) else Seq(s ++ fansi.Str("\n"))
             }
 
-            Seq(fansi.Str("\n")) ++ diffElements.flatMap[fansi.Str]{
-              case DiffElement.InBoth(x) => x.flatMap(Seq(fansi.Str("  ")) ++ wrap(_))
-              case DiffElement.InFirst(x) => x.flatMap(Seq(fansi.Color.Red("-"), fansi.Str(" ")) ++ wrap(_))
-              case DiffElement.InSecond(x) => x.flatMap(Seq(fansi.Color.Green("+"), fansi.Str(" ")) ++ wrap(_))
-              case DiffElement.Diff(x, y) => x.flatMap(Seq(fansi.Color.Red("-"), fansi.Str(" ")) ++ wrap(_)) ++ y.flatMap(Seq(fansi.Color.Green("+"), fansi.Str(" ")) ++ wrap(_))
+            def render0(prefix: String, x: Seq[fansi.Str], color: fansi.Attrs) =
+              x.flatMap(s => Seq(color(prefix)) ++ wrap(color(s)))
+
+            def renderRed(x: Seq[fansi.Str]) =
+              render0("- ", x, fansi.Attrs(fansi.Color.Reset, fansi.Back.Red))
+
+            def renderGreen(x: Seq[fansi.Str]) =
+              render0("+ ", x, fansi.Attrs(fansi.Color.Reset, fansi.Back.Green))
+
+            Seq[fansi.Str](fansi.Color.Cyan(s"\n${x.lhs.name} != ${x.rhs.name}"), ":") ++ diffElements.flatMap{
+              case DiffElement.InBoth(x) => render0("  ", x, fansi.Attrs.Empty)
+              case DiffElement.InFirst(x) => renderRed(x)
+              case DiffElement.InSecond(x) => renderGreen(x)
+              case DiffElement.Diff(x, y) => renderRed(x) ++ renderGreen(y)
             }
         }
     )
@@ -69,7 +77,7 @@ trait ColorMessageError {
  */
 sealed trait TestValue
 object TestValue {
-  case class Single(name: String, tpeName: String, value: Any) extends TestValue
+  case class Single(name: String, tpeName: Option[fansi.Str], value: Any) extends TestValue
   case class Equality(lhs: Single, rhs: Single) extends TestValue
 }
 

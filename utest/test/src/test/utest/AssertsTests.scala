@@ -10,7 +10,7 @@ import utest._
 */
 object AssertsTests extends utest.TestSuite{
 
-
+  implicit val colors: shaded.pprint.TPrintColors = shaded.pprint.TPrintColors.Colors
   def tests = Tests{
     test("assert"){
       test("success"){
@@ -32,7 +32,16 @@ object AssertsTests extends utest.TestSuite{
         } catch { case e @ utest.AssertionError(_, logged, cause) =>
           (e, logged, cause)
         }
-        val expected = Seq(utest.TestValue.Single("x", "Int", 1), TestValue.Single("y", "String", "2"))
+
+        val expected = Seq(
+          TestValue.Single("x", Some(shaded.pprint.tprint[Int]), 1),
+          TestValue.Single("y", Some(shaded.pprint.tprint[String]), "2"),
+          TestValue.Equality(
+            TestValue.Single("x.toString", None, "1"),
+            TestValue.Single("y", None, "2"),
+          ),
+        )
+
         test{
           Predef.assert(
             cause == null,
@@ -64,6 +73,7 @@ object AssertsTests extends utest.TestSuite{
         }
       }
 
+
       test("failureEquals") {
         def x = true
         def y = false
@@ -92,6 +102,86 @@ object AssertsTests extends utest.TestSuite{
               |+   "555555555555555"
               |  )""".stripMargin
           ))
+        }
+
+        val filtered = Seq(
+          "HandleRunThread",
+          "JsonArrayLogger mill-chrome-profile.json",
+          "JsonArrayLogger mill-profile.json",
+          "MillServerActionRunner",
+          "MillServerTimeoutThead",
+          "Process ID Checker Thread",
+          "FileToStreamTailerThread",
+          "FileToStreamTailerThread",
+          "Timer",
+          "main",
+          "prompt-logger-stream-pumper-thread",
+          "proxyInputStreamThroughPumper"
+        )
+
+        val expected = Seq(
+          "HandleRunThread",
+          "JsonArrayLogger mill-chrome-profile.json",
+          "JsonArrayLogger mill-profile.json",
+          "MillServerActionRunner",
+          "MillServerTimeoutThead",
+          "Process ID Checker Thread",
+          "FileToStreamTailerThead",
+          "FileToStreamTailerThread",
+          "Timer",
+          "main",
+          "prompt-logger-stream-pumper-thread",
+          "proxyInputStreamThroughPumper"
+        )
+        try assert(filtered == expected)
+        catch {
+          case e: utest.AssertionError =>
+            val expected ==
+            """filtered: Seq[String] = List(
+              |  "HandleRunThread",
+              |  "JsonArrayLogger mill-chrome-profile.json",
+              |  "JsonArrayLogger mill-profile.json",
+              |  "MillServerActionRunner",
+              |  "MillServerTimeoutThead",
+              |  "Process ID Checker Thread",
+              |  "FileToStreamTailerThread",
+              |  "FileToStreamTailerThread",
+              |  "Timer",
+              |  "main",
+              |  "prompt-logger-stream-pumper-thread",
+              |  "proxyInputStreamThroughPumper"
+              |)
+              |expected: Seq[String] = List(
+              |  "HandleRunThread",
+              |  "JsonArrayLogger mill-chrome-profile.json",
+              |  "JsonArrayLogger mill-profile.json",
+              |  "MillServerActionRunner",
+              |  "MillServerTimeoutThead",
+              |  "Process ID Checker Thread",
+              |  "FileToStreamTailerThead",
+              |  "FileToStreamTailerThread",
+              |  "Timer",
+              |  "main",
+              |  "prompt-logger-stream-pumper-thread",
+              |  "proxyInputStreamThroughPumper"
+              |)
+              |filtered != expected:
+              |  List(
+              |    "HandleRunThread",
+              |    "JsonArrayLogger mill-chrome-profile.json",
+              |    "JsonArrayLogger mill-profile.json",
+              |    "MillServerActionRunner",
+              |    "MillServerTimeoutThead",
+              |    "Process ID Checker Thread",
+              |-   "FileToStreamTailerThread",
+              |+   "FileToStreamTailerThead",
+              |    "FileToStreamTailerThread",
+              |    "Timer",
+              |    "main",
+              |    "prompt-logger-stream-pumper-thread",
+              |    "proxyInputStreamThroughPumper"
+              |  )""".stripMargin
+            assert(e.getMessage == expected)
         }
       }
 
@@ -148,7 +238,10 @@ object AssertsTests extends utest.TestSuite{
         try assert((math.max(1 + 1, 2): @Show) == 3) catch{
           case utest.AssertionError(
             _,
-            Seq(lv @ TestValue.Single(_, "Int", 2)),
+            Seq(
+              lv @ TestValue.Single(_, _, 2),
+              _
+            ),
             null
           ) =>
             lv
@@ -185,7 +278,7 @@ object AssertsTests extends utest.TestSuite{
           // This is subtle: only `x` should be logged as an interesting value, for
           // `y` was not evaluated at all and could not have played a part in the
           // throwing of the exception
-          Predef.assert(e.captured == Seq(TestValue.Single("x", "Int", 1)))
+          Predef.assert(e.captured == Seq(TestValue.Single("x", Some(shaded.pprint.tprint[Int]), 1)))
           Predef.assert(e.cause.isInstanceOf[MatchError])
           e.getMessage
         }
@@ -199,7 +292,7 @@ object AssertsTests extends utest.TestSuite{
           }
         }catch {case e: utest.AssertionError =>
           Predef.assert(e.getMessage.contains("123 + x + y"))
-          Predef.assert(e.captured == Seq(TestValue.Single("x", "Int", 1), TestValue.Single("y", "Double", 2.0)))
+          Predef.assert(e.captured == Seq(TestValue.Single("x", Some(shaded.pprint.tprint[Int]), 1), TestValue.Single("y", Some(shaded.pprint.tprint[Double]), 2.0)))
           e.getMessage
         }
       }

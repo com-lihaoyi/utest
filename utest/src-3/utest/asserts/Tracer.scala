@@ -59,11 +59,11 @@ object Tracer {
         tree match {
           case i @ Apply(Select(lhs, "=="), Seq(rhs)) =>
             '{
-              val tmpLhs = ${lhs.asExpr}
-              val tmpRhs = ${rhs.asExpr}
+              val tmpLhs = ${transformTerm(lhs)(owner).asExpr}
+              val tmpRhs = ${transformTerm(rhs)(owner).asExpr}
               if (tmpLhs != tmpRhs) $logger(TestValue.Equality(
-                utest.TestValue.Single(${Expr(lhs.show)}, "", tmpLhs),
-                utest.TestValue.Single(${Expr(rhs.show)}, "", tmpRhs)
+                utest.TestValue.Single(${Expr(lhs.pos.sourceCode.get)}, None, tmpLhs),
+                utest.TestValue.Single(${Expr(rhs.pos.sourceCode.get)}, None, tmpRhs)
               ))
               tmpLhs == tmpRhs
             }.asTerm
@@ -112,8 +112,8 @@ object Tracer {
         '{
           val tmp: t = $x
           $logger(TestValue.Single(
-            ${Expr(expr.show)},
-            ${Expr(StringUtilHelpers.stripScalaCorePrefixes(tpeString))},
+            ${Expr(expr.asTerm.pos.sourceCode.get)},
+            Some(shaded.pprint.TPrint.default[T].render(shaded.pprint.TPrintColors.Colors)),
             tmp
           ))
           tmp
@@ -131,10 +131,6 @@ object Tracer {
 }
 
 object StringUtilHelpers {
-  def stripScalaCorePrefixes(tpeName: String): String = {
-    val pattern = """(?<!\.)(scala|java\.lang)(\.\w+)*\.(?<tpe>\w+)""".r // Match everything under the core `scala` or `java.lang` packages
-    pattern.replaceAllIn(tpeName, _.group("tpe"))
-  }
 
   extension (str: String) def trim: String =
     str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse
