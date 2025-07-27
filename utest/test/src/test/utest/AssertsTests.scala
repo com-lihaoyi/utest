@@ -318,21 +318,24 @@ object AssertsTests extends utest.TestSuite{
         // a variety of inputs
         val qq = "\"" * 3
         test - assertCompileError("1 + abc").check(
-          if (BuildInfo.scalaVersion.startsWith("3.")) """|1 + abc
-                          |    ^  """.stripMargin
+          if (BuildInfo.scalaVersion.startsWith("3.")) {
+            """1 + abc
+              |    ^  """.stripMargin
+          }
           else """
         test - assertCompileError("1 + abc").check(
-                                 ^
+                                       ^
           """,
           if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
         test - assertCompileError(""" 1 + abc""").check(
-          if (BuildInfo.scalaVersion.startsWith("3.")) """ 1 + abc
-                         |     ^""".stripMargin
-          else s"""
+          if (BuildInfo.scalaVersion.startsWith("3.")) {
+            """ 1 + abc
+              |     ^""".stripMargin
+          } else s"""
         test - assertCompileError($qq 1 + abc$qq).check(
-                                    ^
+                                          ^
           """,
           if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
@@ -371,11 +374,13 @@ object AssertsTests extends utest.TestSuite{
           else "not found: value abc"
         )
         test - assertCompileError("true * false").check(
-          if (BuildInfo.scalaVersion.startsWith("3.")) """true * false
-                         |     ^""".stripMargin
+          if (BuildInfo.scalaVersion.startsWith("3.")) {
+            """true * false
+              |     ^""".stripMargin
+          }
           else """
         test - assertCompileError("true * false").check(
-                                  ^
+                                        ^
           """,
           "value * is not a member of Boolean"
         )
@@ -386,7 +391,7 @@ object AssertsTests extends utest.TestSuite{
                          |      ^""".stripMargin
           else s"""
         test - assertCompileError($qq true * false$qq).check(
-                                     ^
+                                           ^
           """,
           "value * is not a member of Boolean"
         )

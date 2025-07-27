@@ -17,7 +17,7 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
             """).check(
             """
               assertCompileError("1 + 1").check(
-                          ^
+                                ^
             """,
             "assertCompileError check failed to have a compilation error"
           )
@@ -31,7 +31,7 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
             """).check(
             """
               assertCompileError("x + x").check(
-                          ^
+                                ^
             """,
             "assertCompileError check failed to have a compilation error"
           )
@@ -44,7 +44,7 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
           """).check(
             """
               assertCompileError("1" * 2).check(
-                               ^
+                                     ^
             """,
             "You can only have literal strings in assertCompileError"
           )
@@ -57,7 +57,7 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
         assertCompileError("compileTimeOnlyVal").check(
           """
         assertCompileError("compileTimeOnlyVal").check(
-                      ^
+                            ^
           """,
           "compileTimeOnlyVal should be a compile error if used!"
         )
@@ -65,7 +65,7 @@ object AssertsTestsVersionSpecific extends utest.TestSuite{
         assertCompileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
           """
         assertCompileError("{ println(1 + 1); class F{ def foo() = { println(compileTimeOnlyVal) } } }").check(
-                                                                       ^
+                                                                             ^
           """,
           "compileTimeOnlyVal should be a compile error if used!"
         )
