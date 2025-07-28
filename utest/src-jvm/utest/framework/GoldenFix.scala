@@ -49,9 +49,6 @@ object GoldenFix {
     index - lineNumberLookup(line)
   }
 
-  @annotation.compileTimeOnly("implicit GoldenFix.Reporter instance is needed to call this method")
-  implicit def reporter: Reporter = ???
-
   trait Reporter {
     def apply(v: GoldenFix): Unit
   }
@@ -70,7 +67,10 @@ object GoldenFix {
 
   def applyToText(text0: String, fixes: Seq[GoldenFix]): String = {
     var text = text0
-    val sorted = fixes.sortBy(_.startOffset)
+    val sorted = fixes.map(t => t.startOffset -> t).toMap.map(_._2).toSeq.sortBy(_.startOffset)
+    sorted.sliding(2).collect{ case Seq(prev, next) =>
+      Predef.assert(prev.endOffset <= next.startOffset)
+    }
 
     val lineNumberLookupTable = lineNumberLookup(text)
     var lengthOffset = 0
@@ -83,6 +83,7 @@ object GoldenFix {
       )
       lengthOffset = lengthOffset + indentedContents.length - (fix.endOffset - fix.startOffset)
     }
+
     text
   }
 
