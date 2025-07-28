@@ -2,10 +2,10 @@ package utest.asserts
 
 import utest.framework.{GoldenFix}
 import utest.{AssertionError, TestValue}
-
+import java.nio.file.{Files, Path}
 trait AssertsPlatformSpecific {
-  def assertGoldenFile(path: java.nio.file.Path, testValue: String)(implicit reporter: GoldenFix.Reporter): Unit = {
-    val goldenFileContents = java.nio.file.Files.readString(path)
+  def assertGoldenFile(testValue: String, path: Path)(implicit reporter: GoldenFix.Reporter): Unit = {
+    val goldenFileContents = if (Files.exists(path)) Files.readString(path) else ""
     if (goldenFileContents != testValue) {
       if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
         throw new AssertionError(
@@ -44,7 +44,7 @@ trait AssertsPlatformSpecific {
         System.err.println("Value does not match golden literal contents in: " + golden.sourceFile)
         reporter.apply(
           GoldenFix(
-            java.nio.file.Path.of(golden.sourceFile),
+            Path.of(golden.sourceFile),
             utest.shaded.pprint.PPrinter.BlackWhite.apply(golden.value).plainText,
             golden.startOffset,
             golden.endOffset
