@@ -9,7 +9,8 @@ trait AssertsPlatformSpecific {
     if (goldenFileContents != testValue) {
       if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
         throw new AssertionError(
-          "Value does not match golden file contents: " + path,
+          "Value does not match golden file contents\n" +
+          "Run UTEST_UPDATE_GOLDEN_TESTS=1 to update golden file " + path,
           Seq(
             TestValue.Equality(
               TestValue.Single("goldenFileContents", None, goldenFileContents),
@@ -17,10 +18,8 @@ trait AssertsPlatformSpecific {
             )
           )
         )
-
       }
       else {
-        System.err.println("Value does not match golden file contents: " + path)
         reporter.apply(GoldenFix(path, testValue, 0, goldenFileContents.length))
       }
     }
@@ -32,7 +31,8 @@ trait AssertsPlatformSpecific {
     if (testValue != goldenValue) {
       if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
         throw new AssertionError(
-          "Value does not match golden literal contents",
+          "Value does not match golden literal contents\n" +
+            "Run UTEST_UPDATE_GOLDEN_TESTS=1 to update golden literal in " + golden.sourceFile,
           Seq(
             TestValue.Equality(
               TestValue.Single("testValue", None, testValue),
@@ -41,7 +41,6 @@ trait AssertsPlatformSpecific {
           )
         )
       } else {
-        System.err.println("Value does not match golden literal contents in: " + golden.sourceFile)
         reporter.apply(
           GoldenFix(
             Path.of(golden.sourceFile),
