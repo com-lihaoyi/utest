@@ -1,7 +1,6 @@
 package utest
 package asserts
 //import acyclic.file
-import utest.framework.{GoldenFix, StackMarker}
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable

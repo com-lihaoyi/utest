@@ -1,7 +1,7 @@
 package utest
 package runner
 //import acyclic.file
-import sbt.testing.*
+import sbt.testing._
 
 import scala.concurrent.Future
 import scala.util.Failure

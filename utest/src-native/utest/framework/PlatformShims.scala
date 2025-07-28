@@ -2,7 +2,7 @@ package utest.framework
 
 // Taken from the implementation for JS
 
-import scala.concurrent.duration.*
+import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.scalanative.reflect.Reflect
 

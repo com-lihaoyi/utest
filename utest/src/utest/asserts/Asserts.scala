@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import utest.framework.{StackMarker, GoldenFix, SourceSpan}
+import utest.framework.{StackMarker}
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable

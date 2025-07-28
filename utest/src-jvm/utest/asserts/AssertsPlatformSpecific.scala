@@ -4,7 +4,7 @@ import utest.framework.{GoldenFix, SourceSpan}
 import utest.{AssertionError, TestValue}
 
 trait AssertsPlatformSpecific {
-  def assertGoldenFile(path: java.nio.file.Path, testValue: String): Unit = {
+  def assertGoldenFile(path: java.nio.file.Path, testValue: String)(implicit reporter: GoldenFix.Reporter): Unit = {
     val goldenFileContents = java.nio.file.Files.readString(path)
     if (goldenFileContents != testValue) {
       if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
@@ -19,11 +19,12 @@ trait AssertsPlatformSpecific {
         )
 
       }
-      else GoldenFix.register.value.apply(GoldenFix(path, goldenFileContents, 0, goldenFileContents.length))
+      else reporter.apply(GoldenFix(path, goldenFileContents, 0, goldenFileContents.length))
     }
   }
 
-  def assertGoldenLiteral(testValue: Any, golden: SourceSpan[Any]): Unit = {
+  def assertGoldenLiteral(testValue: Any, golden: SourceSpan[Any])
+                         (implicit reporter: GoldenFix.Reporter): Unit = {
     val goldenValue = golden.value
     if (testValue != goldenValue) {
       if (!sys.env.contains("UTEST_UPDATE_GOLDEN")) {
@@ -37,7 +38,7 @@ trait AssertsPlatformSpecific {
           )
         )
       } else {
-        GoldenFix.register.value.apply(
+        reporter.apply(
           GoldenFix(
             java.nio.file.Path.of(golden.sourceFile),
             utest.shaded.pprint.PPrinter.BlackWhite.apply(golden.value).plainText,
