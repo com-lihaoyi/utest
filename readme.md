@@ -17,9 +17,8 @@ Its key features are:
 - [Single uniform syntax for Smart Asserts](#smart-asserts), instead of multiple
   redundant `must_==`/`must beEqual`/`should be` opertors
 - [Isolation-by-default for tests in the same suite](#sharing-setup-code-and-sharing-setup-objects)
-- Supports every version of Scala under the sun:
-  [Scala.js and Scala-Native](#scalajs-and-scala-native), Scala 2.13.0-M2,
-  projects using [SBT](#getting-started) or
+- Supports [Scala.js and Scala-Native](#scalajs-and-scala-native), Scala 2.12.x/2.13.x/3.x,
+  projects using [SBT](#getting-started) or [Mill](https://mill-build.org/mill/index.html)
   [standalone](#running-utest-standalone) (e.g. via a `main` method, or in
   Ammonite Scripts)
 
