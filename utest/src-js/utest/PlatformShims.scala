@@ -22,7 +22,8 @@ object PlatformShims {
   def loadModule(name: String, loader: ClassLoader): Any = {
     Reflect
       .lookupLoadableModuleClass(name + "$", loader)
+      .map(_.loadModule())
+      .orElse(Reflect.lookupInstantiatableClass(name, loader).map(_.newInstance()))
       .getOrElse(throw new ClassNotFoundException(name))
-      .loadModule()
   }
 }

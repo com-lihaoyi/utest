@@ -6,7 +6,7 @@ import utest.framework.ExecutionContext.RunNow
 /**
  * Put executor.utestAfterEach(path) into finally block to make sure it will be executed regardless of the test failing.
  */
-object AfterEachOnFailureTest extends TestSuite {
+class AfterEachOnFailureTest extends TestSuite{
 
   private var res:SomeResource = _
 

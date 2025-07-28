@@ -2,7 +2,7 @@ package test.utest.examples
 
 import utest._
 
-object TestPathTests extends TestSuite{
+class TestPathTests extends TestSuite{
   val tests = Tests{
     test("testPath"){
       test("foo"){

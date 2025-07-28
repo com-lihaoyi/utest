@@ -3,7 +3,7 @@ package test.utest.examples
 
 import utest._
 
-object NestedTests extends TestSuite{
+class NestedTests extends TestSuite{
   val tests =  Tests{
     val x = 1
     test("outer1"){

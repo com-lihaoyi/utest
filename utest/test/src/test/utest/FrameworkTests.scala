@@ -10,7 +10,7 @@ import scala.util.Failure
 import utest.framework.ExecutionContext.RunNow
 
 
-object FrameworkTests extends utest.TestSuite{
+class FrameworkTests extends utest.TestSuite{
 
   override def utestBeforeEach(path: Seq[String]): Unit = println("RUN " + path.mkString("."))
   override def utestAfterEach(path: Seq[String]): Unit = println("END " + path.mkString("."))

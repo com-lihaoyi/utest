@@ -157,7 +157,7 @@ package test.utest.examples
 
 import utest._
 
-object HelloTests extends TestSuite{
+class HelloTests extends TestSuite{
   val tests = Tests{
     test("test1"){
       throw new Exception("test1")
@@ -201,6 +201,7 @@ Tests: 3, Passed: 1, Failed: 2
 The tests are run one at a time, and any tests that fail with an exception have
 their stack trace printed. If the number of tests is large, a separate
 results-summary and failures-summary will be shown after all tests have run.
+Tests can either be inside zero-parameter `class`es (as shown above) or static `object`s.
 
 Nesting Tests
 -------------
@@ -216,7 +217,7 @@ package test.utest.examples
 
 import utest._
 
-object NestedTests extends TestSuite{
+class NestedTests extends TestSuite{
   val tests =  Tests{
     val x = 1
     test("outer1"){

@@ -8,7 +8,7 @@ import utest._
 * since it is the thing that is meant to be *testing* all the fancy uTest
 * asserts, we can't assume they work.
 */
-object AssertsTests extends utest.TestSuite{
+class AssertsTests extends utest.TestSuite{
 
   implicit val colors: shaded.pprint.TPrintColors = shaded.pprint.TPrintColors.Colors
   def tests = Tests{

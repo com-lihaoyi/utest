@@ -2,7 +2,7 @@ package test.utest.examples
 
 import utest._
 
-object SeparateSetupTests extends TestSuite{
+class SeparateSetupTests extends TestSuite{
   val tests = Tests{
     var x = 0
     test("outer1"){
