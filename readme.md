@@ -24,7 +24,7 @@ Its key features are:
 
 Unlike traditional testing libraries for Scala (like
 [Scalatest](http://www.scalatest.org/) or
-[Specs2](https://etorreborre.github.io/specs2/)) uTest aims to be simple enough
+[Specs2](https://etorreborre.github.io/specs2/)) uTest aims to be simple enoughp
 you will never "get lost" in its codebase and functionality, so you can focus on
 what's most important: your tests.
 
