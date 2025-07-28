@@ -2,7 +2,7 @@ package test.utest
 import utest._
 import concurrent.{Future, ExecutionContext}
 
-object FutureCrashTest extends TestSuite {
+class FutureCrashTest extends TestSuite{
   def wrapping[T](f: => T):T = {
     f
   }

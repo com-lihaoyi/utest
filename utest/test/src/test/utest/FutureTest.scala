@@ -2,7 +2,7 @@ package test.utest
 import utest._
 import concurrent.{Future, ExecutionContext}
 
-object FutureTest extends TestSuite {
+class FutureTest extends TestSuite{
   implicit val ec: ExecutionContext = ExecutionContext.global
   @volatile var flag = false
 

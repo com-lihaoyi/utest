@@ -9,7 +9,7 @@ class FlakyThing{
     if (runs < 2) throw new Exception("Flaky!")
   }
 }
-object SuiteRetryTests extends TestSuite with TestSuite.Retries{
+class SuiteRetryTests extends TestSuite with TestSuite.Retries{
   override val utestRetryCount = 3
   val flaky = new FlakyThing
   def tests = Tests{
@@ -19,7 +19,7 @@ object SuiteRetryTests extends TestSuite with TestSuite.Retries{
   }
 }
 
-object SuiteManualRetryTests extends utest.TestSuite{
+class SuiteManualRetryTests extends utest.TestSuite{
   override def utestWrap(path: Seq[String], body: => Future[Any])(implicit ec: ExecutionContext): Future[Any] = {
     def rec(count: Int): Future[Any] = {
       utestBeforeEach(path)
@@ -41,7 +41,7 @@ object SuiteManualRetryTests extends utest.TestSuite{
   }
 }
 
-object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
+class SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
   private var x = 0
   override val utestRetryCount = 3
   override def utestBeforeEach(path: Seq[String]): Unit = {
@@ -57,7 +57,7 @@ object SuiteRetryBeforeEachTests extends TestSuite with TestSuite.Retries {
   }
 }
 
-object SuiteRetryBeforeAllTests extends TestSuite with TestSuite.Retries {
+class SuiteRetryBeforeAllTests extends TestSuite with TestSuite.Retries {
   override val utestRetryCount = 3
   var x = 100
   val flaky = new FlakyThing
@@ -82,7 +82,7 @@ object SuiteRetryBeforeAllTests extends TestSuite with TestSuite.Retries {
   }
 }
 
-object LocalRetryTests extends utest.TestSuite{
+class LocalRetryTests extends utest.TestSuite{
   val flaky = new FlakyThing
   def tests = Tests{
     test("hello") - retry(3){
@@ -91,7 +91,7 @@ object LocalRetryTests extends utest.TestSuite{
   }
 }
 
-object SuiteRetryBeforeEachFailedTests extends TestSuite with TestSuite.Retries {
+class SuiteRetryBeforeEachFailedTests extends TestSuite with TestSuite.Retries {
   override val utestRetryCount = 3
   override def utestBeforeEach(path: Seq[String]): Unit = {
     flaky.run()
@@ -104,7 +104,7 @@ object SuiteRetryBeforeEachFailedTests extends TestSuite with TestSuite.Retries 
   }
 }
 
-object SuiteRetryAfterEachFailedTests extends TestSuite with TestSuite.Retries {
+class SuiteRetryAfterEachFailedTests extends TestSuite with TestSuite.Retries {
   val flaky = new FlakyThing
   override val utestRetryCount = 1
   override def utestAfterEach(path: Seq[String]): Unit = {

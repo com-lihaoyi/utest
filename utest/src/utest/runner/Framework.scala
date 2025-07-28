@@ -56,7 +56,7 @@ class Framework extends sbt.testing.Framework with framework.Formatter {
   def startHeader(path: String) = DefaultFormatters.renderBanner("Running Tests" + path)
 
 
-  final def fingerprints(): Array[sbt.testing.Fingerprint] = Array(Fingerprint)
+  final def fingerprints(): Array[sbt.testing.Fingerprint] = Array(Fingerprint, ClassFingerprint)
 
   final def runner(args: Array[String],
              remoteArgs: Array[String],

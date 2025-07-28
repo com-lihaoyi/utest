@@ -3,7 +3,7 @@ package test.utest.examples
 import utest._
 import scala.concurrent.Future
 
-object BeforeAfterAllSimpleTests extends TestSuite {
+class BeforeAfterAllSimpleTests extends TestSuite{
   println("on object body, aka: before all")
 
   override def utestAfterAll(): Unit = {
@@ -22,7 +22,7 @@ object BeforeAfterAllSimpleTests extends TestSuite {
   }
 }
 
-object BeforeAfterAllTests extends TestSuite {
+class BeforeAfterAllTests extends TestSuite{
   var x = 100
   println(s"starting with x: $x")
 

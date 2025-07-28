@@ -56,6 +56,25 @@ object PortableScalaReflectExcerpts {
     c(clazz)
   }
 
+  private def isInstantiatableClass(clazz: Class[_]): Boolean = {
+    /* A local class will have a non-null *enclosing* class, but a null
+     * *declaring* class. For a top-level class, both are null, and for an
+     * inner class (non-local), both are the same non-null class.
+     */
+    def isLocalClass: Boolean =
+      clazz.getEnclosingClass() != clazz.getDeclaringClass()
+
+    (clazz.getModifiers() & Modifier.ABSTRACT) == 0 &&
+      clazz.getConstructors().length > 0 &&
+      !isModuleClass(clazz) &&
+      !isLocalClass
+  }
+
+  def lookupInstantiatableClass(fqcn: String,
+                                loader: ClassLoader): Option[InstantiatableClass] = {
+    load(fqcn, loader).filter(isInstantiatableClass).map(new InstantiatableClass(_))
+  }
+
   final class LoadableModuleClass private[PortableScalaReflectExcerpts] (val runtimeClass: Class[_]) {
     /** Loads the module instance and returns it.
      *
@@ -75,5 +94,33 @@ object PortableScalaReflectExcerpts {
             throw cause
       }
     }
+  }
+
+  /** A wrapper for a class that can be instantiated.
+   *
+   * @param runtimeClass
+   * The `java.lang.Class[_]` representing the class.
+   */
+  final class InstantiatableClass (val runtimeClass: Class[_]) {
+
+    /** Instantiates this class using its zero-argument constructor.
+     *
+     * @throws java.lang.InstantiationException
+     * (caused by a `NoSuchMethodException`)
+     * If this class does not have a public zero-argument constructor.
+     */
+    def newInstance(): Any = {
+      try {
+        runtimeClass.newInstance()
+      } catch {
+        case e: IllegalAccessException =>
+          /* The constructor exists but is private; make it look like it does not
+           * exist at all.
+           */
+          throw new InstantiationException(runtimeClass.getName).initCause(
+            new NoSuchMethodException(runtimeClass.getName + ".<init>()"))
+      }
+    }
+
   }
 }

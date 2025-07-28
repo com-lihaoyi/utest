@@ -2,7 +2,7 @@ package test.utest.examples
 
 import utest._
 
-object SharedFixturesTests extends TestSuite{
+class SharedFixturesTests extends TestSuite{
   var x = 0
   val tests = Tests{
     test("outer1"){

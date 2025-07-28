@@ -4,11 +4,11 @@ import utest._
 import utest.framework.StackMarker
 
 
-object BeforeAfterAllFailureTest extends TestSuite {
+class BeforeAfterAllFailureTest extends TestSuite{
 
   // Hide this fella inside the outer object, because we don't want uTest's own
   // test suite to discover him: we want to run him manually
-  object AfterAllFailureTest extends TestSuite {
+  object AfterAllFailureTest extends TestSuite{
 
     override def utestAfterAll(): Unit = {
       throw new Exception("Failed After!")
@@ -26,7 +26,7 @@ object BeforeAfterAllFailureTest extends TestSuite {
 
   // No tests for this fella because currently, error handling of test suite
   // initialization is paid done in the SBT logic, not in TestRunner
-  object BeforeAllFailureTest extends TestSuite {
+  class BeforeAllFailureTest extends TestSuite{
     throw new Exception("Failed Before!")
     val tests = Tests {
       test("test"){

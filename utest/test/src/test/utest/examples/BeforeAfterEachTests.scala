@@ -2,7 +2,7 @@ package test.utest.examples
 
 import utest._
 
-object BeforeAfterEachTests extends TestSuite {
+class BeforeAfterEachTests extends TestSuite{
   var x = 0
   override def utestBeforeEach(path: Seq[String]): Unit = {
     println(s"on before each [${path.mkString("=>")}] x: $x")

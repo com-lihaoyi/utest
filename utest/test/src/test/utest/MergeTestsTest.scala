@@ -20,7 +20,7 @@ abstract class MergeSubTests2 extends TestSuite {
   }
 }
 
-object MergeTestsTest extends TestSuite {
+class MergeTestsTest extends TestSuite{
 
   val x = new MergeSubTests1 {}
   val y = new MergeSubTests2 {}

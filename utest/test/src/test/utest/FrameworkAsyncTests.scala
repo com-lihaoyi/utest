@@ -4,7 +4,7 @@ import utest._
 import scala.concurrent.{Future, ExecutionContext}
 import concurrent.duration._
 
-object FrameworkAsyncTests extends TestSuite {
+class FrameworkAsyncTests extends TestSuite{
   implicit val ec: ExecutionContext = utest.framework.ExecutionContext.RunNow
   private val isNative = sys.props("java.vm.name") == "Scala Native"
 

@@ -6,7 +6,7 @@ import utest.TestQueryParser.parse
 import utest._
 
 
-object QueryTests extends utest.TestSuite{
+class QueryTests extends utest.TestSuite{
   def check(a: Either[String, TestQueryParser#Trees],
             b: Either[String, TestQueryParser#Trees]) = {
     Predef.assert(a == b, a)
