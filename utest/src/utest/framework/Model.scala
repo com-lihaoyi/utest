@@ -5,8 +5,6 @@ package framework
 import scala.util.Try
 import scala.language.experimental.macros
 
-import utest.PlatformShims
-
 case class TestPath(value: Seq[String])
 object TestPath{
   @annotation.compileTimeOnly(

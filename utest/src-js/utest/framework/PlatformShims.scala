@@ -1,7 +1,8 @@
-package utest
+package utest.framework
+
+import org.portablescala.reflect.Reflect
 
 import scala.concurrent.Future
-import org.portablescala.reflect.Reflect
 
 /**
  * Platform specific stuff that differs between JVM, JS and Native

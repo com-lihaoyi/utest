@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import utest.framework.StackMarker
+import utest.framework.{StackMarker}
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable
@@ -74,7 +74,7 @@ object Asserts extends AssertsCompanionVersionSpecific {
 }
 
 
-trait Asserts extends AssertsVersionSpecific {
+trait Asserts extends AssertsVersionSpecific with AssertsPlatformSpecific {
     /**
     * Provides a nice syntax for asserting things are equal, that is pretty
     * enough to embed in documentation and examples
@@ -99,4 +99,5 @@ trait Asserts extends AssertsVersionSpecific {
       else throw e
     }
   }
+
 }

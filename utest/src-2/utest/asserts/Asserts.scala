@@ -1,7 +1,6 @@
 package utest
 package asserts
 //import acyclic.file
-import utest.framework.StackMarker
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable
@@ -135,12 +134,6 @@ trait AssertsVersionSpecific {
   def assertCompileError(expr: String): CompileError = macro Asserts.assertCompileError
 
   /**
-   * Forwarder for `Predef.assert`, for when you want to explicitly write the
-   * assert message and don't want or need the fancy smart asserts
-   */
-  def assert(expr: Boolean, msg: => Any) = Predef.assert(expr, msg)
-
-  /**
    * Checks that the expression is true; otherwise raises an
    * exception with some debugging info
    */
@@ -175,5 +168,6 @@ trait AssertsVersionSpecific {
     * exception does not appear.
     */
   def assertThrows[T: ClassTag](expr: Unit): T = macro Asserts.assertThrowsProxy[T]
+
 }
 

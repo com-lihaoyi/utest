@@ -1,4 +1,4 @@
-package utest;
+package utest.framework;
 
 import java.lang.annotation.*;
 
