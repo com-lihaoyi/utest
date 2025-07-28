@@ -936,11 +936,11 @@ Apart from setup and teardown, there are other methods on
     */
   def useSbtLoggers = false
 
-  def resultsHeader = BaseRunner.renderBanner("Results")
-  def failureHeader = BaseRunner.renderBanner("Failures")
-
-
-  def startHeader(path: String) = BaseRunner.renderBanner("Running Tests" + path)
+  def resultsHeader = DefaultFormatters.resultsHeader
+  def failureHeader = DefaultFormatters.failureHeader
+  
+  
+  def startHeader(path: String) = DefaultFormatters.renderBanner("Running Tests" + path)
 ```
 
 Output Formatting
