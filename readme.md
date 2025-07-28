@@ -20,7 +20,8 @@ Its key features are:
 - Supports [Scala.js and Scala-Native](#scalajs-and-scala-native), Scala 2.12.x/2.13.x/3.x,
   projects using [SBT](#getting-started) or [Mill](https://mill-build.org/mill/index.html)
   [standalone](#running-utest-standalone) (e.g. via a `main` method, or in
-  Ammonite Scripts)
+  Ammonite Scripts),
+  projects using [Gradle plugin for Scala.js and Scala Native](https://github.com/dubinsky/scalajs-gradle).
 
 Unlike traditional testing libraries for Scala (like
 [Scalatest](http://www.scalatest.org/) or
@@ -146,6 +147,9 @@ For Scala-Native, you will also need
 ```scala
 nativeLinkStubs := true
 ```
+
+[Gradle plugin for Scala.js and Scala Native](https://github.com/dubinsky/scalajs-gradle)
+supports using uTest with [Gradle](https://gradle.org/).
 
 Defining and Running a Test Suite
 =================================
