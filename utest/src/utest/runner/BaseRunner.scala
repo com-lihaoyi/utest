@@ -39,15 +39,8 @@ abstract class BaseRunner(val args: Array[String],
                           testClassLoader: ClassLoader,
                           useSbtLoggers: Boolean,
                           formatter: utest.framework.Formatter,
-                          startHeader: Option[String => String])
+                          startHeader: Option[String => String] = None)
                           extends sbt.testing.Runner{
-
-  def this(args: Array[String],
-    remoteArgs: Array[String],
-    testClassLoader: ClassLoader,
-    useSbtLoggers: Boolean,
-    formatter: utest.framework.Formatter) =
-      this(args, remoteArgs, testClassLoader, useSbtLoggers, formatter, None)
 
   def remoteArgs(): Array[String] = _remoteArgs
 
@@ -180,11 +173,6 @@ abstract class BaseRunner(val args: Array[String],
             result.value match{
               case Failure(e) =>
                 handleEvent(new OptionalThrowable(e), Status.Failure, subpath, result.milliDuration)
-                // Trim the stack trace so all the utest internals don't get shown,
-                // since the user probably doesn't care about those anyway
-                e.setStackTrace(
-                  e.getStackTrace.takeWhile(_.getClassName != "utest.framework.TestThunkTree")
-                )
                 incFailure()
                 addFailure(str.fold("")(_.render))
               case _ =>
