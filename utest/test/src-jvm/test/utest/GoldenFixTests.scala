@@ -48,7 +48,6 @@ object GoldenFixTests extends utest.TestSuite {
         "0123456789",
         Seq(GoldenFix(null, "Hello", 0, 1), GoldenFix(null, "World", 5, 6))
       )
-      utest.shaded.pprint.log(replaced)
       Predef.assert(replaced == "Hello1234World6789")
     }
     test("replaceIndented") {
@@ -58,7 +57,6 @@ object GoldenFixTests extends utest.TestSuite {
           |""".stripMargin,
         Seq(GoldenFix(null, "I am\nCow", 2, 4))
       )
-      utest.shaded.pprint.log(replaced)
       Predef.assert(
         replaced ==
           """HeI am
@@ -77,7 +75,6 @@ object GoldenFixTests extends utest.TestSuite {
           GoldenFix(null, "Hear\nMe\nMoo", 7, 8)
         )
       )
-      utest.shaded.pprint.log(replaced)
       Predef.assert(
         replaced ==
           """HeI am
