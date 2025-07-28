@@ -54,7 +54,39 @@ object AssertionError {
       case DiffElement.InBoth(x) => render0("  ", x, fansi.Attrs.Empty)
       case DiffElement.InFirst(x) => renderRed(x)
       case DiffElement.InSecond(x) => renderGreen(x)
-      case DiffElement.Diff(x, y) => renderRed(x) ++ renderGreen(y)
+      case DiffElement.Diff(x, y) =>
+        // Within any adjacent blocks of differing text, do a char-by-char
+        // diff between the two versions so we can underline the characters
+        // that differ between them
+        val subDiff = StringDiff.diff(x.map(_.plainText).mkString, y.map(_.plainText).mkString)
+        val sectionsX = subDiff.collect{
+          case DiffElement.InBoth(x) => (false, x.length)
+          case DiffElement.InFirst(x) => (true, x.length)
+          case DiffElement.Diff(x, y) => (true, x.length)
+        }
+
+        val sectionsY = subDiff.collect{
+          case DiffElement.InBoth(x) => (false, x.length)
+          case DiffElement.InSecond(x) => (true, x.length)
+          case DiffElement.Diff(x, y) => (true, y.length)
+        }
+
+        def sectionsToOverlays(sections: Seq[(Boolean, Int)]) = {
+          val buffer = collection.mutable.Buffer.empty[(fansi.Attrs, Int, Int)]
+          var index = 0
+          for ((underline, length) <- sections) {
+            val nextIndex = index + length
+            if (underline) buffer.append((fansi.Underlined.On, index, nextIndex))
+            index = nextIndex
+          }
+          buffer.toSeq
+        }
+
+        val overlaysX = sectionsToOverlays(sectionsX)
+        val overlaysY = sectionsToOverlays(sectionsY)
+
+        renderRed(splitLines(fansi.Str.join(x).overlayAll(overlaysX))) ++
+          renderGreen(splitLines(fansi.Str.join(y).overlayAll(overlaysY)))
     }
   }
   def render(msgPrefix: String, captured: Seq[TestValue]) = {
