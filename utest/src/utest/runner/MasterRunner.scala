@@ -45,7 +45,7 @@ final class MasterRunner(args: Array[String],
   val allSuites = collection.mutable.Buffer.empty[TestSuite]
   override def registerSuite(x: TestSuite) = allSuites.synchronized { allSuites.append(x) }
   def done(): String = {
-    utest.framework.TestSuitePlatformSpecific.processGolden(allSuites.toSeq)
+    utest.framework.TestSuitePlatformSpecific.processGolden(allSuites.toSeq, formatter.goldenLiteralPrinter)
 
     teardown()
     val total = success.get() + failure.get()

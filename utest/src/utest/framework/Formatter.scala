@@ -33,6 +33,8 @@ trait Formatter {
     else fansi.Color.Red
   )
 
+  def goldenLiteralPrinter(x: Any): String = pprint.PPrinter.BlackWhite.apply(x).plainText
+
   def formatMillisColor = toggledColor(fansi.Bold.Faint)
 
   def exceptionStackFrameHighlighter(s: StackTraceElement): Boolean = true

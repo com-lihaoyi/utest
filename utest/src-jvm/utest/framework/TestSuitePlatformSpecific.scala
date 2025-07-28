@@ -8,14 +8,14 @@ trait TestSuitePlatformSpecific {
 }
 
 object TestSuitePlatformSpecific {
-  def processGolden(allSuites: Seq[utest.TestSuite]): Unit = {
+  def processGolden(allSuites: Seq[utest.TestSuite], goldenLiteralPrinter: Any => String): Unit = {
     if (sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
       val goldenFixes = allSuites.flatMap { suite =>
         suite.utestGoldenReports.synchronized {
           suite.utestGoldenReports.toList
         }
       }
-      GoldenFix.applyAll(goldenFixes)
+      GoldenFix.applyAll(goldenFixes, goldenLiteralPrinter)
     }
   }
 }

@@ -3,11 +3,14 @@ package utest.framework
 import scala.collection.mutable.ArrayBuffer
 
 case class GoldenFix(path: java.nio.file.Path,
-                     contents: String,
+                     contents: Any,
                      startOffset: Int,
                      endOffset: Int)
 
 object GoldenFix {
+  class Literal(s: String) {
+    override def toString = s
+  }
   // vendored from
   // https://github.com/com-lihaoyi/fastparse/blob/d8f95daef21d6e6f9734624237f993f4cebfa881/fastparse/src/fastparse/internal/Util.scala
   //
@@ -53,15 +56,15 @@ object GoldenFix {
     def apply(v: GoldenFix): Unit
   }
 
-  def applyAll(fixes: Seq[GoldenFix]): Unit = {
+  def applyAll(fixes: Seq[GoldenFix], goldenLiteralPrinter: Any => String): Unit = {
     for((path, group) <- fixes.groupBy(_.path)){
       println(s"UTEST_UPDATE_GOLDEN_TESTS detected, uTest applying ${group.size} golden fixes to file $path")
       val text = java.nio.file.Files.readString(path)
-      java.nio.file.Files.writeString(path, applyToText(text, group))
+      java.nio.file.Files.writeString(path, applyToText(text, group, goldenLiteralPrinter))
     }
   }
 
-  def applyToText(text0: String, fixes: Seq[GoldenFix]): String = {
+  def applyToText(text0: String, fixes: Seq[GoldenFix], goldenLiteralPrinter: Any => String): String = {
     var text = text0
     val sorted = fixes.map(t => t.startOffset -> t).toMap.map(_._2).toSeq.sortBy(_.startOffset)
     sorted.sliding(2).collect{ case Seq(prev, next) =>
@@ -74,7 +77,7 @@ object GoldenFix {
       val (startLine, startCol) = lineColumnLookup(fix.startOffset, lineNumberLookupTable)
       val (endLine, endCol) = lineColumnLookup(fix.endOffset, lineNumberLookupTable)
       println(s"Updating line:column $startLine:$startCol to $endLine:$endCol")
-      val indentedContents = fix.contents.linesWithSeparators.mkString(" " * startCol)
+      val indentedContents = goldenLiteralPrinter(fix.contents).linesWithSeparators.mkString(" " * startCol)
       text = text.patch(
         fix.startOffset + lengthOffset, indentedContents,
         fix.endOffset - fix.startOffset

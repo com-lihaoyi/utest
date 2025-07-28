@@ -23,7 +23,7 @@ trait AssertsPlatformSpecific {
       if (!sys.env.get("UTEST_UPDATE_GOLDEN_TESTS").exists(_.nonEmpty)) {
         throwAssertionError(goldenFilePath.toString, goldenFileContents, actualValue)
       } else {
-        reporter.apply(GoldenFix(goldenFilePath, actualValue, 0, goldenFileContents.length))
+        reporter.apply(GoldenFix(goldenFilePath, new GoldenFix.Literal(actualValue), 0, goldenFileContents.length))
       }
     }
   }
@@ -43,7 +43,7 @@ trait AssertsPlatformSpecific {
         reporter.apply(
           GoldenFix(
             Path.of(goldenLiteral.sourceFile),
-            utest.shaded.pprint.PPrinter.BlackWhite.apply(actualValue).plainText,
+            actualValue,
             goldenLiteral.startOffset,
             goldenLiteral.endOffset
           )
