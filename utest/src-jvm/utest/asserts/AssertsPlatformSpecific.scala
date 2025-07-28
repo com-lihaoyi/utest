@@ -1,6 +1,6 @@
 package utest.asserts
 
-import utest.framework.{GoldenFix, SourceSpan}
+import utest.framework.{GoldenFix}
 import utest.{AssertionError, TestValue}
 
 trait AssertsPlatformSpecific {
@@ -23,7 +23,7 @@ trait AssertsPlatformSpecific {
     }
   }
 
-  def assertGoldenLiteral(testValue: Any, golden: SourceSpan[Any])
+  def assertGoldenLiteral(testValue: Any, golden: GoldenFix.Span[Any])
                          (implicit reporter: GoldenFix.Reporter): Unit = {
     val goldenValue = golden.value
     if (testValue != goldenValue) {

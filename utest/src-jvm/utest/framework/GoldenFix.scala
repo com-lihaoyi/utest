@@ -24,4 +24,9 @@ object GoldenFix {
       java.nio.file.Files.writeString(path, txt)
     }
   }
+
+  case class Span[+T](value: T, sourceFile: String, startOffset: Int, endOffset: Int)
+
+  object Span extends GoldenSpanMacros
+
 }
