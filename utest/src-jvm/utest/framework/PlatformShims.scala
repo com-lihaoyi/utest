@@ -1,7 +1,7 @@
-package utest
+package utest.framework
 
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
-import concurrent.duration._
 
 /**
  * Platform specific stuff that differs between JVM, JS and Native

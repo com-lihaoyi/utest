@@ -1,11 +1,11 @@
 package utest
 package runner
 //import acyclic.file
-import sbt.testing._
+import sbt.testing.*
 
 import scala.concurrent.Future
 import scala.util.Failure
-import utest.framework.{StackMarker, Tree}
+import utest.framework.{PlatformShims, StackMarker, Tree}
 object BaseRunner{
   /**
     * Checks whether the given query needs the TestSuite at testSuitePath

@@ -1,6 +1,6 @@
-package utest
+package utest.framework
 
-import java.lang.reflect._
+import java.lang.reflect.*
 import scala.collection.mutable
 
 /**

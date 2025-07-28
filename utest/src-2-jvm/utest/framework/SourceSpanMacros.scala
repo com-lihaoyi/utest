@@ -1,7 +1,7 @@
 package utest.framework
 
 import scala.language.experimental.macros
-import scala.reflect.internal.util.{RangePosition}
+import scala.reflect.internal.util.RangePosition
 
 trait SourceSpanMacros {
   implicit def generate[T](v: T): SourceSpan[T] = macro SourceSpanMacros.text[T]
