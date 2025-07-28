@@ -1,7 +1,7 @@
 package utest
 package asserts
 
-import utest.framework.StackMarker
+import utest.framework.{StackMarker, GoldenFix, SourceSpan}
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable
@@ -99,4 +99,29 @@ trait Asserts extends AssertsVersionSpecific {
       else throw e
     }
   }
+
+  def assertGoldenFile(path: java.nio.file.Path, text: String): Unit = {
+    val fileContents = java.nio.file.Files.readString(path)
+    if (fileContents != text) {
+      if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) Predef.assert(fileContents != text)
+      else GoldenFix.register.value.apply(GoldenFix(path, fileContents, 0, fileContents.length))
+    }
+  }
+  def assertGoldenLiteral(value: Any, golden: SourceSpan[Any]): Unit = {
+    val goldenValue = golden.value
+    if (value != goldenValue) {
+      if (!sys.env.contains("UTEST_UPDATE_GOLDEN")) Predef.assert(value == goldenValue)
+      else {
+       GoldenFix.register.value.apply(
+         GoldenFix(
+           java.nio.file.Path.of(golden.sourceFile),
+           shaded.pprint.PPrinter.BlackWhite.apply(golden.value).plainText,
+           golden.startOffset,
+           golden.endOffset
+         )
+       )
+      }
+    }
+  }
+
 }

@@ -1,7 +1,7 @@
 package utest
 package asserts
 //import acyclic.file
-import utest.framework.StackMarker
+import utest.framework.{GoldenFix, StackMarker}
 
 import scala.annotation.{StaticAnnotation, tailrec}
 import scala.collection.mutable
@@ -175,5 +175,6 @@ trait AssertsVersionSpecific {
     * exception does not appear.
     */
   def assertThrows[T: ClassTag](expr: Unit): T = macro Asserts.assertThrowsProxy[T]
+
 }
 
