@@ -1,6 +1,5 @@
 package test.utest
 import utest._
-import TestUtil.isDotty
 
 /**
 * Test suite for all the assertions that uTest comes bundled with.
@@ -11,7 +10,7 @@ import TestUtil.isDotty
 */
 object AssertsTests extends utest.TestSuite{
 
-
+  implicit val colors: shaded.pprint.TPrintColors = shaded.pprint.TPrintColors.Colors
   def tests = Tests{
     test("assert"){
       test("success"){
@@ -23,7 +22,7 @@ object AssertsTests extends utest.TestSuite{
         val (e, logged, cause) = try {
           val x = 1
           val y = "2"
-          assert(
+          assertAll(
             x > 0,
             x.toString == y
           )
@@ -33,7 +32,16 @@ object AssertsTests extends utest.TestSuite{
         } catch { case e @ utest.AssertionError(_, logged, cause) =>
           (e, logged, cause)
         }
-        val expected = Seq(utest.TestValue("x", "Int", 1), TestValue("y", "String", "2"))
+
+        val expected = Seq(
+          TestValue.Single("x", Some(shaded.pprint.tprint[Int]), 1),
+          TestValue.Single("y", Some(shaded.pprint.tprint[String]), "2"),
+          TestValue.Equality(
+            TestValue.Single("x.toString", None, "1"),
+            TestValue.Single("y", None, "2"),
+          ),
+        )
+
         test{
           Predef.assert(
             cause == null,
@@ -50,8 +58,9 @@ object AssertsTests extends utest.TestSuite{
         }
 
         test{
+          val exText = shaded.fansi.Str(e.toString).plainText
           Predef.assert(
-            e.toString.contains("y: String = 2") && e.toString.contains("x: Int = 1"),
+            exText.contains("y: String = \"2\"") && exText.contains("x: Int = 1"),
             "Logging doesn't display local values properly " + e.toString
           )
         }
@@ -63,6 +72,121 @@ object AssertsTests extends utest.TestSuite{
           )
         }
       }
+
+
+      test("failureEquals") {
+        def x = true
+        def y = false
+        try assert(x == y)
+        catch{ case e: utest.AssertionError =>
+          Predef.assert(e.getMessage.contains(
+            """- true
+              |+ false""".stripMargin
+          ))
+        }
+
+        def a = Seq("1" * 15, "2" * 15, "3" * 15, "4" * 15, "5" * 15, "6" * 15)
+        def b = Seq("0" * 15, "1" * 15, "b" * 15, "3" * 15, "4" * 15, "5" * 15)
+        try assert(a == b)
+        catch{ case e: utest.AssertionError =>
+          Predef.assert(e.getMessage.contains(
+            """  List(
+              |+   "000000000000000",
+              |    "111111111111111",
+              |-   "222222222222222",
+              |+   "bbbbbbbbbbbbbbb",
+              |    "333333333333333",
+              |    "444444444444444",
+              |-   "555555555555555",
+              |-   "666666666666666"
+              |+   "555555555555555"
+              |  )""".stripMargin
+          ))
+        }
+
+        val filtered = Seq(
+          "HandleRunThread",
+          "JsonArrayLogger mill-chrome-profile.json",
+          "JsonArrayLogger mill-profile.json",
+          "MillServerActionRunner",
+          "MillServerTimeoutThead",
+          "Process ID Checker Thread",
+          "FileToStreamTailerThread",
+          "FileToStreamTailerThread",
+          "Timer",
+          "main",
+          "prompt-logger-stream-pumper-thread",
+          "proxyInputStreamThroughPumper"
+        )
+
+        val expected = Seq(
+          "HandleRunThread",
+          "JsonArrayLogger mill-chrome-profile.json",
+          "JsonArrayLogger mill-profile.json",
+          "MillServerActionRunner",
+          "MillServerTimeoutThead",
+          "Process ID Checker Thread",
+          "FileToStreamTailerThead",
+          "FileToStreamTailerThread",
+          "Timer",
+          "main",
+          "prompt-logger-stream-pumper-thread",
+          "proxyInputStreamThroughPumper"
+        )
+        try assert(filtered == expected)
+        catch {
+          case e: utest.AssertionError =>
+            val expected =
+            """filtered: Seq[String] = List(
+              |  "HandleRunThread",
+              |  "JsonArrayLogger mill-chrome-profile.json",
+              |  "JsonArrayLogger mill-profile.json",
+              |  "MillServerActionRunner",
+              |  "MillServerTimeoutThead",
+              |  "Process ID Checker Thread",
+              |  "FileToStreamTailerThread",
+              |  "FileToStreamTailerThread",
+              |  "Timer",
+              |  "main",
+              |  "prompt-logger-stream-pumper-thread",
+              |  "proxyInputStreamThroughPumper"
+              |)
+              |expected: Seq[String] = List(
+              |  "HandleRunThread",
+              |  "JsonArrayLogger mill-chrome-profile.json",
+              |  "JsonArrayLogger mill-profile.json",
+              |  "MillServerActionRunner",
+              |  "MillServerTimeoutThead",
+              |  "Process ID Checker Thread",
+              |  "FileToStreamTailerThead",
+              |  "FileToStreamTailerThread",
+              |  "Timer",
+              |  "main",
+              |  "prompt-logger-stream-pumper-thread",
+              |  "proxyInputStreamThroughPumper"
+              |)
+              |filtered != expected:
+              |  List(
+              |    "HandleRunThread",
+              |    "JsonArrayLogger mill-chrome-profile.json",
+              |    "JsonArrayLogger mill-profile.json",
+              |    "MillServerActionRunner",
+              |    "MillServerTimeoutThead",
+              |    "Process ID Checker Thread",
+              |-   "FileToStreamTailerThread",
+              |+   "FileToStreamTailerThead",
+              |    "FileToStreamTailerThread",
+              |    "Timer",
+              |    "main",
+              |    "prompt-logger-stream-pumper-thread",
+              |    "proxyInputStreamThroughPumper"
+              |  )""".stripMargin
+
+            Predef.assert(e.getMessage.contains(expected))
+        }
+      }
+
+
       test("failureWithException"){
         try {
           assert(Iterator.empty.next() == 10)
@@ -89,7 +213,7 @@ object AssertsTests extends utest.TestSuite{
       test("multiple"){
         def die = throw new IllegalArgumentException("foo")
         val msg1 = try {
-          assert(
+          assertAll(
             1 == 2,
             die
           )
@@ -99,7 +223,7 @@ object AssertsTests extends utest.TestSuite{
         }
         Predef.assert(msg1.contains("#1: 1 == 2"))
         val msg2 = try {
-          assert(
+          assertAll(
             1 == 1,
             die
           )
@@ -115,7 +239,10 @@ object AssertsTests extends utest.TestSuite{
         try assert((math.max(1 + 1, 2): @Show) == 3) catch{
           case utest.AssertionError(
             _,
-            Seq(lv @ TestValue(_, "Int", 2)),
+            Seq(
+              lv @ TestValue.Single(_, _, 2),
+              _
+            ),
             null
           ) =>
             lv
@@ -131,9 +258,9 @@ object AssertsTests extends utest.TestSuite{
         e
       }
     }
-    test("intercept"){
+    test("assertThrows"){
       test("success"){
-        val e = intercept[MatchError]{
+        val e = assertThrows[MatchError]{
           (0: Any) match { case _: String => }
         }
         Predef.assert(e.toString.contains("MatchError"))
@@ -143,7 +270,7 @@ object AssertsTests extends utest.TestSuite{
         try {
           val x = 1
           val y = 2.0
-          intercept[NumberFormatException]{
+          assertThrows[NumberFormatException]{
             (x: Any) match { case _: String => y + 1 }
           }
           Predef.assert(false) // error wasn't thrown???
@@ -152,7 +279,7 @@ object AssertsTests extends utest.TestSuite{
           // This is subtle: only `x` should be logged as an interesting value, for
           // `y` was not evaluated at all and could not have played a part in the
           // throwing of the exception
-          Predef.assert(e.captured == Seq(TestValue("x", "Int", 1)))
+          Predef.assert(e.captured == Seq(TestValue.Single("x", Some(shaded.pprint.tprint[Int]), 1)))
           Predef.assert(e.cause.isInstanceOf[MatchError])
           e.getMessage
         }
@@ -161,18 +288,18 @@ object AssertsTests extends utest.TestSuite{
         try{
           val x = 1
           val y = 2.0
-          intercept[NullPointerException]{
+          assertThrows[NullPointerException]{
             123 + x + y
           }
         }catch {case e: utest.AssertionError =>
           Predef.assert(e.getMessage.contains("123 + x + y"))
-          Predef.assert(e.captured == Seq(TestValue("x", "Int", 1), TestValue("y", "Double", 2.0)))
+          Predef.assert(e.captured == Seq(TestValue.Single("x", Some(shaded.pprint.tprint[Int]), 1), TestValue.Single("y", Some(shaded.pprint.tprint[Double]), 2.0)))
           e.getMessage
         }
       }
-      test("interceptWithAssignment"){
+      test("assertThrowsWithAssignment"){
         var W = 1
-        try utest.intercept[Exception] { W = 2 }
+        try utest.assertThrows[Exception] { W = 2 }
         catch{case e: utest.AssertionError => e.getMessage}
       }
     }
@@ -184,46 +311,49 @@ object AssertsTests extends utest.TestSuite{
         ()
       }
     }
-    test("compileError"){
+    test("assertCompileError"){
       test("success"){
         // Make sure that on successfully catching a compilation
         // error, the error it reports is in the correct place for
         // a variety of inputs
         val qq = "\"" * 3
-        test - compileError("1 + abc").check(
-          if (isDotty) """|1 + abc
-                          |    ^  """.stripMargin
+        test - assertCompileError("1 + abc").check(
+          if (BuildInfo.scalaVersion.startsWith("3.")) {
+            """1 + abc
+              |    ^  """.stripMargin
+          }
           else """
-        test - compileError("1 + abc").check(
-                                 ^
+        test - assertCompileError("1 + abc").check(
+                                       ^
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
-        test - compileError(""" 1 + abc""").check(
-          if (isDotty) """ 1 + abc
-                         |     ^""".stripMargin
-          else s"""
-        test - compileError($qq 1 + abc$qq).check(
-                                    ^
+        test - assertCompileError(""" 1 + abc""").check(
+          if (BuildInfo.scalaVersion.startsWith("3.")) {
+            """ 1 + abc
+              |     ^""".stripMargin
+          } else s"""
+        test - assertCompileError($qq 1 + abc$qq).check(
+                                          ^
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
-        test - compileError("""
+        test - assertCompileError("""
             1 + abc
           """).check(
-          if (isDotty) """
+          if (BuildInfo.scalaVersion.startsWith("3.")) """
             1 + abc
                 ^""".tail
           else """
             1 + abc
                 ^
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
-        test - compileError("""
+        test - assertCompileError("""
 
 
 
@@ -231,7 +361,7 @@ object AssertsTests extends utest.TestSuite{
 
 
         """).check(
-          if (isDotty) """
+          if (BuildInfo.scalaVersion.startsWith("3.")) """
             1 + abc
                 ^
           """.tail
@@ -240,32 +370,34 @@ object AssertsTests extends utest.TestSuite{
                 ^
 
           """,
-          if (isDotty) "Not found: abc"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: abc"
           else "not found: value abc"
         )
-        test - compileError("true * false").check(
-          if (isDotty) """true * false
-                         |     ^""".stripMargin
+        test - assertCompileError("true * false").check(
+          if (BuildInfo.scalaVersion.startsWith("3.")) {
+            """true * false
+              |     ^""".stripMargin
+          }
           else """
-        test - compileError("true * false").check(
-                                  ^
+        test - assertCompileError("true * false").check(
+                                        ^
           """,
           "value * is not a member of Boolean"
         )
         // need to work around inability to use """ in string
 
-        test - compileError(""" true * false""").check(
-          if (isDotty) """ true * false
+        test - assertCompileError(""" true * false""").check(
+          if (BuildInfo.scalaVersion.startsWith("3.")) """ true * false
                          |      ^""".stripMargin
           else s"""
-        test - compileError($qq true * false$qq).check(
-                                     ^
+        test - assertCompileError($qq true * false$qq).check(
+                                           ^
           """,
           "value * is not a member of Boolean"
         )
-        test - compileError("ab ( cd }").check(
+        test - assertCompileError("ab ( cd }").check(
           """""",
-          if (isDotty) "')' expected, but '}' found"
+          if (BuildInfo.scalaVersion.startsWith("3.")) "')' expected, but '}' found"
           else "')' expected but '}' found."
 
         )

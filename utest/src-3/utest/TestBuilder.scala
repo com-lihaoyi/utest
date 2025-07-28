@@ -31,7 +31,8 @@ object TestBuilder:
     val assertInliner = new TreeMap {
       override def transformTerm(term: Term)(owner: Symbol): Term = scala.util.Try(term.asExpr) match {
           case Success(expr) => expr match
-            case '{utest.assert(${_}*) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
+            case '{utest.assert(${_}) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
+            case '{utest.assertAll(${_}*) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
             case _ => super.transformTerm(term)(owner)
           case _ => super.transformTerm(term)(owner)
       }
@@ -75,39 +76,35 @@ object TestBuilder:
 
   private object TestMethod {
 
-    def unapply(using Quotes)(tree: quotes.reflect.Tree): Option[(Option[String], quotes.reflect.Tree)] =
+    def unapply(using quotes: Quotes)(tree: quotes.reflect.Tree): Option[(Option[String], quotes.reflect.Tree)] =
       import quotes.reflect._
       import quotes.reflect.given
 
-      Option(tree).collect { case tree: Term => tree.asExpr }.collect {
-        // case q"""utest.`package`.*.-($body)""" => (None, body)
-        case '{utest.*.-($body)} => (None, body.asTerm)
-
-        // case q"""$p($value).apply($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        // case '{($name: TestableString).apply($body)} => (Some(run(name).value), body.asTerm)
-        // case '{($sym: scala.Symbol).apply($body)} => (Some(run(sym).name), body.asTerm)
-
-        // case q"""$p($value).-($body)""" if checkLhs(p) => (Some(literalValue(value)), body)
-        case '{($name: String).-($body)} => (name.value, body.asTerm)
-        // case '{($sym: scala.Symbol).-($body)} => (Some(run(sym).name), body.asTerm)
-
-        // case q"""utest.`package`.test.apply($value).apply($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String)($body)} => (name.value, body.asTerm)
-
-        // case q"""utest.`package`.test.apply($value).-($body)""" => (Some(literalValue(value)), body)
-        case '{utest.test($name: String).-($body)} => (name.value, body.asTerm)
-
-        // case q"""utest.`package`.test.-($body)""" => (None, body)
-        case '{utest.test.-($body)} => (None, body.asTerm)
-
-        // case q"""utest.`package`.test.apply($body)""" => (None, body)
-        case '{utest.test($body: Any)} => (None, body.asTerm)
+      Option(tree).flatMap{
+        case tree: Term =>
+          tree match{
+            // Somehow this pattern match on the quoted expr doesn't work, so instead
+            // match on the tree directly
+            //  case '{utest.test($body: Any)} => (None, body.asTerm)
+            case Apply(Select(Ident("test"), "apply"), Seq(body)) => Some((None, body))
+            case Block(List(Apply(Select(Ident("test"), "apply"), Seq(body))), Literal(UnitConstant())) => Some((None, body))
+            case _ =>
+              tree.asExpr match{
+                case '{utest.test($name: String)($body)} => Some((name.value, body.asTerm))
+                case '{utest.test($name: String).-($body)} => Some((name.value, body.asTerm))
+                case '{utest.test.-($body)} => Some((None, body.asTerm))
+                case expr => None
+              }
+          }
+        case _ => None
       }
   }
 
   private object Test {
-    def unapply(using Quotes)(tree: quotes.reflect.Tree): Option[(Option[String], List[quotes.reflect.Apply], List[quotes.reflect.Statement])] = tree match {
-      case TestMethod(name, Stats(nested, stats)) => Some((name, nested, stats))
+    def unapply(using Quotes)(tree: quotes.reflect.Tree): Option[(Option[String], List[quotes.reflect.Apply], List[quotes.reflect.Statement])] = {
+      tree match {
+        case TestMethod(name, Stats(nested, stats)) => Some((name, nested, stats))
+      }
     }
   }
 
@@ -123,10 +120,13 @@ object TestBuilder:
   private object Stats {
     def partition(using Quotes)(stats: List[quotes.reflect.Statement]): (List[quotes.reflect.Apply], List[quotes.reflect.Statement]) =
       import quotes.reflect._
-      stats.partitionMap[Apply, Statement] {
+
+      val res = stats.partitionMap[Apply, Statement] {
         case IsTest(test) => Left (test)
         case stmt: Statement => Right(stmt)
       }
+
+      res
 
     def unapply(using Quotes)(tree: quotes.reflect.Tree): Option[(List[quotes.reflect.Apply], List[quotes.reflect.Statement])] =
       import quotes.reflect._

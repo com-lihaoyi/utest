@@ -17,16 +17,15 @@ Its key features are:
 - [Single uniform syntax for Smart Asserts](#smart-asserts), instead of multiple
   redundant `must_==`/`must beEqual`/`should be` opertors
 - [Isolation-by-default for tests in the same suite](#sharing-setup-code-and-sharing-setup-objects)
-- Supports every version of Scala under the sun:
-  [Scala.js and Scala-Native](#scalajs-and-scala-native),
-  projects using [SBT](#getting-started) or
+- Supports [Scala.js and Scala-Native](#scalajs-and-scala-native), Scala 2.12.x/2.13.x/3.x,
+  projects using [SBT](#getting-started) or [Mill](https://mill-build.org/mill/index.html)
   [standalone](#running-utest-standalone) (e.g. via a `main` method, or in
   Ammonite Scripts),
   projects using [Gradle plugin for Scala.js and Scala Native](https://github.com/dubinsky/scalajs-gradle).
 
 Unlike traditional testing libraries for Scala (like
 [Scalatest](http://www.scalatest.org/) or
-[Specs2](https://etorreborre.github.io/specs2/)) uTest aims to be simple enough
+[Specs2](https://etorreborre.github.io/specs2/)) uTest aims to be simple enoughp
 you will never "get lost" in its codebase and functionality, so you can focus on
 what's most important: your tests.
 
@@ -53,7 +52,7 @@ Contents
   - [Asynchronous Tests](#asynchronous-tests)
 - [Smart Asserts](#smart-asserts)
   - [Arrow Asserts](#arrow-asserts)
-  - [Intercept](#intercept)
+  - [assertThrows](#assertThrows)
   - [Eventually and Continually](#eventually-and-continually)
   - [Assert Match](#assert-match)
   - [Compile Error](#compile-error)
@@ -581,14 +580,17 @@ Smart Asserts
 ```scala
 val x = 1
 val y = "2"
-assert(
-  x > 0,
-  x == y
-)
+assert(x > 0)
+assert(x == y)
 
 // utest.AssertionError: x == y
 // x: Int = 1
 // y: String = 2
+
+assertAll( // Helper to perform multiple asserts at once
+  x > 0,
+  x == y
+)
 ```
 
 uTest comes with a macro-powered smart `assert`s that provide useful debugging
@@ -636,11 +638,11 @@ try{
 You can use `a ==> b` as a shorthand for `assert(a == b)`. This results in
 pretty code you can easily copy-paste into documentation.
 
-Intercept
+assertThrows
 ---------
 
 ```scala
-val e = intercept[MatchError]{
+val e = assertThrows[MatchError]{
   (0: Any) match { case _: String => }
 }
 println(e)
@@ -648,32 +650,32 @@ println(e)
 // scala.MatchError: 0 (of class java.lang.Integer)
 ```
 
-`intercept` allows you to verify that a block raises an exception. This
+`assertThrows` allows you to verify that a block raises an exception. This
 exception is caught and returned so you can perform further validation on it,
 e.g. checking that the message is what you expect. If the block does not raise
 one, an `AssertionError` is raised.
 
-As with `assert`, `intercept` adds debugging information to the error messages
-if the `intercept` fails or throws an unexpected Exception.
+As with `assert`, `assertThrows` adds debugging information to the error messages
+if the `assertThrows` fails or throws an unexpected Exception.
 
 Eventually and Continually
 --------------------------
 
 ```scala
 val x = Seq(12)
-eventually(x == Nil)
+assertEventually(x == Nil)
 
-// utest.AssertionError: eventually(x == Nil)
+// utest.AssertionError: assertEventually(x == Nil)
 // x: Seq[Int] = List(12)
 ```
 
 In addition to a macro-powered `assert`, uTest also provides macro-powered
-versions of `eventually` and `continually`. These are used to test asynchronous
+versions of `assertEventually` and `assertContinually`. These are used to test asynchronous
 concurrent operations:
 
-- `eventually(tests: Boolean*)`: ensure that the boolean values of `tests` all
+- `assertEventually(tests: Boolean*)`: ensure that the boolean values of `tests` all
   become true at least once within a certain period of time.
-- `continually(tests: Boolean*)`: ensure that the boolean values of `tests` all
+- `assertContinually(tests: Boolean*)`: ensure that the boolean values of `tests` all
   remain true and never become false within a certain period of time.
 
 These are implemented via a retry-loop, with a default retry interval of 0.1
@@ -692,7 +694,7 @@ Together, these two operations allow you to easily test asynchronous operations.
 You can use them to help verify Liveness properties (that condition must
 eventually be met) and Safety properties (that a condition is never met)
 
-As with `assert`, `eventually` and `continually` add debugging information to
+As with `assert`, `assertEventually` and `assertContinually` add debugging information to
 the error messages if they fail.
 
 Assert Match
@@ -717,39 +719,39 @@ Compile Error
 -------------
 
 ```scala
-compileError("true * false")
+assertCompileError("true * false")
 // CompileError.Type("value * is not a member of Boolean")
 
-compileError("(}")
+assertCompileError("(}")
 // CompileError.Parse("')' expected but '}' found.")
 ```
 
-`compileError` is a macro that can be used to assert that a fragment of code
+`assertCompileError` is a macro that can be used to assert that a fragment of code
 (given as a literal String) fails to compile.
 
-- If the code compiles successfully, `compileError` will fail the compilation
+- If the code compiles successfully, `assertCompileError` will fail the compilation
   run with a message.
-- If the code fails to compile, `compileError` will return an instance of
+- If the code fails to compile, `assertCompileError` will return an instance of
   `CompileError`, one of `CompileError.Type(pos: String, msgs: String*)` or
   `CompileError.Parse(pos: String, msgs: String*)` to represent typechecker
   errors or parser errors
 
-In general, `compileError` works similarly to `intercept`, except it does its
+In general, `assertCompileError` works similarly to `assertThrows`, except it does its
 checks (that a snippet of code fails) and errors (if it doesn't fail) at
 compile-time rather than run-time. If the code fails as expected, the failure
 message is propagated to runtime in the form of a `CompileError` object. You can
 then do whatever additional checks you want on the failure message, such as
 verifying that the failure message contains some string you expect to be there.
 
-The `compileError` macro compiles the given string in the local scope and
+The `assertCompileError` macro compiles the given string in the local scope and
 context. This means that you can refer to variables in the enclosing scope, i.e.
 the following example will fail to compile because the variable `x` exists.
 
 ```scala
 val x = 0
 
-compileError("x + x"),
-// [error] compileError check failed to have a compilation error
+assertCompileError("x + x"),
+// [error] assertCompileError check failed to have a compilation error
 ```
 
 The returned `CompileError` object also has a handy `.check` method, which takes
@@ -758,9 +760,9 @@ zero-or-more messages which are expected to be part of the final error message.
 This is used as follows:
 
 ```scala
-compileError("true * false").check(
+assertCompileError("true * false").check(
   """
-compileError("true * false").check(
+assertCompileError("true * false").check(
                    ^
   """,
   "value * is not a member of Boolean"
@@ -769,7 +771,7 @@ compileError("true * false").check(
 
 Note that the position-string needs to exactly match the line of code the
 compile-error occured on. This includes any whitespace on the left, as well as
-any unrelated code or comments sharing the same line as the `compileError`
+any unrelated code or comments sharing the same line as the `assertCompileError`
 expression.
 
 Test Utilities
@@ -970,22 +972,22 @@ def formatWrapWidth: Int = 100
 
 def formatValue(x: Any) = testValueColor(x.toString)
 
-def toggledColor(t: ufansi.Attrs) = if(formatColor) t else ufansi.Attrs.Empty
-def testValueColor = toggledColor(ufansi.Color.Blue)
-def exceptionClassColor = toggledColor(ufansi.Underlined.On ++ ufansi.Color.LightRed)
-def exceptionMsgColor = toggledColor(ufansi.Color.LightRed)
-def exceptionPrefixColor = toggledColor(ufansi.Color.Red)
-def exceptionMethodColor = toggledColor(ufansi.Color.LightRed)
-def exceptionPunctuationColor = toggledColor(ufansi.Color.Red)
-def exceptionLineNumberColor = toggledColor(ufansi.Color.LightRed)
+def toggledColor(t: utest.shaded.fansi.Attrs) = if(formatColor) t else utest.shaded.fansi.Attrs.Empty
+def testValueColor = toggledColor(utest.shaded.fansi.Color.Blue)
+def exceptionClassColor = toggledColor(utest.shaded.fansi.Underlined.On ++ utest.shaded.fansi.Color.LightRed)
+def exceptionMsgColor = toggledColor(utest.shaded.fansi.Color.LightRed)
+def exceptionPrefixColor = toggledColor(utest.shaded.fansi.Color.Red)
+def exceptionMethodColor = toggledColor(utest.shaded.fansi.Color.LightRed)
+def exceptionPunctuationColor = toggledColor(utest.shaded.fansi.Color.Red)
+def exceptionLineNumberColor = toggledColor(utest.shaded.fansi.Color.LightRed)
 def exceptionStackFrameHighlighter(s: StackTraceElement) = true
 
 def formatResultColor(success: Boolean) = toggledColor(
-  if (success) ufansi.Color.Green
-  else ufansi.Color.Red
+  if (success) utest.shaded.fansi.Color.Green
+  else utest.shaded.fansi.Color.Red
 )
 
-def formatMillisColor = toggledColor(ufansi.Bold.Faint)
+def formatMillisColor = toggledColor(utest.shaded.fansi.Bold.Faint)
 ```
 
 Any methods overriden on your own custom `Framework` apply to every `TestSuite`
@@ -994,8 +996,8 @@ is formatted, you can override `utestFormatter` on that test suite.
 
 Note that uTest uses an internal copy of the
 [Fansi](https://www.github.com/lihaoyi/fansi) library, vendored at
-`utest.ufansi`, in order to avoid any compatibility problems with any of your
-other dependencies. You can use `ufansi` to construct the colored `ufansi.Str`s
+`utest.shaded.fansi`, in order to avoid any compatibility problems with any of your
+other dependencies. You can use `utest.shaded.fansi` to construct the colored `utest.shaded.fansi.Str`s
 that these methods require, or you could just return colored `java.lang.String`
 objects containing ANSI escapes, created however you like, and they will be
 automatically parsed into the correct format.

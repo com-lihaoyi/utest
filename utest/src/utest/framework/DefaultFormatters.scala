@@ -4,26 +4,26 @@ package framework
 //import acyclic.file
 
 object DefaultFormatters{
-  def formatSummary(resultsHeader: ufansi.Str,
-                    body: ufansi.Str,
-                    failureMsg: ufansi.Str,
+  def formatSummary(resultsHeader: utest.shaded.fansi.Str,
+                    body: utest.shaded.fansi.Str,
+                    failureMsg: utest.shaded.fansi.Str,
                     successCount: Int,
                     failureCount: Int,
-                    showSummaryThreshold: Int): ufansi.Str = {
+                    showSummaryThreshold: Int): utest.shaded.fansi.Str = {
     val totalCount = successCount + failureCount
-    val summary: ufansi.Str =
+    val summary: utest.shaded.fansi.Str =
       if (totalCount < showSummaryThreshold) ""
-      else ufansi.Str.join(
+      else utest.shaded.fansi.Str.join(Seq(
         resultsHeader, "\n",
         body, "\n",
         failureMsg, "\n"
-      )
-    ufansi.Str.join(
+      ))
+    utest.shaded.fansi.Str.join(Seq(
       summary,
       s"Tests: ", totalCount.toString, ", ",
       s"Passed: ", successCount.toString, ", ",
       s"Failed: ", failureCount.toString
-    ).render
+    )).render
   }
 
   def resultsHeader = renderBanner("Results")

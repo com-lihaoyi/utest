@@ -15,7 +15,7 @@ object TestRunner {
                     formatter: Formatter = Formatter,
                     showSummaryThreshold: Int = 30,
                     resultsHeader: String = DefaultFormatters.resultsHeader,
-                    failureHeader: String = DefaultFormatters.failureHeader): (ufansi.Str, Int, Int) = {
+                    failureHeader: String = DefaultFormatters.failureHeader): (utest.shaded.fansi.Str, Int, Int) = {
 
     val (successes, failures) = results.flatMap(_._2.leaves).partition(_.value.isSuccess)
 
@@ -25,16 +25,16 @@ object TestRunner {
         val frags = for {
           (topLevelName, tree) <- results
           str <- formatter.formatSummary(topLevelName, tree).toSeq
-          frag <- Seq[ufansi.Str]("\n", str)
+          frag <- Seq[utest.shaded.fansi.Str]("\n", str)
         } yield frag
-        ufansi.Str.join(frags.drop(1):_*)
+        utest.shaded.fansi.Str.join(frags.drop(1))
       },
       failureMsg = {
         val frags = for{
           f <- failures
           str <- formatter.formatSingle(Nil, f)
         } yield str
-        ufansi.Str.join(frags:_*)
+        utest.shaded.fansi.Str.join(frags)
       },
       successes.length,
       failures.length,

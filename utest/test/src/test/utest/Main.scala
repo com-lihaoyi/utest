@@ -14,7 +14,7 @@ object Main {
           val b = 2
           val c = 3
           val d = 4
-          assert(
+          assertAll(
             a == 1,
             c == d,
             ???

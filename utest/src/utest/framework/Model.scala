@@ -34,7 +34,7 @@ class TestCallTree(inner: => Either[Any, IndexedSeq[TestCallTree]]) {
 
   /**
    * Runs the test in this [[TestCallTree]] at the specified `path`. Called
-   * by the [[TestTreeSeq.run]] method and usually not called manually.
+   * by the [[TestCallTree.run]] method and usually not called manually.
    */
   def run(path: List[Int]): Any = {
     path match {

@@ -42,12 +42,19 @@ object Tracer {
       case _ => throw new RuntimeException(s"Only varargs are supported. Got: ${exprs.asTerm}")
     }
   }
+  def single[T](func: Expr[Seq[AssertEntry[T]] => Unit], expr: Expr[T])(using Quotes, Type[T]): Expr[Unit] = {
+    import quotes.reflect.*
+
+    val trees: Expr[Seq[AssertEntry[T]]] = Expr.ofSeq(Seq(expr).map(e => makeAssertEntry(e, codeOf(e))))
+    betaReduceKeepLineNumbers('{ $func($trees)}.asTerm).asExprOf[Unit]
+
+  }
 
   def codeOf[T](expr: Expr[T])(using Quotes): String =
     import quotes.reflect._
     expr.asTerm.pos.sourceCode.get
 
-  private def tracingMap(logger: Expr[TestValue => Unit])(using Quotes) =
+  private def tracingMap(logger: Expr[TestValue => Unit])(using quotes: Quotes) =
     import quotes.reflect._
     new TreeMap {
       // Do not descend into definitions inside blocks since their arguments are unbound
@@ -57,6 +64,17 @@ object Tracer {
 
       override def transformTerm(tree: Term)(owner: Symbol): Term = {
         tree match {
+          case i @ Apply(Select(lhs, "=="), Seq(rhs)) =>
+            '{
+              val tmpLhs = ${transformTerm(lhs)(owner).asExpr}
+              val tmpRhs = ${transformTerm(rhs)(owner).asExpr}
+              if (tmpLhs != tmpRhs) $logger(TestValue.Equality(
+                utest.TestValue.Single(${Expr(lhs.pos.sourceCode.get)}, None, tmpLhs),
+                utest.TestValue.Single(${Expr(rhs.pos.sourceCode.get)}, None, tmpRhs)
+              ))
+              tmpLhs == tmpRhs
+            }.asTerm
+
           case i @ Ident(name) if i.symbol.pos.isDefined
             // only trace identifiers coming from the same file,
             // since those are the ones people probably care about
@@ -100,9 +118,9 @@ object Tracer {
       case '{ $x: t } =>
         '{
           val tmp: t = $x
-          $logger(TestValue(
-            ${Expr(expr.show)},
-            ${Expr(StringUtilHelpers.stripScalaCorePrefixes(tpeString))},
+          $logger(TestValue.Single(
+            ${Expr(expr.asTerm.pos.sourceCode.get)},
+            Some(shaded.pprint.TPrint.default[T].render(shaded.pprint.TPrintColors.Colors)),
             tmp
           ))
           tmp
@@ -120,10 +138,6 @@ object Tracer {
 }
 
 object StringUtilHelpers {
-  def stripScalaCorePrefixes(tpeName: String): String = {
-    val pattern = """(?<!\.)(scala|java\.lang)(\.\w+)*\.(?<tpe>\w+)""".r // Match everything under the core `scala` or `java.lang` packages
-    pattern.replaceAllIn(tpeName, _.group("tpe"))
-  }
 
   extension (str: String) def trim: String =
     str.dropWhile(_ == ' ').reverse.dropWhile(_ == ' ').reverse

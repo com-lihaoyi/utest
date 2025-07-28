@@ -4,6 +4,7 @@ import utest.asserts.{RetryInterval, RetryMax}
 
 
 object Parallel extends TestSuite{
+  implicit val colors: shaded.pprint.TPrintColors = shaded.pprint.TPrintColors.Colors
   case class Counter(){
     var i = 0
     def apply() = {
@@ -49,80 +50,90 @@ object Parallel extends TestSuite{
 //      "Speedup: " + speedup
 //    }
 
-    "eventually"-{
-      "failure"-{
+    test("assertEventually"){
+      test("failure"){
         val x = Seq(12)
         val y = 1
-        val error = intercept[AssertionError]{
-          eventually(
-            x == Nil,
-            y == 1
-          )
+        val error = assertThrows[AssertionError]{
+          assertEventually(x == Nil && y == 1)
         }
-        val expected = Seq(utest.TestValue("x", "Seq[Int]", Seq(12)))
-        assert(error.captured == expected)
+
+        val expected = Seq(
+          utest.TestValue.Single("x", Some(shaded.pprint.tprint[Seq[Int]]), Seq(12)),
+          utest.TestValue.Equality(
+            utest.TestValue.Single("x", None, Seq(12)),
+            utest.TestValue.Single("Nil", None, Seq())
+          )
+        )
+        val expectedScala3 = Seq(
+          utest.TestValue.Single("x", Some(shaded.pprint.tprint[Seq[Int]]), Seq(12)),
+          utest.TestValue.Equality(
+            utest.TestValue.Single("x", None, Seq(12)),
+            utest.TestValue.Single("Nil", None, Seq())
+          )
+        )
+
+
+        assert(error.captured == expected || error.captured == expectedScala3)
         error.captured
       }
-      "success"-{
 
+      test("success"){
         val i = Counter()
 
-        eventually(
+        assertEventually(
           i() > 5
         )
 
         i()
       }
-      "adjustInterval"-{
+      test("adjustInterval"){
         import concurrent.duration._
         implicit val retryInterval: RetryInterval = RetryInterval(300.millis)
 
         val i = Counter()
 
-        intercept[AssertionError]{
-          eventually{
+        assertThrows[AssertionError]{
+          assertEventually{
             i() > 5
           }
         }
       }
 
-      "adjustMax"-{
+      test("adjustMax"){
         import concurrent.duration._
         implicit val retryMax: RetryMax = RetryMax(300.millis)
 
         val i = Counter()
 
-        intercept[AssertionError]{
-          eventually{
+        assertThrows[AssertionError]{
+          assertEventually{
             i() > 5
           }
         }
       }
     }
 
-    "continually"-{
-      "failure"-{
+    test("assertContinually"){
+      test("failure"){
 
         val i = Counter()
-        val error = intercept[AssertionError]{
-          continually(
+        val error = assertThrows[AssertionError]{
+          assertContinually(
             i() < 4
           )
         }
 
-        val expected = utest.TestValue("i", "test.utest.Parallel.Counter", Counter())
+        val expected = utest.TestValue.Single("i", Some(shaded.pprint.tprint[Parallel.Counter]), Counter())
 
         assert(error.captured.contains(expected))
         expected
       }
-      "success"-{
+      test("success"){
         val x = Seq(12)
         val y = 1
 
-        continually(
-          x == Seq(12),
-          y == 1
-        )
+        assertContinually(x == Seq(12) && y == 1)
       }
     }
   }

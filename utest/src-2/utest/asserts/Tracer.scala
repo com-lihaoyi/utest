@@ -1,5 +1,6 @@
 package utest
 package asserts
+import scala.reflect.internal.util.{RangePosition}
 import scala.reflect.macros.Context
 //import acyclic.file
 /**
@@ -7,6 +8,16 @@ import scala.reflect.macros.Context
  * converting it into an [[AssertEntry]] and inserting debug loggers.
  */
 object Tracer{
+  def textRange(c: Context)(tree: c.Tree) = {
+
+    val fileContent = new String(tree.pos.source.content)
+    val res = if (tree.pos.isInstanceOf[RangePosition]){
+      val r = tree.pos.asInstanceOf[RangePosition]
+      fileContent.slice(r.start, r.end)
+    } else ""
+
+    res
+  }
   def wrapWithLoggedValue(c: Context)(tree: c.Tree,
                                       loggerName: c.TermName,
                                       tpe: c.Type) = {
@@ -14,14 +25,15 @@ object Tracer{
     val tempName = c.fresh(newTermName("$temp"))
     q"""{
       val $tempName = $tree
-      $loggerName(utest.TestValue(
-        ${tree.toString()},
-        ${show(tpe)},
+      $loggerName(utest.TestValue.Single(
+        ${textRange(c)(tree)},
+        Some(implicitly[utest.shaded.pprint.TPrint[$tpe]].render(utest.shaded.pprint.TPrintColors.Colors)),
         $tempName
       ))
       $tempName
     }"""
   }
+
   def apply[T](c: Context)(func: c.Tree, exprs: c.Expr[T]*): c.Expr[Unit] = {
     import c.universe._
     val loggerName = c.fresh(newTermName("$log"))
@@ -31,6 +43,21 @@ object Tracer{
       override def transform(tree: Tree): Tree = {
 
         tree match {
+          case i @ Apply(Select(lhs, TermName("$eq$eq")), Seq(rhs)) =>
+            val tempLhs = c.fresh(newTermName("$lhs"))
+            val tempRhs = c.fresh(newTermName("$rhs"))
+            val isEquals = c.fresh(newTermName("isEquals"))
+
+            q"""
+            val $tempLhs = ${transform(lhs)}
+            val $tempRhs = ${transform(rhs)}
+            val $isEquals = $tempLhs == $tempRhs
+            if (!$isEquals) $loggerName(utest.TestValue.Equality(
+              utest.TestValue.Single(${textRange(c)(lhs)}, None, $tempLhs),
+              utest.TestValue.Single(${textRange(c)(rhs)}, None, $tempRhs)
+            ))
+            $isEquals
+            """
           case i @ Ident(name)
             if i.symbol.pos != NoPosition
             && i.pos != NoPosition

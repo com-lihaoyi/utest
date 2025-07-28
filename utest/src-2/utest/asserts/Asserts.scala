@@ -18,7 +18,7 @@ import scala.language.experimental.macros
  * message for boolean expression assertion.
  */
 trait AssertsCompanionVersionSpecific {
-  def compileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
+  def assertCompileError(c: Context)(expr: c.Expr[String]): c.Expr[CompileError] = {
     import c.universe._
     val macrocompat = new MacroCompat(c)
     import macrocompat._
@@ -73,7 +73,7 @@ trait AssertsCompanionVersionSpecific {
             case None =>
               c.abort(
                 c.enclosingPosition,
-                "compileError check failed to have a compilation error"
+                "assertCompileError check failed to have a compilation error"
               )
           }
 
@@ -89,24 +89,30 @@ trait AssertsCompanionVersionSpecific {
       case e =>
         c.abort(
           expr.tree.pos,
-          s"You can only have literal strings in compileError, not ${expr.tree}"
+          s"You can only have literal strings in assertCompileError, not ${expr.tree}"
         )
     }
   }
 
-  def assertProxy(c: Context)(exprs: c.Expr[Boolean]*): c.Expr[Unit] = {
+  def assertProxy(c: Context)(expr: c.Expr[Boolean]): c.Expr[Unit] = {
     import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", exprs:_*)
+    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", expr)
   }
 
-  def interceptProxy[T: c.WeakTypeTag]
+
+  def assertAllProxy(c: Context)(expr: c.Expr[Boolean]*): c.Expr[Unit] = {
+    import c.universe._
+    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", expr:_*)
+  }
+
+  def assertThrowsProxy[T: c.WeakTypeTag]
                     (c: Context)
-                    (exprs: c.Expr[Unit])
+                    (expr: c.Expr[Unit])
                     (t: c.Expr[ClassTag[T]]): c.Expr[T] = {
     import c.universe._
     val typeTree = implicitly[c.WeakTypeTag[T]]
 
-    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.interceptImpl[$typeTree]", exprs)
+    val x = Tracer[Unit](c)(q"utest.asserts.Asserts.assertThrowsImpl[$typeTree]", expr)
     c.Expr[T](q"$x($t)")
   }
 
@@ -126,22 +132,35 @@ trait AssertsVersionSpecific {
     * [[utest.CompileError]] containing the message of the failure. If the expression
     * compile successfully, this macro itself will raise a compilation error.
     */
-  def compileError(expr: String): CompileError = macro Asserts.compileError
+  def assertCompileError(expr: String): CompileError = macro Asserts.assertCompileError
+
   /**
-    * Checks that one or more expressions are true; otherwises raises an
+   * Forwarder for `Predef.assert`, for when you want to explicitly write the
+   * assert message and don't want or need the fancy smart asserts
+   */
+  def assert(expr: Boolean, msg: => Any) = Predef.assert(expr, msg)
+
+  /**
+   * Checks that the expression is true; otherwise raises an
+   * exception with some debugging info
+   */
+  def assert(expr: Boolean): Unit = macro Asserts.assertProxy
+
+  /**
+    * Checks that one or more expressions are true; otherwise raises an
     * exception with some debugging info
     */
-  def assert(exprs: Boolean*): Unit = macro Asserts.assertProxy
+  def assertAll(expr: Boolean*): Unit = macro Asserts.assertAllProxy
   /**
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def eventually(exprs: Boolean*): Unit = macro Parallel.eventuallyProxy
+  def assertEventually(expr: Boolean): Unit = macro Parallel.eventuallyProxy
   /**
     * Checks that one or more expressions all remain true within a certain
     * period of time. Polls at a regular interval to check this.
     */
-  def continually(exprs: Boolean*): Unit = macro Parallel.continuallyProxy
+  def assertContinually(expr: Boolean): Unit = macro Parallel.continuallyProxy
 
   /**
     * Asserts that the given value matches the PartialFunction. Useful for using
@@ -155,6 +174,6 @@ trait AssertsVersionSpecific {
     * is returned if raised, and an `AssertionError` is raised if the expected
     * exception does not appear.
     */
-  def intercept[T: ClassTag](exprs: Unit): T = macro Asserts.interceptProxy[T]
+  def assertThrows[T: ClassTag](expr: Unit): T = macro Asserts.assertThrowsProxy[T]
 }
 
