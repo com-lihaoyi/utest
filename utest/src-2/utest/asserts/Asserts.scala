@@ -134,12 +134,6 @@ trait AssertsVersionSpecific {
   def assertCompileError(expr: String): CompileError = macro Asserts.assertCompileError
 
   /**
-   * Forwarder for `Predef.assert`, for when you want to explicitly write the
-   * assert message and don't want or need the fancy smart asserts
-   */
-  def assert(expr: Boolean, msg: => Any) = Predef.assert(expr, msg)
-
-  /**
    * Checks that the expression is true; otherwise raises an
    * exception with some debugging info
    */

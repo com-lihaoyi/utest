@@ -21,7 +21,7 @@ trait AssertsPlatformSpecific {
       }
       else {
         System.err.println("Value does not match golden file contents: " + path)
-        reporter.apply(GoldenFix(path, goldenFileContents, 0, goldenFileContents.length))
+        reporter.apply(GoldenFix(path, testValue, 0, goldenFileContents.length))
       }
     }
   }

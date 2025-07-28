@@ -54,10 +54,8 @@ object GoldenFix {
   }
 
   def applyAll(fixes: Seq[GoldenFix]): Unit = {
-
-    println("GoldenFix.applyAll: " + fixes.length)
     for((path, group) <- fixes.groupBy(_.path)){
-      println("Updating golden fixes to file " + path)
+      println(s"Applying ${group.size} golden fixes to file $path")
 
       val text = java.nio.file.Files.readString(path)
 
