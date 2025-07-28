@@ -139,6 +139,7 @@ abstract class BaseRunner(val args: Array[String],
         }
         scala.concurrent.Future.successful(None)
       case Right(suite) =>
+        registerSuite(suite)
         val innerQuery = {
           def rec(currentQuery: TestQueryParser#Trees, segments: List[String]): TestQueryParser#Trees = {
             segments match{

@@ -19,7 +19,10 @@ trait AssertsPlatformSpecific {
         )
 
       }
-      else reporter.apply(GoldenFix(path, goldenFileContents, 0, goldenFileContents.length))
+      else {
+        System.err.println("Value does not match golden file contents: " + path)
+        reporter.apply(GoldenFix(path, goldenFileContents, 0, goldenFileContents.length))
+      }
     }
   }
 
@@ -38,6 +41,7 @@ trait AssertsPlatformSpecific {
           )
         )
       } else {
+        System.err.println("Value does not match golden literal contents in: " + golden.sourceFile)
         reporter.apply(
           GoldenFix(
             java.nio.file.Path.of(golden.sourceFile),
