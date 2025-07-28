@@ -4,49 +4,48 @@ import utest.framework.{GoldenFix}
 import utest.{AssertionError, TestValue}
 import java.nio.file.{Files, Path}
 trait AssertsPlatformSpecific {
-  def assertGoldenFile(testValue: String, path: Path)(implicit reporter: GoldenFix.Reporter): Unit = {
-    val goldenFileContents = if (Files.exists(path)) Files.readString(path) else ""
-    if (goldenFileContents != testValue) {
-      if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
-        throw new AssertionError(
-          "Value does not match golden file contents\n" +
-          "Run UTEST_UPDATE_GOLDEN_TESTS=1 to update golden file " + path,
-          Seq(
-            TestValue.Equality(
-              TestValue.Single("goldenFileContents", None, goldenFileContents),
-              TestValue.Single("testValue", None, testValue),
-            )
-          )
+  private def throwAssertionError(path: String, goldenValue: Any, actualValue: Any): Unit = {
+    throw new AssertionError(
+      s"Actual value does not match golden data in file $path\n" +
+        "Run tests with UTEST_UPDATE_GOLDEN_TESTS=1 to apply the following patch to update the golden value",
+      Seq(
+        TestValue.Equality(
+          TestValue.Single("goldenValue", None, goldenValue),
+          TestValue.Single("actualValue", None, actualValue),
         )
-      }
-      else {
-        reporter.apply(GoldenFix(path, testValue, 0, goldenFileContents.length))
+      )
+    )
+
+  }
+  def assertGoldenFile(actualValue: String, goldenFilePath: Path)(implicit reporter: GoldenFix.Reporter): Unit = {
+    val goldenFileContents = if (Files.exists(goldenFilePath)) Files.readString(goldenFilePath) else ""
+    if (goldenFileContents != actualValue) {
+      if (!sys.env.get("UTEST_UPDATE_GOLDEN_TESTS").exists(_.nonEmpty)) {
+        throwAssertionError(goldenFilePath.toString, goldenFileContents, actualValue)
+      } else {
+        reporter.apply(GoldenFix(goldenFilePath, actualValue, 0, goldenFileContents.length))
       }
     }
   }
 
-  def assertGoldenLiteral(testValue: Any, golden: GoldenFix.Span[Any])
+  def assertGoldenLiteral(actualValue: Any, goldenLiteral: GoldenFix.Span[Any])
                          (implicit reporter: GoldenFix.Reporter): Unit = {
-    val goldenValue = golden.value
-    if (testValue != goldenValue) {
-      if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
-        throw new AssertionError(
-          "Value does not match golden literal contents\n" +
-            "Run UTEST_UPDATE_GOLDEN_TESTS=1 to update golden literal in " + golden.sourceFile,
-          Seq(
-            TestValue.Equality(
-              TestValue.Single("testValue", None, testValue),
-              TestValue.Single("goldenValue", None, goldenValue),
-            )
-          )
-        )
+    Predef.assert(
+      goldenLiteral != null,
+      "assertGoldenLiteral does not allow `null` as the golden literal," +
+        "please use `()` if you want a placeholder for `UTEST_UPDATE_GOLDEN_TESTS=1` to fill in"
+    )
+    val goldenValue = goldenLiteral.value
+    if (actualValue != goldenValue) {
+      if (!sys.env.get("UTEST_UPDATE_GOLDEN_TESTS").exists(_.nonEmpty)) {
+        throwAssertionError(goldenLiteral.sourceFile, goldenValue, actualValue)
       } else {
         reporter.apply(
           GoldenFix(
-            Path.of(golden.sourceFile),
-            utest.shaded.pprint.PPrinter.BlackWhite.apply(golden.value).plainText,
-            golden.startOffset,
-            golden.endOffset
+            Path.of(goldenLiteral.sourceFile),
+            utest.shaded.pprint.PPrinter.BlackWhite.apply(actualValue).plainText,
+            goldenLiteral.startOffset,
+            goldenLiteral.endOffset
           )
         )
       }

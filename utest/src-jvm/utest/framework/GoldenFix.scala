@@ -41,12 +41,12 @@ object GoldenFix {
     lineStarts.toArray
   }
 
-  def columnLookup(index: Int, lineNumberLookup: Array[Int]): Int = {
+  def lineColumnLookup(index: Int, lineNumberLookup: Array[Int]): (Int, Int) = {
     val line = lineNumberLookup.indexWhere(_ > index) match {
       case -1 => lineNumberLookup.length - 1
       case n => math.max(0, n - 1)
     }
-    index - lineNumberLookup(line)
+    (line, index - lineNumberLookup(line))
   }
 
   trait Reporter {
@@ -55,10 +55,8 @@ object GoldenFix {
 
   def applyAll(fixes: Seq[GoldenFix]): Unit = {
     for((path, group) <- fixes.groupBy(_.path)){
-      println(s"Applying ${group.size} golden fixes to file $path")
-
+      println(s"UTEST_UPDATE_GOLDEN_TESTS detected, uTest applying ${group.size} golden fixes to file $path")
       val text = java.nio.file.Files.readString(path)
-
       java.nio.file.Files.writeString(path, applyToText(text, group))
     }
   }
@@ -73,8 +71,10 @@ object GoldenFix {
     val lineNumberLookupTable = lineNumberLookup(text)
     var lengthOffset = 0
     for (fix <- sorted) {
-      val col = columnLookup(fix.startOffset, lineNumberLookupTable)
-      val indentedContents = fix.contents.linesWithSeparators.mkString(" " * col)
+      val (startLine, startCol) = lineColumnLookup(fix.startOffset, lineNumberLookupTable)
+      val (endLine, endCol) = lineColumnLookup(fix.endOffset, lineNumberLookupTable)
+      println(s"Updating line:column $startLine:$startCol to $endLine:$endCol")
+      val indentedContents = fix.contents.linesWithSeparators.mkString(" " * startCol)
       text = text.patch(
         fix.startOffset + lengthOffset, indentedContents,
         fix.endOffset - fix.startOffset
