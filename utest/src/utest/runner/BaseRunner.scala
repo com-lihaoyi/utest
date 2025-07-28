@@ -44,6 +44,7 @@ abstract class BaseRunner(val args: Array[String],
 
   def remoteArgs(): Array[String] = _remoteArgs
 
+  def registerSuite(x: TestSuite): Unit = ()
   lazy val path = args.headOption.filter(_(0) != '-')
   lazy val query = path
     .map(TestQueryParser(_))

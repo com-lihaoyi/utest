@@ -27,7 +27,7 @@ trait AssertsPlatformSpecific {
                          (implicit reporter: GoldenFix.Reporter): Unit = {
     val goldenValue = golden.value
     if (testValue != goldenValue) {
-      if (!sys.env.contains("UTEST_UPDATE_GOLDEN")) {
+      if (!sys.env.contains("UTEST_UPDATE_GOLDEN_TESTS")) {
         throw new AssertionError(
           "Value does not match golden literal contents",
           Seq(

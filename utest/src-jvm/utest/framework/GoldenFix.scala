@@ -15,6 +15,7 @@ object GoldenFix {
 
   def applyAll(fixes: Seq[GoldenFix]): Unit = {
     for((path, group) <- fixes.groupBy(_.path)){
+      println("Updating golden fixes to file " + path)
       val sorted = group.sortBy(_.startOffset)
       var txt = java.nio.file.Files.readString(path)
       for(fix <- sorted){
