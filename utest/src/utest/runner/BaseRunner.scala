@@ -84,18 +84,11 @@ abstract class BaseRunner(val args: Array[String],
     }
   }
 
-  @deprecated("Use the variant that takes the full query instead")
-  def runSuite(loggers: Seq[Logger],
-               suiteName: String,
-               eventHandler: EventHandler,
-               taskDef: TaskDef): Future[Unit] =
-    runSuite(loggers, suiteName, eventHandler, taskDef, query)
-
   def runSuite(loggers: Seq[Logger],
                suiteName: String,
                eventHandler: EventHandler,
                taskDef: TaskDef,
-               fullQuery: TestQueryParser#Trees): Future[Unit] = {
+               fullQuery: TestQueryParser#Trees): Future[Option[TestSuite]] = {
 
     startHeader.foreach(h => println(h(path.fold("")(" " + _))))
 
@@ -143,7 +136,7 @@ abstract class BaseRunner(val args: Array[String],
           addResult(fstr.render)
           log(fstr.render)
         }
-        scala.concurrent.Future.successful(())
+        scala.concurrent.Future.successful(None)
       case Right(suite) =>
         val innerQuery = {
           def rec(currentQuery: TestQueryParser#Trees, segments: List[String]): TestQueryParser#Trees = {
@@ -185,10 +178,11 @@ abstract class BaseRunner(val args: Array[String],
           ec = ec
         )
 
-        results.map(suiteFormatter.formatSummary(suiteName, _).foreach(x => addResult(x.render)))
+        results.map { r =>
+          suiteFormatter.formatSummary(suiteName, r).foreach(x => addResult(x.render))
+          Some(suite)
+        }
     }
-
-
   }
 
 

@@ -1,6 +1,6 @@
 package utest
 
-import utest.framework.Formatter
+import utest.framework.{Formatter, TestSuitePlatformSpecific}
 import scala.concurrent.{ExecutionContext, Future}
 import utest.framework.PlatformShims.EnableReflectiveInstantiation
 
@@ -10,7 +10,7 @@ import utest.framework.PlatformShims.EnableReflectiveInstantiation
  */
 @EnableReflectiveInstantiation
 abstract class TestSuite
-  extends framework.Executor with TestSuiteVersionSpecific {
+  extends framework.Executor with TestSuiteVersionSpecific with TestSuitePlatformSpecific {
   def utestFormatter: Formatter = null
   def tests: Tests
 }

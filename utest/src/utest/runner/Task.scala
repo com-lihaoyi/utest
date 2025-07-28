@@ -9,7 +9,7 @@ import concurrent.duration._
 import utest.framework.{ExecutionContext, PlatformShims, Tree}
 
 class Task(_taskDef: TaskDef,
-           runUTestTask: (Seq[Logger], EventHandler) => Future[Unit])
+           runUTestTask: (Seq[Logger], EventHandler) => Future[_])
            extends sbt.testing.Task{
 
   def taskDef(): TaskDef = _taskDef
