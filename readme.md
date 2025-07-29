@@ -1,12 +1,6 @@
 µTest 0.9.0
 ====================================================================================================
 
-[travis-badge]: https://travis-ci.org/lihaoyi/utest.svg
-[travis-link]: https://travis-ci.org/lihaoyi/utest
-[gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
-[gitter-link]: https://gitter.im/lihaoyi/utest?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
-![Splash.png](docs/Splash.png)
 
 uTest is a simple, convenient testing library for Scala.
 Its key features are:
