@@ -172,7 +172,7 @@ class FrameworkTests extends utest.TestSuite{
             test("inner"){
               val z = y + 1
               test("innerest"){
-                assertAll(
+                assert(
                   x == 1,
                   y == 2,
                   z == 3

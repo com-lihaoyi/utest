@@ -1,6 +1,7 @@
 package utest
 
 import utest.shaded._
+import utest.shaded.fansi.{Attrs, Str}
 
 //import acyclic.file
 
@@ -15,13 +16,29 @@ case class NoSuchTestException(path: Seq[String]*)
  * contains metadata about local variables used in the assert expression.
  */
 case class AssertionError(msgPrefix: String, captured: Seq[TestValue], cause: Throwable = null)
-extends java.lang.AssertionError(AssertionError.render(msgPrefix, captured).plainText)
+extends java.lang.AssertionError(
+  AssertionError.render(
+    msgPrefix,
+    captured,
+    new AssertionError.Printer{
+      def pprinter(v: Any): Str = pprint.PPrinter.BlackWhite.apply(v)
+      def nameColor: Attrs = fansi.Attrs.Empty
+      def colored = false
+    }
+  ).plainText
+)
   with ColorMessageError {
   super.initCause(cause)
-  override def coloredMessage: fansi.Str = AssertionError.render(msgPrefix, captured)
+  override def coloredMessage(pprinter: AssertionError.Printer): fansi.Str = AssertionError.render(msgPrefix, captured, pprinter)
 }
 
 object AssertionError {
+  trait Printer {
+    def pprinter(v: Any): fansi.Str
+    def nameColor: fansi.Attrs
+    def colored: Boolean
+
+  }
   def diff(lhs: fansi.Str, rhs: fansi.Str) = {
     def splitLines(str: fansi.Str): IndexedSeq[fansi.Str] = {
       val lineLengths = str.plainText.linesWithSeparators.map(_.length).toList
@@ -89,23 +106,32 @@ object AssertionError {
           renderGreen(splitLines(fansi.Str.join(y).overlayAll(overlaysY)))
     }
   }
-  def render(msgPrefix: String, captured: Seq[TestValue]) = {
+
+  def render(msgPrefix: String, captured: Seq[TestValue], pprinter: AssertionError.Printer) = {
     shaded.fansi.Str.join(
       Seq[shaded.fansi.Str](msgPrefix) ++
         captured.flatMap{
           case x: TestValue.Single =>
-            Seq[fansi.Str]("\n", fansi.Color.Cyan(x.name), ": ", x.tpeName.getOrElse(""), " = ", shaded.pprint.apply(x.value))
+            Seq[fansi.Str](
+              "\n",
+              pprinter.nameColor(x.name),
+              ": ",
+              if (pprinter.colored) x.tpeName.getOrElse("") else fansi.Color.Reset(x.tpeName.getOrElse("")),
+              " = ",
+              pprinter.pprinter(x.value
+              )
+            )
 
           case x: TestValue.Equality =>
-            Seq[fansi.Str](fansi.Color.Cyan(s"\n${x.lhs.name} != ${x.rhs.name}"), ":\n") ++
-              diff(shaded.pprint.apply(x.lhs.value), shaded.pprint.apply(x.rhs.value))
+            Seq[fansi.Str](pprinter.nameColor(s"\n${x.lhs.name} != ${x.rhs.name}"), ":\n") ++
+              diff(pprinter.pprinter(x.lhs.value), pprinter.pprinter(x.rhs.value))
         }
     )
   }
 }
 
 trait ColorMessageError {
-  def coloredMessage: shaded.fansi.Str
+  def coloredMessage(pprinter: AssertionError.Printer): fansi.Str
 }
 
 /**

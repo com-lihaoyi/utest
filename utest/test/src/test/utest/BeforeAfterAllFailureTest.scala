@@ -48,7 +48,7 @@ class BeforeAfterAllFailureTest extends TestSuite{
         .toList
       val successes = res.leaves.count(_.value.isSuccess)
       val filteredStackLengths = failures.map(x => StackMarker.filterCallStack(x.getStackTrace).length)
-      assertAll(
+      assert(
         successes == 0,
         failures.map(_.getMessage) == Seq("Failed After!"),
         // Make sure we return stack traces that get truncated to reasonably
