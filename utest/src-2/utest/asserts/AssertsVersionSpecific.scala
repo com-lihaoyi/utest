@@ -93,13 +93,7 @@ trait AssertsCompanionVersionSpecific {
     }
   }
 
-  def assertProxy(c: Context)(expr: c.Expr[Boolean]): c.Expr[Unit] = {
-    import c.universe._
-    Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", expr)
-  }
-
-
-  def assertAllProxy(c: Context)(expr: c.Expr[Boolean]*): c.Expr[Unit] = {
+  def assertProxy(c: Context)(expr: c.Expr[Boolean]*): c.Expr[Unit] = {
     import c.universe._
     Tracer[Boolean](c)(q"utest.asserts.Asserts.assertImpl", expr:_*)
   }
@@ -134,16 +128,10 @@ trait AssertsVersionSpecific {
   def assertCompileError(expr: String): CompileError = macro Asserts.assertCompileError
 
   /**
-   * Checks that the expression is true; otherwise raises an
-   * exception with some debugging info
-   */
-  def assert(expr: Boolean): Unit = macro Asserts.assertProxy
-
-  /**
     * Checks that one or more expressions are true; otherwise raises an
     * exception with some debugging info
     */
-  def assertAll(expr: Boolean*): Unit = macro Asserts.assertAllProxy
+  def assert(expr: Boolean*): Unit = macro Asserts.assertProxy
   /**
     * Checks that one or more expressions all become true within a certain
     * period of time. Polls at a regular interval to check this.

@@ -15,14 +15,8 @@ import scala.collection.mutable
  * message for boolean expression assertion.
  */
 trait AssertsCompanionVersionSpecific {
-  def assertProxy(expr: Expr[Boolean])(using ctx: Quotes): Expr[Unit] = {
-    Tracer.single[Boolean](
-      '{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) },
-      expr
-    )
-  }
 
-  def assertAllProxy(exprs: Expr[Seq[Boolean]])(using ctx: Quotes): Expr[Unit] = {
+  def assertProxy(exprs: Expr[Seq[Boolean]])(using ctx: Quotes): Expr[Unit] = {
     Tracer[Boolean] ('{ (esx: Seq[AssertEntry[Boolean]]) => utest.asserts.Asserts.assertImpl(esx: _*) }, exprs)
   }
 
@@ -58,17 +52,12 @@ trait AssertsVersionSpecific {
     */
   transparent inline def assertCompileError(inline expr: String): CompileError = compileErrorImpl(typeCheckErrors(expr), expr)
 
-  /**
-   * Checks that the expression is true; otherwise raises an
-   * exception with some debugging info
-   */
-  inline def assert(inline expr: Boolean): Unit = ${Asserts.assertProxy('expr)}
 
   /**
     * Checks that one or more expressions are true; otherwise raises an
     * exception with some debugging info
     */
-  inline def assertAll(inline expr: Boolean*): Unit = ${Asserts.assertAllProxy('expr)}
+  inline def assert(inline expr: Boolean*): Unit = ${Asserts.assertProxy('expr)}
 
   /**
     * Checks that one or more expressions all become true within a certain

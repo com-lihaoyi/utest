@@ -5,6 +5,7 @@ package framework
 import scala.collection.mutable
 import scala.util.{Failure, Success}
 import utest.shaded._
+import utest.shaded.fansi.{Attrs, Str}
 
 object Formatter extends Formatter
 /**
@@ -14,7 +15,7 @@ object Formatter extends Formatter
 trait Formatter {
 
   def formatColor: Boolean = true
-  def formatTruncateHeight: Int = 15
+  def formatTruncateHeight: Int = 30
   def formatWrapWidth: Int = Int.MaxValue >> 1 // halving here to avoid overflows later
 
   def formatValue(x: Any) = testValueColor("" + x)
@@ -29,11 +30,22 @@ trait Formatter {
   def exceptionLineNumberColor = toggledColor(fansi.Color.LightRed)
 
   def formatResultColor(success: Boolean) = toggledColor(
-    if (success) fansi.Color.Green
-    else fansi.Color.Red
+    if (success) fansi.Color.Green else fansi.Color.Red
   )
 
+  /**
+   * Override this to customize how values are written to source files during
+   * `assertGoldenLiteral` updates
+   */
   def goldenLiteralPrinter(x: Any): String = pprint.PPrinter.BlackWhite.apply(x).plainText
+
+  /**
+   * Override this to customize how values are written to the console during `assert`
+   * errors
+   */
+  def assertPrettyPrinter(x: Any, height: Int = formatTruncateHeight): fansi.Str =
+    if (formatColor) pprint.apply(x, height = height)
+    else pprint.PPrinter.BlackWhite.apply(x, height = height)
 
   def formatMillisColor = toggledColor(fansi.Bold.Faint)
 
@@ -49,7 +61,14 @@ trait Formatter {
           lineWrapInput(
             current match{
               case colored: ColorMessageError =>
-                fansi.Str.join(Seq(exCls, ": ", colored.coloredMessage))
+                fansi.Str.join(Seq(exCls, ": ", colored.coloredMessage(
+                  new AssertionError.Printer{
+                    def pprinter(v: Any): Str = assertPrettyPrinter(v)
+                    def nameColor: Attrs = toggledColor(fansi.Color.Cyan)
+                    def colored = formatColor
+                  }
+
+                )))
               case _ =>
                 current.getMessage match{
                   case null => exCls
@@ -91,7 +110,7 @@ trait Formatter {
 
           val frameIndent = leftIndent + "  "
           val wrapper =
-            if(exceptionStackFrameHighlighter(e)) fansi.Attrs.Empty
+            if(exceptionStackFrameHighlighter(e) || !formatColor) fansi.Attrs.Empty
             else fansi.Bold.Faint
 
           output.append(
@@ -150,7 +169,7 @@ trait Formatter {
     r.value match{
       case Success(()) => ""
       case Success(v) =>
-        val wrapped = lineWrapInput(shaded.pprint.apply(v, height = formatTruncateHeight).overlay(shaded.fansi.Color.Blue), leftIndent)
+        val wrapped = lineWrapInput(assertPrettyPrinter(v).overlay(testValueColor), leftIndent)
         joinLineStr(wrapped, leftIndent)
 
       case Failure(e) => formatException(e, leftIndent)

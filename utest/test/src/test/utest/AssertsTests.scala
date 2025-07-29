@@ -22,7 +22,7 @@ class AssertsTests extends utest.TestSuite{
         val (e, logged, cause) = try {
           val x = 1
           val y = "2"
-          assertAll(
+          assert(
             x > 0,
             x.toString == y
           )
@@ -213,7 +213,7 @@ class AssertsTests extends utest.TestSuite{
       test("multiple"){
         def die = throw new IllegalArgumentException("foo")
         val msg1 = try {
-          assertAll(
+          assert(
             1 == 2,
             die
           )
@@ -223,7 +223,7 @@ class AssertsTests extends utest.TestSuite{
         }
         Predef.assert(msg1.contains("#1: 1 == 2"))
         val msg2 = try {
-          assertAll(
+          assert(
             1 == 1,
             die
           )
