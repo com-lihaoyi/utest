@@ -25,7 +25,7 @@ extends java.lang.AssertionError(
       def nameColor: Attrs = fansi.Attrs.Empty
       def colored = false
     }
-  )
+  ).plainText
 )
   with ColorMessageError {
   super.initCause(cause)
