@@ -830,6 +830,10 @@ assertGoldenLiteral(x, List(1, 2))
 This means it is easy to write the logic of the tests and have uTest "fill in the blanks"
 for you.
 
+See
+[Golden Literal Testing in uTest 0.9.0](https://www.lihaoyi.com/post/GoldenLiteralTestinginuTest090.html)
+for more details.
+
 `assertGoldenLiteral` is only supported on Scala-JVM, and not on Scala-JS and Scala-Native
 
 assertGoldenFile
@@ -1499,7 +1503,9 @@ Changelog
 * Golden testing is now supported via [assertGoldenLiteral](#assertgoldenliteral) and
   [assertGoldenFile](#assertgoldenfile). This allows uTest to help you fill in the
   "expected" value of simple assertions the first time you run the test, and keep
-  that value up to date as the behavior of your code evolves.
+  that value up to date as the behavior of your code evolves. See
+  [Golden Literal Testing in uTest 0.9.0](https://www.lihaoyi.com/post/GoldenLiteralTestinginuTest090.html)
+  for more details
 
 ![Golden.png](docs/Golden.png)
 
