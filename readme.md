@@ -1,4 +1,4 @@
-µTest 0.9.0
+µTest 0.9.1
 ====================================================================================================
 
 
@@ -62,7 +62,8 @@ Contents
   - [assertEventually and assertContinually](#asserteventually-and-assertcontinually)
   - [assertMatch](#assert-match)
   - [assertCompileError](#assertcompileerror)
-  - [assertGoldenLiteral and assertGoldenFile](#assertgoldenliteral-and-assertgoldenfile)
+  - [assertGoldenLiteral](#assertgoldenliteral)
+  - [assertGoldenFile](#assertgoldenfile)
 - [Test Utilities](#test-utilities)
   - [TestPath](#testpath)
   - [Local Retries](#local-retries)
@@ -87,8 +88,8 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.9.0" % "test" // Scala-JVM
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.9.0" % "test" // Scala.js or Scala-Native
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.9.1" % "test" // Scala-JVM
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.9.1" % "test" // Scala.js or Scala-Native
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -96,8 +97,8 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 Or Mill:
 
 ```scala
-def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.9.0") // Scala-JVM
-def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.9.0") // Scala.js or Scala-Native
+def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.9.1") // Scala-JVM
+def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.9.1") // Scala.js or Scala-Native
 
 def testFrameworks = Seq("utest.runner.Framework")
 ```
@@ -1489,6 +1490,11 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.9.1
+-----
+
+* Don't truncate large data in golden testing [#399](https://github.com/com-lihaoyi/utest/pull/399)
 
 0.9.0
 -----
