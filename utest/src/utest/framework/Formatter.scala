@@ -37,7 +37,8 @@ trait Formatter {
    * Override this to customize how values are written to source files during
    * `assertGoldenLiteral` updates
    */
-  def goldenLiteralPrinter(x: Any): String = pprint.PPrinter.BlackWhite.apply(x).plainText
+  def goldenLiteralPrinter(x: Any): String =
+    pprint.PPrinter.BlackWhite.apply(x, height = Int.MaxValue).plainText
 
   /**
    * Override this to customize how values are written to the console during `assert`
