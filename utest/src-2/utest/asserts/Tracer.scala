@@ -78,7 +78,7 @@ object Tracer{
             i.tpe match {
               case t: AnnotatedType
                 // Don't worry about multiple chained annotations for now...
-                if t.annotations.map(_.tpe) == Seq(typeOf[utest.asserts.Show]) =>
+                if t.annotations.corresponds(Seq(typeOf[utest.asserts.Show]))(_.tpe <:< _) =>
 
                 val newTpe = t.underlying
 
