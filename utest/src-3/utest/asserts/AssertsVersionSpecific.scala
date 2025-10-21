@@ -29,7 +29,7 @@ trait AssertsCompanionVersionSpecific {
     import quotes.reflect._
     val clazz = Literal(ClassOfConstant(TypeRepr.of[T]))
     Tracer.traceOne[Unit, T]('{ (x: AssertEntry[Unit]) =>
-      utest.asserts.Asserts.assertThrowsImpl[T](x)(ClassTag(${clazz.asExprOf[Class[T]]})) }, expr)
+      utest.asserts.Asserts.assertThrowsImpl[T](x)(using ClassTag(${clazz.asExprOf[Class[T]]})) }, expr)
   }
 
   def compileErrorImpl(errors: List[Error], snippet: String): CompileError =
