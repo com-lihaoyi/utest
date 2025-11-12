@@ -1,4 +1,4 @@
-//| mill-version: 1.0.0
+//| mill-version: 1.1.0-RC1
 //| mill-jvm-version: 11
 //| mill-opts: ["--jobs=0.5C"]
 //| mvnDeps:
