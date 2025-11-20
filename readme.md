@@ -1,4 +1,4 @@
-µTest 0.9.1
+µTest 0.9.2
 ====================================================================================================
 
 
@@ -88,8 +88,8 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.9.1" % "test" // Scala-JVM
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.9.1" % "test" // Scala.js or Scala-Native
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.9.2" % "test" // Scala-JVM
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.9.2" % "test" // Scala.js or Scala-Native
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -97,8 +97,8 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 Or Mill:
 
 ```scala
-def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.9.1") // Scala-JVM
-def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.9.1") // Scala.js or Scala-Native
+def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.9.2") // Scala-JVM
+def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.9.2") // Scala.js or Scala-Native
 
 def testFrameworks = Seq("utest.runner.Framework")
 ```
@@ -1490,6 +1490,13 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.9.2
+-----
+
+* Fix pathological performance in `def splitLines` affecting assertion diffs [#409](https://github.com/com-lihaoyi/utest/pull/409)
+* Bump PPrint version to fix `assertGoldenValue` code-generation for `HashMap`, `HashSet`, and `ArraySeq` [#408](https://github.com/com-lihaoyi/utest/pull/408)
+
 
 0.9.1
 -----
