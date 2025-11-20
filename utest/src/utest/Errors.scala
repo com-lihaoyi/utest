@@ -41,12 +41,21 @@ object AssertionError {
   }
   def diff(lhs: fansi.Str, rhs: fansi.Str) = {
     def splitLines(str: fansi.Str): IndexedSeq[fansi.Str] = {
-      val lineLengths = str.plainText.linesWithSeparators.map(_.length).toList
-      (Seq(0) ++ lineLengths).inits.toList.reverse
-        .sliding(2)
-        .drop(1)
-        .collect { case Seq(start, end) => str.substring(start.sum, end.sum) }
-        .toIndexedSeq
+      val lines = str.plainText.linesWithSeparators.toList
+    
+      // Compute array of starting offsets for each line
+      val result = new Array[fansi.Str](lines.length)
+      var offset = 0
+      var i = 0
+    
+      while (i < lines.length) {
+        val len = lines(i).length
+        result(i) = str.substring(offset, offset + len)
+        offset += len
+        i += 1
+      }
+    
+      result.toIndexedSeq
     }
 
     import app.tulz.diff._
