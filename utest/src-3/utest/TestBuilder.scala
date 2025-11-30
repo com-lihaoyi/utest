@@ -56,8 +56,10 @@ object TestBuilder:
           override def transformTerm(t: Term)(owner: Symbol): Term =
             t.tpe.widen match {
               case _: MethodType | _: PolyType => super.transformTerm(t)(owner)
-              case _ => t.asExpr match {
-                case '{ TestPath.synthetic } => '{ TestPath($pathExpr) }.asTerm
+              // Need a `Try` here because sometimes `t` is inside a
+              // named pattern match which causes asExpr to blow up
+              case _ => scala.util.Try(t.asExpr) match {
+                case Success('{ TestPath.synthetic }) => '{ TestPath($pathExpr) }.asTerm
                 case _ => super.transformTerm(t)(owner)
               }
             }
