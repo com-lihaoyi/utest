@@ -1,7 +1,7 @@
 package utest
 
 import scala.quoted.{ Type => QType, _ }
-import scala.util.Success
+import scala.util.{Success, Failure}
 
 import utest.framework.{TestCallTree, Tree => UTree, TestPath }
 
@@ -33,7 +33,7 @@ object TestBuilder:
           case Success(expr) => expr match
             case '{utest.assert(${_}*) } => Inlined(None,Nil,term) //Inlined results in proper line number generation
             case _ => super.transformTerm(term)(owner)
-          case _ => super.transformTerm(term)(owner)
+          case Failure(_) => term
       }
     }
     val statsWithInlinedAsserts = assertInliner.transformStats(setupStats)(Symbol.spliceOwner)
@@ -60,7 +60,8 @@ object TestBuilder:
               // named pattern match which causes asExpr to blow up
               case _ => scala.util.Try(t.asExpr) match {
                 case Success('{ TestPath.synthetic }) => '{ TestPath($pathExpr) }.asTerm
-                case _ => super.transformTerm(t)(owner)
+                case Success(_) => super.transformTerm(t)(owner)
+                case Failure(_) => t
               }
             }
         }
