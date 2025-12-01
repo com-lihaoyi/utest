@@ -17,7 +17,7 @@ jobs:
       matrix:
         java: ['11', '17']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Run tests
         run: |
@@ -27,7 +27,7 @@ jobs:
   check-binary-compatibility:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -52,7 +52,7 @@ jobs:
       LC_ALL: "en_US.UTF-8"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Publish to Maven Central
         run: ./mill -i mill.scalalib.SonatypeCentralPublishModule/
 
