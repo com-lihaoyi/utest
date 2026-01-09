@@ -48,7 +48,7 @@ private[stringdiff] object DiffTokenize {
             case (InSecond(second), InFirst(first)) => same(first, second)
             case _                                  => false
           })
-      ).maxOption.map { samePrefixLength =>
+      ).lastOption.map { samePrefixLength =>
         val prefix = group1.take(samePrefixLength).collect {
           case InFirst(first)  => InBoth(first)
           case InSecond(first) => InBoth(first)
@@ -76,7 +76,7 @@ private[stringdiff] object DiffTokenize {
             case (InSecond(second), InFirst(first)) => same(first, second)
             case _                                  => false
           })
-      ).maxOption.map { sameSuffixLength =>
+      ).lastOption.map { sameSuffixLength =>
         val suffix = group1.takeRight(sameSuffixLength).collect {
           case InFirst(first)   => InBoth(first)
           case InSecond(second) => InBoth(second)
@@ -104,7 +104,7 @@ private[stringdiff] object DiffTokenize {
             case (InSecond(second), InFirst(first)) => same(first, second)
             case _                                  => false
           }
-      ).maxOption.map { prefixSuffixLength =>
+      ).lastOption.map { prefixSuffixLength =>
         val prefix = group1.take(prefixSuffixLength).collect {
           case InFirst(first)  => InBoth(first)
           case InSecond(first) => InBoth(first)
@@ -132,7 +132,7 @@ private[stringdiff] object DiffTokenize {
             case (InSecond(second), InFirst(first)) => same(first, second)
             case _                                  => false
           }
-      ).maxOption.map { suffixPrefixLength =>
+      ).lastOption.map { suffixPrefixLength =>
         val suffix = group1.takeRight(suffixPrefixLength).collect {
           case InFirst(first)  => InBoth(first)
           case InSecond(first) => InBoth(first)

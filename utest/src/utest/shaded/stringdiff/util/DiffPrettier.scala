@@ -50,7 +50,7 @@ private[stringdiff] object DiffPrettier {
   ): (String, String, String) = {
     val samePrefixLength = s1.indices
       .takeWhile(i => i < s2.length && s1.charAt(i) == s2.charAt(i) && s1.charAt(i).isWhitespace)
-      .maxOption.fold(0)(_ + 1)
+      .lastOption.fold(0)(_ + 1)
 
     (s1.take(samePrefixLength), s1.drop(samePrefixLength), s2.drop(samePrefixLength))
   }
@@ -61,7 +61,7 @@ private[stringdiff] object DiffPrettier {
   ): (String, String, String) = {
     val sameSuffixLength = s1.indices
       .takeWhile(i => i < s2.length && s1.charAt(s1.length - 1 - i) == s2.charAt(s2.length - 1 - i) && s1.charAt(i).isWhitespace)
-      .maxOption.fold(0)(_ + 1)
+      .lastOption.fold(0)(_ + 1)
     (s1.dropRight(sameSuffixLength), s2.dropRight(sameSuffixLength), s1.takeRight(sameSuffixLength))
   }
 
