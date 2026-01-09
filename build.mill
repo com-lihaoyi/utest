@@ -23,6 +23,7 @@ trait MimaCheck extends Mima {
 trait UtestModule extends PublishModule with MimaCheck {
   def artifactName = "utest"
 
+  def jvmVersion = "11"
   def publishVersion = VcsVersion.vcsState().format()
 
   def pomSettings = PomSettings(
