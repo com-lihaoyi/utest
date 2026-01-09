@@ -1,4 +1,4 @@
-ef µTest 0.9.2
+µTest 0.9.5
 ====================================================================================================
 
 
@@ -88,8 +88,8 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.9.2" % "test" // Scala-JVM
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.9.2" % "test" // Scala.js or Scala-Native
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.9.5" % "test" // Scala-JVM
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.9.5" % "test" // Scala.js or Scala-Native
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -97,10 +97,10 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 Or Mill:
 
 ```scala
-def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.9.2") // Scala-JVM
-def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.9.2") // Scala.js or Scala-Native
+def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.9.5") // Scala-JVM
+def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.9.5") // Scala.js or Scala-Native
 
-def testFrameworks = Seq("utest.runner.Framework")
+def testFramework = "utest.runner.Framework"
 ```
 
 For Scala-Native, you will also need
@@ -1490,6 +1490,12 @@ libraries are currently at.
 
 Changelog
 =========
+0.9.5
+-----
+
+* Fix pathological performance of stringdiff algorithm on large assertion diffs [#412](https://github.com/com-lihaoyi/utest/pull/412)
+* Fixes for crashes in named pattern matches
+
 
 0.9.2
 -----
