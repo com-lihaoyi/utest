@@ -58,7 +58,7 @@ object AssertionError {
       result.toIndexedSeq
     }
 
-    import app.tulz.diff._
+    import utest.shaded.stringdiff._
     val lhsLines = splitLines(lhs)
     val rhsLines = splitLines(rhs)
     val diffElements = SeqDiff.seq(lhsLines, rhsLines)

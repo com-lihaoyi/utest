@@ -21,7 +21,7 @@ jobs:
 
       - name: Run tests
         run: |
-          sed -i 's#//| mill-jvm-version: 11#//| mill-jvm-version: ${{ matrix.java }}#' build.mill 
+          sed -i 's#def jvmVersion = "11"#def jvmVersion = "${{ matrix.java }}"#' build.mill
           ./mill -i '__.{publishArtifacts,test}'
 
   check-binary-compatibility:

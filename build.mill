@@ -1,5 +1,4 @@
-//| mill-version: 1.1.0-RC1
-//| mill-jvm-version: 11
+//| mill-version: 1.1.0-RC3-173-d2f08f
 //| mill-opts: ["--jobs=0.5C"]
 //| mvnDeps:
 //| - com.github.lolgab::mill-mima_mill1:0.2.0
@@ -18,11 +17,16 @@ val scalaReflectVersion = "1.1.3"
 
 trait MimaCheck extends Mima {
   def mimaPreviousVersions = VcsVersion.vcsState().lastTag.toSeq
+  override def mimaBinaryIssueFilters: T[Seq[ProblemFilter]] = Seq(
+    // shaded internal thing not for public use
+    ProblemFilter.exclude[MissingClassProblem]("utest.shaded.app.tulz.diff.*")
+  )
 }
 
 trait UtestModule extends PublishModule with MimaCheck {
   def artifactName = "utest"
 
+  def jvmVersion = "11"
   def publishVersion = VcsVersion.vcsState().format()
 
   def pomSettings = PomSettings(
@@ -59,18 +63,18 @@ trait UtestMainModule extends CrossScalaModule with UtestModule with PlatformSca
   def generatedSources = Task{
     // Locally-build and shade versions of pprint and fansi to avoid classpath
     // conflicts and circular dependencies between utest and those projects
+    // Note: stringdiff is vendored directly in utest/src/utest/shaded/stringdiff/
+    // with a fix for the pathological performance issue caused by View concatenation
     resolveUnpackShade(
       defaultResolver().classpath(
         Seq(
           mvn"com.lihaoyi::pprint:0.9.5",
-          mvn"com.lihaoyi::fansi:0.5.1",
-          mvn"app.tulz::stringdiff:0.3.4"
+          mvn"com.lihaoyi::fansi:0.5.1"
         ),
         sources = true
       ).filter(_.path.last match{
         case s"fansi$versionSuffix.jar" => true
         case s"pprint$versionSuffix.jar" => true
-        case s"stringdiff$versionSuffix.jar" => true
         case _ => false
       })
     )

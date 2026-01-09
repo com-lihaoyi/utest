@@ -85,6 +85,25 @@ class AssertsTests extends utest.TestSuite{
           ))
         }
 
+        // Regression test for pathological performance with large sequence diffs.
+        // Previously this would hang due to O(n^2) or worse performance from
+        // nested SeqView$Concat structures in the stringdiff library.
+        test("largeSeqDiff") {
+          val start = System.currentTimeMillis()
+          try {
+            assert(Seq.tabulate(500)(identity) == Nil)
+            Predef.assert(false, "Should have thrown AssertionError")
+          } catch { case e: utest.AssertionError =>
+            val elapsed = System.currentTimeMillis() - start
+            // Should complete in well under 10 seconds (typically < 1 second)
+            Predef.assert(elapsed < 10000, s"Diff took too long: ${elapsed}ms")
+            // Should have a reasonable error message mentioning the values
+            Predef.assert(e.getMessage.contains("0"), "Error message should contain sequence elements")
+            Predef.assert(e.getMessage.contains("499") || e.getMessage.contains("..."),
+              "Error message should contain last element or truncation indicator")
+          }
+        }
+
         def a = Seq("1" * 15, "2" * 15, "3" * 15, "4" * 15, "5" * 15, "6" * 15)
         def b = Seq("0" * 15, "1" * 15, "b" * 15, "3" * 15, "4" * 15, "5" * 15)
         try assert(a == b)
