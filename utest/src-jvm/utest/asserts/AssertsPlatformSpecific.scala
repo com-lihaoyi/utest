@@ -81,9 +81,25 @@ trait AssertsPlatformSpecific {
       }
     }
 
-    def readFileContent(base: Path, relativePath: Path): String = {
+    def readFileBytes(base: Path, relativePath: Path): Array[Byte] = {
       val fullPath = base.resolve(relativePath)
-      if (Files.exists(fullPath)) Files.readString(fullPath) else ""
+      if (Files.exists(fullPath)) Files.readAllBytes(fullPath) else Array.empty
+    }
+
+    def isBinaryContent(bytes: Array[Byte]): Boolean = {
+      // Check for null bytes or high proportion of non-printable characters
+      bytes.exists(_ == 0) || {
+        val nonPrintable = bytes.count(b => b < 32 && b != '\t' && b != '\n' && b != '\r')
+        bytes.nonEmpty && nonPrintable.toDouble / bytes.length > 0.1
+      }
+    }
+
+    def formatFileContent(bytes: Array[Byte]): GoldenFix.Literal = {
+      if (isBinaryContent(bytes)) {
+        new GoldenFix.Literal(s"<binary file, ${bytes.length} bytes>")
+      } else {
+        new GoldenFix.Literal(new String(bytes, java.nio.charset.StandardCharsets.UTF_8))
+      }
     }
 
     val goldenFiles = listFilesRecursively(goldenFolderPath)
@@ -94,7 +110,10 @@ trait AssertsPlatformSpecific {
     val inBoth = goldenFiles.intersect(actualFiles)
 
     val differentContent = inBoth.filter { relativePath =>
-      readFileContent(goldenFolderPath, relativePath) != readFileContent(actualFolderPath, relativePath)
+      !java.util.Arrays.equals(
+        readFileBytes(goldenFolderPath, relativePath),
+        readFileBytes(actualFolderPath, relativePath)
+      )
     }
 
     val hasDifferences = onlyInGolden.nonEmpty || onlyInActual.nonEmpty || differentContent.nonEmpty
@@ -106,29 +125,29 @@ trait AssertsPlatformSpecific {
 
         // Show files only in golden (will be deleted)
         for (relativePath <- onlyInGolden.toSeq.sortBy(_.toString)) {
-          val goldenContent = readFileContent(goldenFolderPath, relativePath)
+          val goldenBytes = readFileBytes(goldenFolderPath, relativePath)
           errorParts += TestValue.Equality(
-            TestValue.Single(s"$relativePath (golden)", None, new GoldenFix.Literal(goldenContent)),
+            TestValue.Single(s"$relativePath (golden)", None, formatFileContent(goldenBytes)),
             TestValue.Single(s"$relativePath (actual)", None, new GoldenFix.Literal("<file does not exist>"))
           )
         }
 
         // Show files only in actual (will be added)
         for (relativePath <- onlyInActual.toSeq.sortBy(_.toString)) {
-          val actualContent = readFileContent(actualFolderPath, relativePath)
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
           errorParts += TestValue.Equality(
             TestValue.Single(s"$relativePath (golden)", None, new GoldenFix.Literal("<file does not exist>")),
-            TestValue.Single(s"$relativePath (actual)", None, new GoldenFix.Literal(actualContent))
+            TestValue.Single(s"$relativePath (actual)", None, formatFileContent(actualBytes))
           )
         }
 
         // Show files with different content
         for (relativePath <- differentContent.toSeq.sortBy(_.toString)) {
-          val goldenContent = readFileContent(goldenFolderPath, relativePath)
-          val actualContent = readFileContent(actualFolderPath, relativePath)
+          val goldenBytes = readFileBytes(goldenFolderPath, relativePath)
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
           errorParts += TestValue.Equality(
-            TestValue.Single(s"$relativePath (golden)", None, new GoldenFix.Literal(goldenContent)),
-            TestValue.Single(s"$relativePath (actual)", None, new GoldenFix.Literal(actualContent))
+            TestValue.Single(s"$relativePath (golden)", None, formatFileContent(goldenBytes)),
+            TestValue.Single(s"$relativePath (actual)", None, formatFileContent(actualBytes))
           )
         }
 
