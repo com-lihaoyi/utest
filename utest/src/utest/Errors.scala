@@ -132,7 +132,9 @@ object AssertionError {
             )
 
           case x: TestValue.Equality =>
-            Seq[fansi.Str](pprinter.nameColor(s"\n${x.lhs.name} != ${x.rhs.name}"), ":\n") ++
+            val lhsColor = if (pprinter.colored) fansi.Attrs(fansi.Color.Reset, fansi.Back.Red) else fansi.Attrs.Empty
+            val rhsColor = if (pprinter.colored) fansi.Attrs(fansi.Color.Reset, fansi.Back.Green) else fansi.Attrs.Empty
+            Seq[fansi.Str]("\n", lhsColor(x.lhs.name), " != ", rhsColor(x.rhs.name), ":\n") ++
               diff(pprinter.pprinter(x.lhs.value), pprinter.pprinter(x.rhs.value))
         }
     )
