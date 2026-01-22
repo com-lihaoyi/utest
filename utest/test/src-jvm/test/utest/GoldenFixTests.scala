@@ -9,7 +9,9 @@ object GoldenFixTests extends utest.TestSuite {
     test("assertGoldenFolder") {
       def deleteRecursively(path: Path): Unit = {
         if (Files.isDirectory(path)) {
-          Files.list(path).forEach(deleteRecursively)
+          val stream = Files.list(path)
+          try stream.forEach(deleteRecursively)
+          finally stream.close()
         }
         Files.deleteIfExists(path)
       }

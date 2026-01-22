@@ -70,14 +70,18 @@ trait AssertsPlatformSpecific {
    * If `UTEST_UPDATE_GOLDEN_TESTS=1` is set during the test run, the golden folder
    * is updated to match the actual folder contents.
    */
-  def assertGoldenFolder(actualFolderPath: Path, goldenFolderPath: Path): Unit = {
+  def assertGoldenFolder(actualFolderPath: Path, goldenFolderPath: Path)
+                        (implicit reporter: GoldenFix.Reporter): Unit = {
     def listFilesRecursively(root: Path): Set[Path] = {
       if (!Files.exists(root)) Set.empty
       else {
-        Files.walk(root).iterator().asScala
-          .filter(Files.isRegularFile(_))
-          .map(root.relativize)
-          .toSet
+        val stream = Files.walk(root)
+        try {
+          stream.iterator().asScala
+            .filter(Files.isRegularFile(_))
+            .map(root.relativize)
+            .toSet
+        } finally stream.close()
       }
     }
 
@@ -159,40 +163,28 @@ trait AssertsPlatformSpecific {
           errorParts.result()
         )
       } else {
-        // Update mode: sync golden folder to match actual folder
-        println(s"UTEST_UPDATE_GOLDEN_TESTS detected, syncing golden folder $goldenFolderPath with $actualFolderPath")
+        // Update mode: report fixes to sync golden folder with actual folder
 
         // Delete files that only exist in golden
         for (relativePath <- onlyInGolden) {
           val targetPath = goldenFolderPath.resolve(relativePath)
-          println(s"  Deleting $relativePath")
-          Files.deleteIfExists(targetPath)
+          reporter.apply(GoldenFix(targetPath, null, -1, -1, deleted = true))
         }
 
         // Copy files that only exist in actual
         for (relativePath <- onlyInActual) {
-          val sourcePath = actualFolderPath.resolve(relativePath)
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
           val targetPath = goldenFolderPath.resolve(relativePath)
-          println(s"  Adding $relativePath")
-          Files.createDirectories(targetPath.getParent)
-          Files.copy(sourcePath, targetPath)
+          val content = new String(actualBytes, java.nio.charset.StandardCharsets.UTF_8)
+          reporter.apply(GoldenFix(targetPath, new GoldenFix.Literal(content), -1, -1))
         }
 
         // Update files with different content
         for (relativePath <- differentContent) {
-          val sourcePath = actualFolderPath.resolve(relativePath)
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
           val targetPath = goldenFolderPath.resolve(relativePath)
-          println(s"  Updating $relativePath")
-          Files.copy(sourcePath, targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
-        }
-
-        // Clean up empty directories in golden folder
-        if (onlyInGolden.nonEmpty) {
-          Files.walk(goldenFolderPath).iterator().asScala.toSeq
-            .sortBy(_.toString)(Ordering[String].reverse) // Process deepest first
-            .filter(Files.isDirectory(_))
-            .filter(p => !Files.list(p).iterator().hasNext)
-            .foreach(Files.delete)
+          val content = new String(actualBytes, java.nio.charset.StandardCharsets.UTF_8)
+          reporter.apply(GoldenFix(targetPath, new GoldenFix.Literal(content), -1, -1))
         }
       }
     }

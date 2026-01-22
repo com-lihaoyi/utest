@@ -5,7 +5,8 @@ import scala.collection.mutable.ArrayBuffer
 case class GoldenFix(path: java.nio.file.Path,
                      contents: Any,
                      startOffset: Int,
-                     endOffset: Int)
+                     endOffset: Int,
+                     deleted: Boolean = false)
 
 object GoldenFix {
   class Literal(s: String) {
@@ -57,7 +58,25 @@ object GoldenFix {
   }
 
   def applyAll(fixes: Seq[GoldenFix], goldenLiteralPrinter: Any => String): Unit = {
-    for((path, group) <- fixes.groupBy(_.path)){
+    // Separate file-level operations from in-source patches
+    val (fileOps, inSourcePatches) = fixes.partition(f => f.deleted || f.startOffset < 0)
+
+    // Handle file deletions and whole-file writes
+    for (fix <- fileOps) {
+      if (fix.deleted) {
+        println(s"UTEST_UPDATE_GOLDEN_TESTS detected, deleting file ${fix.path}")
+        java.nio.file.Files.deleteIfExists(fix.path)
+      } else {
+        // Whole-file write (startOffset < 0 indicates file-level operation)
+        println(s"UTEST_UPDATE_GOLDEN_TESTS detected, writing file ${fix.path}")
+        val parent = fix.path.getParent
+        if (parent != null) java.nio.file.Files.createDirectories(parent)
+        java.nio.file.Files.writeString(fix.path, fix.contents.toString)
+      }
+    }
+
+    // Handle in-source patches (existing behavior)
+    for ((path, group) <- inSourcePatches.groupBy(_.path)) {
       println(s"UTEST_UPDATE_GOLDEN_TESTS detected, uTest applying ${group.size} golden fixes to file $path")
       val text = java.nio.file.Files.readString(path)
       java.nio.file.Files.writeString(path, applyToText(text, group, goldenLiteralPrinter))
