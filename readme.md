@@ -1,4 +1,4 @@
-µTest 0.9.5
+µTest 0.10.0-RC1
 ====================================================================================================
 
 
@@ -88,8 +88,8 @@ can immediately begin defining and running tests programmatically.
 
 
 ```scala
-libraryDependencies += "com.lihaoyi" %% "utest" % "0.9.5" % "test" // Scala-JVM
-libraryDependencies += "com.lihaoyi" %%% "utest" % "0.9.5" % "test" // Scala.js or Scala-Native
+libraryDependencies += "com.lihaoyi" %% "utest" % "0.10.0-RC1" % "test" // Scala-JVM
+libraryDependencies += "com.lihaoyi" %%% "utest" % "0.10.0-RC1" % "test" // Scala.js or Scala-Native
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 ```
@@ -97,8 +97,8 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 Or Mill:
 
 ```scala
-def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.9.5") // Scala-JVM
-def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.9.5") // Scala.js or Scala-Native
+def mvnDeps = Seq(mvn"com.lihaoyi::utest:0.10.0-RC1") // Scala-JVM
+def mvnDeps = Seq(mvn"com.lihaoyi::utest::0.10.0-RC1") // Scala.js or Scala-Native
 
 def testFramework = "utest.runner.Framework"
 ```
@@ -1490,6 +1490,13 @@ libraries are currently at.
 
 Changelog
 =========
+
+0.10.0-RC1
+------
+
+* Added support for `assertGoldenFolder` [#414](https://github.com/com-lihaoyi/utest/pull/414)
+
+
 0.9.5
 -----
 
