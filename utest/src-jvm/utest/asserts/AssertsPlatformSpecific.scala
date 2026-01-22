@@ -3,6 +3,7 @@ package utest.asserts
 import utest.framework.{GoldenFix}
 import utest.{AssertionError, TestValue}
 import java.nio.file.{Files, Path}
+import scala.jdk.CollectionConverters._
 trait AssertsPlatformSpecific {
   private def throwAssertionError(path: String, goldenValue: Any, actualValue: Any): Unit = {
     throw new AssertionError(
@@ -59,6 +60,132 @@ trait AssertsPlatformSpecific {
             goldenLiteral.endOffset
           )
         )
+      }
+    }
+  }
+
+  /**
+   * Asserts that the contents of the folder at [[actualFolderPath]] match the contents
+   * of the golden folder at [[goldenFolderPath]]. Compares all files recursively.
+   * If `UTEST_UPDATE_GOLDEN_TESTS=1` is set during the test run, the golden folder
+   * is updated to match the actual folder contents.
+   */
+  def assertGoldenFolder(actualFolderPath: Path, goldenFolderPath: Path)
+                        (implicit reporter: GoldenFix.Reporter): Unit = {
+    def listFilesRecursively(root: Path): Set[Path] = {
+      if (!Files.exists(root)) Set.empty
+      else {
+        val stream = Files.walk(root)
+        try {
+          stream.iterator().asScala
+            .filter(Files.isRegularFile(_))
+            .map(root.relativize)
+            .toSet
+        } finally stream.close()
+      }
+    }
+
+    def readFileBytes(base: Path, relativePath: Path): Array[Byte] = {
+      val fullPath = base.resolve(relativePath)
+      if (Files.exists(fullPath)) Files.readAllBytes(fullPath) else Array.empty
+    }
+
+    def isBinaryContent(bytes: Array[Byte]): Boolean = {
+      // Check for null bytes or high proportion of non-printable characters
+      bytes.exists(_ == 0) || {
+        val nonPrintable = bytes.count(b => b < 32 && b != '\t' && b != '\n' && b != '\r')
+        bytes.nonEmpty && nonPrintable.toDouble / bytes.length > 0.1
+      }
+    }
+
+    def formatFileContent(bytes: Array[Byte]): GoldenFix.Literal = {
+      if (isBinaryContent(bytes)) {
+        new GoldenFix.Literal(s"<binary file, ${bytes.length} bytes>")
+      } else {
+        new GoldenFix.Literal(new String(bytes, java.nio.charset.StandardCharsets.UTF_8))
+      }
+    }
+
+    val goldenFiles = listFilesRecursively(goldenFolderPath)
+    val actualFiles = listFilesRecursively(actualFolderPath)
+
+    val onlyInGolden = goldenFiles -- actualFiles
+    val onlyInActual = actualFiles -- goldenFiles
+    val inBoth = goldenFiles.intersect(actualFiles)
+
+    val differentContent = inBoth.filter { relativePath =>
+      !java.util.Arrays.equals(
+        readFileBytes(goldenFolderPath, relativePath),
+        readFileBytes(actualFolderPath, relativePath)
+      )
+    }
+
+    val hasDifferences = onlyInGolden.nonEmpty || onlyInActual.nonEmpty || differentContent.nonEmpty
+
+    if (hasDifferences) {
+      if (!sys.env.get("UTEST_UPDATE_GOLDEN_TESTS").exists(_.nonEmpty)) {
+        // Build error message showing all differences
+        val errorParts = Seq.newBuilder[TestValue]
+
+        // Show files only in golden (will be deleted)
+        for (relativePath <- onlyInGolden.toSeq.sortBy(_.toString)) {
+          val goldenBytes = readFileBytes(goldenFolderPath, relativePath)
+          errorParts += TestValue.Equality(
+            TestValue.Single(s"$relativePath (golden)", None, formatFileContent(goldenBytes)),
+            TestValue.Single(s"$relativePath (actual)", None, new GoldenFix.Literal("<file does not exist>"))
+          )
+        }
+
+        // Show files only in actual (will be added)
+        for (relativePath <- onlyInActual.toSeq.sortBy(_.toString)) {
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
+          errorParts += TestValue.Equality(
+            TestValue.Single(s"$relativePath (golden)", None, new GoldenFix.Literal("<file does not exist>")),
+            TestValue.Single(s"$relativePath (actual)", None, formatFileContent(actualBytes))
+          )
+        }
+
+        // Show files with different content
+        for (relativePath <- differentContent.toSeq.sortBy(_.toString)) {
+          val goldenBytes = readFileBytes(goldenFolderPath, relativePath)
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
+          errorParts += TestValue.Equality(
+            TestValue.Single(s"$relativePath (golden)", None, formatFileContent(goldenBytes)),
+            TestValue.Single(s"$relativePath (actual)", None, formatFileContent(actualBytes))
+          )
+        }
+
+        throw new AssertionError(
+          s"Actual folder does not match golden folder\n" +
+            s"golden: $goldenFolderPath\n" +
+            s"actual: $actualFolderPath\n" +
+            "Run tests with UTEST_UPDATE_GOLDEN_TESTS=1 to update the golden folder",
+          errorParts.result()
+        )
+      } else {
+        // Update mode: report fixes to sync golden folder with actual folder
+
+        // Delete files that only exist in golden
+        for (relativePath <- onlyInGolden) {
+          val targetPath = goldenFolderPath.resolve(relativePath)
+          reporter.apply(GoldenFix(targetPath, null, -1, -1, deleted = true))
+        }
+
+        // Copy files that only exist in actual
+        for (relativePath <- onlyInActual) {
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
+          val targetPath = goldenFolderPath.resolve(relativePath)
+          val content = new String(actualBytes, java.nio.charset.StandardCharsets.UTF_8)
+          reporter.apply(GoldenFix(targetPath, new GoldenFix.Literal(content), -1, -1))
+        }
+
+        // Update files with different content
+        for (relativePath <- differentContent) {
+          val actualBytes = readFileBytes(actualFolderPath, relativePath)
+          val targetPath = goldenFolderPath.resolve(relativePath)
+          val content = new String(actualBytes, java.nio.charset.StandardCharsets.UTF_8)
+          reporter.apply(GoldenFix(targetPath, new GoldenFix.Literal(content), -1, -1))
+        }
       }
     }
   }
